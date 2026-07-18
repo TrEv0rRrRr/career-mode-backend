@@ -53,6 +53,7 @@ model Player {
   transfers         Transfer[]
   playerSeasonStats PlayerSeasonStats[]
   playerTeams       PlayerTeam[]
+  playerPositions   PlayerPosition[]
 
   @@map("player")
 }
@@ -91,6 +92,15 @@ model Stadium {
   teams       Team[]
 
   @@map("stadium")
+}
+
+model Position {
+  id              Int              @id @default(autoincrement())
+  code            String           @unique
+  name            String
+  playerPositions PlayerPosition[]
+
+  @@map("position")
 }
 
 // TABLAS CON FK
@@ -312,4 +322,16 @@ model PlayerTeam {
   team   Team   @relation(fields: [teamId], references: [id])
 
   @@id([playerId, teamId, startDate])
+}
+
+model PlayerPosition {
+  playerId   Int     @map("player_id")
+  positionId Int     @map("position_id")
+  isPrimary  Boolean @default(false) @map("is_primary")
+
+  player   Player   @relation(fields: [playerId], references: [id])
+  position Position @relation(fields: [positionId], references: [id])
+
+  @@id([playerId, positionId])
+  @@map("player_position")
 }
