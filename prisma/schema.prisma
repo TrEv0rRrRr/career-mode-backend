@@ -10,3 +10,305 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+// ENUMS
+
+enum PreferredFoot {
+  LEFT
+  RIGHT
+}
+
+enum CompetitionType {
+  LEAGUE
+  CUP
+  INTERNATIONAL
+}
+
+enum TransferType {
+  TRANSFER
+  LOAN
+  FREE_AGENT
+  YOUTH_PROMOTION
+}
+
+enum MatchStatus {
+  SCHEDULED
+  PLAYED
+}
+
+// TABLAS SIN FK
+model Player {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  position          String
+  birthDate         DateTime            @map("birth_date") @db.Date
+  nationality       String
+  preferredFoot     PreferredFoot       @map("preferred_foot")
+  overall           Int
+  height            Decimal             @db.Decimal(3, 2)
+  weight            Decimal             @db.Decimal(5, 2)
+  face              String?
+  matchPlayerStats  MatchPlayerStats[]
+  transfers         Transfer[]
+  playerSeasonStats PlayerSeasonStats[]
+  playerTeams       PlayerTeam[]
+
+  @@map("player")
+}
+
+model Manager {
+  id          Int      @id @default(autoincrement())
+  name        String
+  birthDate   DateTime @map("birth_date") @db.Date
+  nationality String
+  face        String?
+  teams       Team[]
+
+  @@map("manager")
+}
+
+model Competition {
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  type                CompetitionType
+  logo                String?
+  teams               Team[]
+  competitionEditions CompetitionEdition[]
+  teamSeasons         TeamSeason[]
+
+  @@map("competition")
+}
+
+model Stadium {
+  id          Int      @id @default(autoincrement())
+  name        String
+  country     String
+  image       String?
+  capacity    Int
+  openingDate DateTime @map("opening_date") @db.Date
+  matches     Match[]
+  teams       Team[]
+
+  @@map("stadium")
+}
+
+// TABLAS CON FK
+model Match {
+  id                   Int                @id @default(autoincrement())
+  round                String
+  date                 DateTime           @db.Date
+  homeGoals            Int                @map("home_goals")
+  awayGoals            Int                @map("away_goals")
+  status               MatchStatus
+  stadiumId            Int                @map("stadium_id")
+  homeTeamId           Int                @map("home_team_id")
+  awayTeamId           Int                @map("away_team_id")
+  competitionEditionId Int                @map("competition_edition_id")
+  matchPlayerStats     MatchPlayerStats[]
+
+  stadium            Stadium            @relation(fields: [stadiumId], references: [id])
+  competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
+
+  homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
+
+  awayTeam       Team             @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  matchTeamStats MatchTeamStats[]
+
+  @@map("match")
+}
+
+model Transfer {
+  id         Int          @id @default(autoincrement())
+  fee        Decimal      @db.Decimal(15, 2)
+  date       DateTime     @db.Date
+  type       TransferType
+  playerId   Int          @map("player_id")
+  seasonId   Int          @map("season_id")
+  fromTeamId Int          @map("from_team_id")
+  toTeamId   Int          @map("to_team_id")
+
+  player Player @relation(fields: [playerId], references: [id])
+  season Season @relation(fields: [seasonId], references: [id])
+
+  fromTeam Team @relation("FromTeam", fields: [fromTeamId], references: [id])
+  toTeam   Team @relation("ToTeam", fields: [toTeamId], references: [id])
+
+  @@map("transfer")
+}
+
+model Season {
+  id       Int     @id @default(autoincrement())
+  year     String
+  notes    String?
+  careerId Int     @map("career_id")
+
+  career              Career               @relation(fields: [careerId], references: [id])
+  transfers           Transfer[]
+  teamSeasonStats     TeamSeasonStats[]
+  competitionEditions CompetitionEdition[]
+  teamSeasons         TeamSeason[]
+  playerSeasonStats   PlayerSeasonStats[]
+
+  @@map("season")
+}
+
+model Career {
+  id          Int    @id @default(autoincrement())
+  managerName String @map("manager_name")
+  teamId      Int    @map("team_id")
+
+  team    Team     @relation(fields: [teamId], references: [id])
+  seasons Season[]
+
+  @@map("career")
+}
+
+model Team {
+  id             Int      @id @default(autoincrement())
+  name           String
+  shortName      String   @map("short_name")
+  country        String
+  logo           String?
+  foundationDate DateTime @map("foundation_date") @db.Date
+  primaryColor   String   @map("primary_color")
+  secondaryColor String   @map("secondary_color")
+  stadiumId      Int      @map("stadium_id")
+  managerId      Int      @map("manager_id")
+  leagueId       Int      @map("league_id")
+
+  stadium     Stadium     @relation(fields: [stadiumId], references: [id])
+  manager     Manager     @relation(fields: [managerId], references: [id])
+  competition Competition @relation(fields: [leagueId], references: [id])
+
+  homeMatches Match[] @relation("HomeTeam")
+
+  awayMatches Match[] @relation("AwayTeam")
+
+  incomingTransfers Transfer[] @relation("ToTeam")
+
+  outgoingTransfers Transfer[] @relation("FromTeam")
+
+  wonCompetitions CompetitionEdition[] @relation("CompetitionWinner")
+
+  careers           Career[]
+  teamSeasonStats   TeamSeasonStats[]
+  teamSeasons       TeamSeason[]
+  matchTeamStats    MatchTeamStats[]
+  playerSeasonStats PlayerSeasonStats[]
+  playerTeams       PlayerTeam[]
+
+  @@map("team")
+}
+
+// TABLAS PUENTE
+model MatchPlayerStats {
+  matchId     Int     @map("match_id")
+  playerId    Int     @map("player_id")
+  goals       Int
+  assists     Int
+  rating      Decimal @db.Decimal(3, 1)
+  yellowCards Int     @map("yellow_cards")
+  redCards    Int     @map("red_cards")
+
+  player Player @relation(fields: [playerId], references: [id])
+  match  Match  @relation(fields: [matchId], references: [id])
+
+  @@id([matchId, playerId])
+  @@map("match_player_stats")
+}
+
+model TeamSeasonStats {
+  teamId   Int @map("team_id")
+  seasonId Int @map("season_id")
+  played   Int
+  wins     Int
+  draws    Int
+  losses   Int
+  gf       Int
+  ga       Int
+  gd       Int
+  points   Int
+  position Int
+
+  team   Team   @relation(fields: [teamId], references: [id])
+  season Season @relation(fields: [seasonId], references: [id])
+
+  @@id([teamId, seasonId])
+  @@map("team_season_stats")
+}
+
+model CompetitionEdition {
+  id            Int  @id @default(autoincrement())
+  seasonId      Int  @map("season_id")
+  competitionId Int  @map("competition_id")
+  winnerTeamId  Int? @map("winner_team_id")
+
+  season      Season      @relation(fields: [seasonId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
+  matches     Match[]
+  winnerTeam  Team?       @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
+
+  @@unique([seasonId, competitionId])
+  @@map("competition_edition")
+}
+
+model TeamSeason {
+  teamId   Int @map("team_id")
+  seasonId Int @map("season_id")
+  leagueId Int @map("league_id")
+
+  season      Season      @relation(fields: [seasonId], references: [id])
+  competition Competition @relation(fields: [leagueId], references: [id])
+  team        Team        @relation(fields: [teamId], references: [id])
+
+  @@id([teamId, seasonId, leagueId])
+  @@map("team_season")
+}
+
+model MatchTeamStats {
+  teamId        Int @map("team_id")
+  matchId       Int @map("match_id")
+  possession    Int
+  shots         Int
+  shotsOnTarget Int @map("shots_on_target")
+  corners       Int
+  fouls         Int
+  offsides      Int
+
+  team  Team  @relation(fields: [teamId], references: [id])
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@id([teamId, matchId])
+  @@map("match_team_stats")
+}
+
+model PlayerSeasonStats {
+  playerId    Int     @map("player_id")
+  teamId      Int     @map("team_id")
+  seasonId    Int     @map("season_id")
+  matches     Int
+  goals       Int
+  assists     Int
+  yellowCards Int     @map("yellow_cards")
+  redCards    Int     @map("red_cards")
+  rating      Decimal @db.Decimal(3, 1)
+
+  player Player @relation(fields: [playerId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id])
+  season Season @relation(fields: [seasonId], references: [id])
+
+  @@id([playerId, teamId, seasonId])
+  @@map("player_season_stats")
+}
+
+model PlayerTeam {
+  playerId  Int       @map("player_id")
+  teamId    Int       @map("team_id")
+  startDate DateTime  @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+
+  player Player @relation(fields: [playerId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  @@id([playerId, teamId, startDate])
+}
