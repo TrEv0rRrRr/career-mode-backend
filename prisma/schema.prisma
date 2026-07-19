@@ -40,7 +40,7 @@ enum MatchStatus {
 // TABLAS SIN FK
 model Player {
   id                Int                 @id @default(autoincrement())
-  name              String
+  name              String              @unique
   birthDate         DateTime            @map("birth_date") @db.Date
   nationality       String
   preferredFoot     PreferredFoot       @map("preferred_foot")
@@ -59,7 +59,7 @@ model Player {
 
 model Manager {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String   @unique
   birthDate   DateTime @map("birth_date") @db.Date
   nationality String
   face        String?
@@ -70,7 +70,7 @@ model Manager {
 
 model Competition {
   id                  Int                  @id @default(autoincrement())
-  name                String
+  name                String               @unique
   type                CompetitionType
   logo                String?
   teams               Team[]
@@ -82,7 +82,7 @@ model Competition {
 
 model Stadium {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String   @unique
   country     String
   image       String?
   capacity    Int
@@ -175,7 +175,7 @@ model Career {
 
 model Team {
   id             Int      @id @default(autoincrement())
-  name           String
+  name           String   @unique
   shortName      String   @map("short_name")
   country        String
   logo           String?
