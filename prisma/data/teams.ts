@@ -1,0 +1,26 @@
+export const teams = [
+  {
+    name: 'FC Barcelona',
+    shortName: 'FCB',
+    country: 'Spain',
+    logo: '/images/players/fc-barcelona.png',
+    foundationDate: new Date('1899-11-29'),
+    primaryColor: '#14285d',
+    secondaryColor: '#8c0035',
+    stadiumId: 1,
+    managerId: 1,
+    leagueId: 2,
+  },
+  {
+    name: 'Real Madrid CF',
+    shortName: 'RMA',
+    country: 'Spain',
+    logo: '/images/players/real-madrid.png',
+    foundationDate: new Date('1902-03-06'),
+    primaryColor: '#ffffff',
+    secondaryColor: '#222222',
+    stadiumId: 2,
+    managerId: 2,
+    leagueId: 2,
+  },
+];
