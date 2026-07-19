@@ -5,6 +5,7 @@ import { PlayersModule } from './players/players.module.ts';
 import { PrismaModule } from './prisma/prisma.module.ts';
 import { PrismaService } from './prisma/prisma.service.ts';
 import { StadiumsModule } from './stadiums/stadiums.module.ts';
+import { TeamsModule } from './teams/teams.module.ts';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { StadiumsModule } from './stadiums/stadiums.module.ts';
     PlayersModule,
     ManagersModule,
     StadiumsModule,
+    TeamsModule,
   ],
   providers: [PrismaService],
 })
