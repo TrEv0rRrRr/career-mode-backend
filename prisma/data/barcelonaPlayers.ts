@@ -3,19 +3,6 @@ enum PreferredFoot {
   RIGHT,
 }
 
-/*
-{
-    name: '',
-    birthDate: new Date('0-0-0'),
-    nationality: '',
-    preferredFoot: PreferredFoot.LEFT,
-    overall: 0,
-    height: 0.0,
-    weight: 0,
-    face: '/images/players/name-lastname.png',
-},
-*/
-
 export const barcelonaPlayers = [
   {
     name: 'Joan García',
