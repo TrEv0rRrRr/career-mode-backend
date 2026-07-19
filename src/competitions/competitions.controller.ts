@@ -6,11 +6,12 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CompetitionType } from '@prisma/client';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 
+@ApiTags('competitions')
 @Controller('competitions')
 export class CompetitionsController {
   constructor(private readonly competitionsService: CompetitionsService) {}
