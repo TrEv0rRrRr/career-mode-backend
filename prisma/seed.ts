@@ -1,26 +1,28 @@
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '@prisma/client';
-import { barcelonaPlayers } from './data/barcelonaPlayers.js';
-import { competitions } from './data/competitions.js';
-import { managers } from './data/managers.js';
-import { positions } from './data/positions.js';
-import { stadiums } from './data/stadiums.js';
-import { teams } from './data/teams.js';
+import { seedDatabase } from './seedDatabase.ts';
 
-const prisma = new PrismaClient();
+const dbUrl = process.env.DATABASE_URL;
 
-export const seedDatabase = async () => {
-  await prisma.$transaction(async (tx) => {
-    await Promise.all([
-      tx.player.createMany({ data: barcelonaPlayers, skipDuplicates: true }),
-      tx.competition.createMany({ data: competitions, skipDuplicates: true }),
-      tx.manager.createMany({ data: managers, skipDuplicates: true }),
-      tx.position.createMany({ data: positions, skipDuplicates: true }),
-      tx.stadium.createMany({ data: stadiums, skipDuplicates: true }),
-    ]);
+if (!dbUrl)
+  throw new Error('DATABASE_URL is required to initialize the Client.');
 
-    await tx.team.createMany({
-      data: teams,
-      skipDuplicates: true,
-    });
-  });
-};
+const adapter = new PrismaMariaDb(dbUrl);
+
+const prisma = new PrismaClient({
+  adapter,
+});
+
+async function main() {
+  await prisma.$connect();
+
+  await seedDatabase(prisma);
+
+  await prisma.$disconnect();
+}
+
+main().catch(async (e) => {
+  console.error(e);
+  await prisma.$disconnect();
+  process.exit(1);
+});
