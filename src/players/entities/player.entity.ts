@@ -1,6 +1,7 @@
 import { PreferredFoot } from '@prisma/client';
 
 export class PlayerEntity {
+  id!: number;
   name!: string;
   birthDate!: Date;
   nationality!: string;
