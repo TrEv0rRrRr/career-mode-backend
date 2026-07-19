@@ -21,6 +21,7 @@ enum PreferredFoot {
 enum CompetitionType {
   LEAGUE
   CUP
+  SUPER_CUP
   INTERNATIONAL
 }
 
@@ -40,11 +41,9 @@ enum MatchStatus {
 model Player {
   id                Int                 @id @default(autoincrement())
   name              String
-  position          String
   birthDate         DateTime            @map("birth_date") @db.Date
   nationality       String
   preferredFoot     PreferredFoot       @map("preferred_foot")
-  jerseyNumber      Int                 @map("jersey_number")
   overall           Int
   height            Decimal             @db.Decimal(3, 2)
   weight            Decimal             @db.Decimal(5, 2)
@@ -313,10 +312,11 @@ model PlayerSeasonStats {
 }
 
 model PlayerTeam {
-  playerId  Int       @map("player_id")
-  teamId    Int       @map("team_id")
-  startDate DateTime  @map("start_date") @db.Date
-  endDate   DateTime? @map("end_date") @db.Date
+  playerId     Int       @map("player_id")
+  teamId       Int       @map("team_id")
+  jerseyNumber Int       @map("jersey_number")
+  startDate    DateTime  @map("start_date") @db.Date
+  endDate      DateTime? @map("end_date") @db.Date
 
   player Player @relation(fields: [playerId], references: [id])
   team   Team   @relation(fields: [teamId], references: [id])
