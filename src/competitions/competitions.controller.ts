@@ -6,16 +6,27 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CompetitionType } from '@prisma/client';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
+import { CompetitionEntity } from './entities/competition.entity.ts';
 
 @ApiTags('competitions')
 @Controller('competitions')
 export class CompetitionsController {
   constructor(private readonly competitionsService: CompetitionsService) {}
   @Get()
+  @ApiOkResponse({
+    type: CompetitionEntity,
+    isArray: true,
+  })
   @ApiOperation({
     summary: 'Gets all competitions or filters them by type',
   })
@@ -38,6 +49,9 @@ export class CompetitionsController {
   }
 
   @Get(':id')
+  @ApiOkResponse({
+    type: CompetitionEntity,
+  })
   @ApiOperation({ summary: "Gets a competition by it's id" })
   @ApiResponse({
     status: HttpStatus.OK,

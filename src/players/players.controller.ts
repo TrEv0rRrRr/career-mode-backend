@@ -9,9 +9,15 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreatePlayerDto } from './dto/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/update-player.dto.ts';
+import { PlayerEntity } from './entities/player.entity.ts';
 import { PlayersService } from './players.service.ts';
 
 @ApiTags('players')
@@ -20,6 +26,10 @@ export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}
 
   @Get()
+  @ApiOkResponse({
+    type: PlayerEntity,
+    isArray: true,
+  })
   @ApiOperation({ summary: 'Get all players' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -30,6 +40,9 @@ export class PlayersController {
   }
 
   @Get(':id')
+  @ApiOkResponse({
+    type: PlayerEntity,
+  })
   @ApiOperation({ summary: 'Get a player by its id' })
   @ApiResponse({
     status: HttpStatus.OK,
