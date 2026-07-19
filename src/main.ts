@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.ts';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,8 +15,8 @@ async function bootstrap() {
   app.enableCors();
 
   const config = new DocumentBuilder()
-    .setTitle('Tasks API')
-    .setDescription('A tasks API built with NestJS')
+    .setTitle('Career Mode Backend')
+    .setDescription('A backend developed for my career mode frontend')
     .setVersion('1.0')
     .build();
 
