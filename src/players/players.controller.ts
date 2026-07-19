@@ -20,7 +20,7 @@ import { UpdatePlayerDto } from './dto/update-player.dto.ts';
 import { PlayerEntity } from './entities/player.entity.ts';
 import { PlayersService } from './players.service.ts';
 
-@ApiTags('players')
+@ApiTags('Players')
 @Controller('players')
 export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}

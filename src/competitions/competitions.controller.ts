@@ -18,7 +18,7 @@ import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 import { CompetitionEntity } from './entities/competition.entity.ts';
 
-@ApiTags('competitions')
+@ApiTags('Competitions')
 @Controller('competitions')
 export class CompetitionsController {
   constructor(private readonly competitionsService: CompetitionsService) {}
