@@ -46,7 +46,7 @@ model Player {
   preferredFoot     PreferredFoot       @map("preferred_foot")
   overall           Int
   height            Decimal             @db.Decimal(3, 2)
-  weight            Decimal             @db.Decimal(5, 2)
+  weight            Int
   face              String?
   matchPlayerStats  MatchPlayerStats[]
   transfers         Transfer[]
