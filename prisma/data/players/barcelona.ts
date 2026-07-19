@@ -1,6 +1,6 @@
 import { PreferredFoot } from '@prisma/client';
 
-export const barcelonaPlayers = [
+export const barcelona = [
   {
     name: 'Joan García',
     birthDate: new Date('2001-05-04'),
