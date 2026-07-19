@@ -1,9 +1,4 @@
-enum CompetitionType {
-  LEAGUE,
-  CUP,
-  SUPER_CUP,
-  INTERNATIONAL,
-}
+import { CompetitionType } from '@prisma/client';
 
 export const competitions = [
   {

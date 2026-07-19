@@ -1,7 +1,4 @@
-enum PreferredFoot {
-  LEFT,
-  RIGHT,
-}
+import { PreferredFoot } from '@prisma/client';
 
 export const barcelonaPlayers = [
   {
