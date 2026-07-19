@@ -4,9 +4,16 @@ import { ManagersModule } from './managers/managers.module.ts';
 import { PlayersModule } from './players/players.module.ts';
 import { PrismaModule } from './prisma/prisma.module.ts';
 import { PrismaService } from './prisma/prisma.service.ts';
+import { StadiumsModule } from './stadiums/stadiums.module.ts';
 
 @Module({
-  imports: [PrismaModule, CompetitionsModule, PlayersModule, ManagersModule],
+  imports: [
+    PrismaModule,
+    CompetitionsModule,
+    PlayersModule,
+    ManagersModule,
+    StadiumsModule,
+  ],
   providers: [PrismaService],
 })
 export class AppModule {}
