@@ -1,6 +1,6 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '@prisma/client';
-import { seedDatabase } from './seedDatabase.ts';
+import { seedDatabase } from './seeds/seedDatabase.ts';
 
 const dbUrl = process.env.DATABASE_URL;
 
