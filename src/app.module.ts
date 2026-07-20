@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CareerModule } from './careers/careers.module.ts';
 import { CompetitionsModule } from './competitions/competitions.module.ts';
 import { ManagersModule } from './managers/managers.module.ts';
 import { PlayersModule } from './players/players.module.ts';
@@ -15,6 +16,7 @@ import { TeamsModule } from './teams/teams.module.ts';
     ManagersModule,
     StadiumsModule,
     TeamsModule,
+    CareerModule,
   ],
   providers: [PrismaService],
 })
