@@ -9,18 +9,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateManagerDto } from './dto/create-manager.dto.ts';
 import { UpdateManagerDto } from './dto/update-manager.dto.ts';
 import { ManagerEntity } from './entities/manager.entity.ts';
 import { ManagersService } from './managers.service.ts';
 
-@ApiTags('Managers')
 @Controller('managers')
 export class ManagersController {
   constructor(private readonly managersService: ManagersService) {}

@@ -9,18 +9,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { StadiumEntity } from '../stadiums/entities/stadium.entity.ts';
 import { CreateStadiumDto } from './dto/create-stadium.dto.ts';
 import { UpdateStadiumDto } from './dto/update-stadium.dto.ts';
 import { StadiumsService } from './stadiums.service.ts';
 
-@ApiTags('Stadiums')
 @Controller('stadiums')
 export class StadiumsController {
   constructor(private readonly stadiumsService: StadiumsService) {}
