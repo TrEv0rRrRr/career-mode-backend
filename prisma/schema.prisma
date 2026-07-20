@@ -148,7 +148,7 @@ model Transfer {
 
 model Season {
   id       Int     @id @default(autoincrement())
-  year     String
+  year     String  @unique
   notes    String?
   careerId Int     @map("career_id")
 
