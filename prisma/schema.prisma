@@ -163,9 +163,11 @@ model Season {
 }
 
 model Career {
-  id          Int    @id @default(autoincrement())
-  managerName String @map("manager_name")
-  teamId      Int    @map("team_id")
+  id          Int       @id @default(autoincrement())
+  managerName String    @map("manager_name")
+  teamId      Int       @map("team_id")
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
 
   team    Team     @relation(fields: [teamId], references: [id])
   seasons Season[]
