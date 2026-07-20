@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateCareerDto {
   @ApiProperty({
@@ -33,6 +39,7 @@ export class CreateCareerDto {
     example: '2026-12-20',
     description: 'The date when my master league ended',
   })
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
   endDate?: Date;
