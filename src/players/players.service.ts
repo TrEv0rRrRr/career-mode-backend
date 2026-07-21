@@ -20,6 +20,14 @@ export class PlayersService {
     return player;
   }
 
+  async findPlayerByName(name: string) {
+    const player = await this.repo.findByName(name);
+
+    if (!player) throw new PlayerNotFoundException();
+
+    return player;
+  }
+
   async createPlayer(data: CreatePlayerDto) {
     const existing = await this.repo.findByName(data.name);
 

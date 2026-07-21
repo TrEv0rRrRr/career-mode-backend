@@ -50,6 +50,23 @@ export class PlayersController {
     return this.playersService.findPlayerById(id);
   }
 
+  @Get('name/:name')
+  @ApiOkResponse({
+    type: PlayerEntity,
+  })
+  @ApiOperation({ summary: 'Get a player by its name' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the player',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  getPlayerByName(@Param('name') name: string) {
+    return this.playersService.findPlayerByName(name);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create a player' })
   @ApiResponse({

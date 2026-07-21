@@ -3,20 +3,32 @@ import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreatePlayerDto } from './dto/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/update-player.dto.ts';
 
+const playerInclude = {
+  playerPositions: true,
+} as const;
+
 @Injectable()
 export class PlayersRepository {
   constructor(private prisma: PrismaService) {}
 
   findById(id: number) {
-    return this.prisma.player.findUnique({ where: { id } });
+    return this.prisma.player.findUnique({
+      where: { id },
+      include: playerInclude,
+    });
   }
 
   findAll() {
-    return this.prisma.player.findMany();
+    return this.prisma.player.findMany({
+      include: playerInclude,
+    });
   }
 
   findByName(name: string) {
-    return this.prisma.player.findFirst({ where: { name } });
+    return this.prisma.player.findFirst({
+      where: { name },
+      include: playerInclude,
+    });
   }
 
   create(data: CreatePlayerDto) {
