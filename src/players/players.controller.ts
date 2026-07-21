@@ -8,10 +8,19 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { AssignPositionsDto } from './dto/assign-positions.dto.ts';
 import { CreatePlayerDto } from './dto/create-player.dto.ts';
+import { UpdatePlayerPositionDto } from './dto/update-player-position.dto.ts';
 import { UpdatePlayerDto } from './dto/update-player.dto.ts';
+import { PlayerPositionsEntity } from './entities/player-positions.entity.ts';
 import { PlayerEntity } from './entities/player.entity.ts';
 import { PlayersService } from './players.service.ts';
 
@@ -110,5 +119,101 @@ export class PlayersController {
   })
   deletePlayer(@Param('id', ParseIntPipe) id: number) {
     return this.playersService.deletePlayer(id);
+  }
+
+  @Get(':playerId/positions')
+  @ApiOkResponse({
+    type: PlayerPositionsEntity,
+    isArray: true,
+  })
+  @ApiOperation({ summary: "Get all player's position" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player positions found!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  getAllPlayerPositions(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerPositions(playerId);
+  }
+
+  @Post(':playerId/positions')
+  @ApiOperation({ summary: 'Assign positions to a player' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Positions assigned!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  assignPlayerPositions(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: AssignPositionsDto,
+  ) {
+    return this.playersService.assignPositions(playerId, data);
+  }
+
+  @Put(':playerId/positions')
+  @ApiOperation({ summary: "Updates all player's position" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player positions replaced!',
+  })
+  @ApiBody({
+    schema: {
+      example: [
+        {
+          positionId: 11,
+          isPrimary: true,
+        },
+        {
+          positionId: 9,
+          isPrimary: false,
+        },
+      ],
+    },
+  })
+  replacePlayerPositions(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: AssignPositionsDto[],
+  ) {
+    return this.playersService.replacePlayerPositions(playerId, data);
+  }
+
+  @Patch(':playerId/positions/:positionId')
+  @ApiOperation({ summary: "Update a player's position assignment" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player position updated!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  updatePlayerPosition(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('positionId', ParseIntPipe) positionId: number,
+    @Body() data: UpdatePlayerPositionDto,
+  ) {
+    return this.playersService.updatePlayerPosition(playerId, positionId, data);
+  }
+  @Delete(':playerId/positions/:positionId')
+  @ApiOperation({ summary: "Deletes a player's position" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player position deleted!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  deletePlayerPosition(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('positionId', ParseIntPipe) positionId: number,
+  ) {
+    return this.playersService.deletePlayerPosition(playerId, positionId);
   }
 }

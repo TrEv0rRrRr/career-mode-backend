@@ -1,5 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { AssignPositionsDto } from './dto/assign-positions.dto.ts';
 import { CreatePlayerDto } from './dto/create-player.dto.ts';
+import { UpdatePlayerPositionDto } from './dto/update-player-position.dto.ts';
 import { UpdatePlayerDto } from './dto/update-player.dto.ts';
 import { PlayerNotFoundException } from './exceptions/player-not-found.exception.ts';
 import { PlayersRepository } from './players.repository.ts';
@@ -47,5 +49,42 @@ export class PlayersService {
     await this.findPlayerById(id);
 
     return this.repo.delete(id);
+  }
+
+  async findPlayerPositions(playerId: number) {
+    await this.findPlayerById(playerId);
+
+    return this.repo.findPlayerPositions(playerId);
+  }
+
+  async assignPositions(playerId: number, data: AssignPositionsDto) {
+    await this.findPlayerById(playerId);
+
+    if (data.isPrimary)
+      throw new ConflictException("There's already a main position");
+
+    return this.repo.assignPositions(playerId, data);
+  }
+
+  async replacePlayerPositions(playerId: number, data: AssignPositionsDto[]) {
+    await this.repo.replacePlayerPositions(playerId, data);
+  }
+
+  async updatePlayerPosition(
+    playerId: number,
+    positionId: number,
+    data: UpdatePlayerPositionDto,
+  ) {
+    await this.findPlayerById(playerId);
+
+    if (data.isPrimary) await this.repo.makePositionsNotPrimary(playerId);
+
+    return this.repo.updatePlayerPosition(playerId, positionId, data);
+  }
+
+  async deletePlayerPosition(playerId: number, positionId: number) {
+    await this.findPlayerById(playerId);
+
+    return this.repo.deletePlayerPosition(playerId, positionId);
   }
 }
