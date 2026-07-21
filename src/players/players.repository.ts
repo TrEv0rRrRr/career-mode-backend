@@ -58,6 +58,29 @@ export class PlayersRepository {
     });
   }
 
+  findPlayerPosition(playerId: number, positionId: number) {
+    return this.prisma.playerPosition.findUnique({
+      where: {
+        playerId_positionId: {
+          playerId,
+          positionId,
+        },
+      },
+    });
+  }
+
+  findAnotherMainPosition(playerId: number, positionId: number) {
+    return this.prisma.playerPosition.findFirst({
+      where: {
+        playerId,
+        isPrimary: true,
+        NOT: {
+          positionId,
+        },
+      },
+    });
+  }
+
   assignPositions(playerId: number, data: AssignPositionsDto) {
     return this.prisma.playerPosition.create({
       data: {

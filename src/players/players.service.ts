@@ -66,8 +66,8 @@ export class PlayersService {
     return this.repo.assignPositions(playerId, data);
   }
 
-  async replacePlayerPositions(playerId: number, data: AssignPositionsDto[]) {
-    await this.repo.replacePlayerPositions(playerId, data);
+  replacePlayerPositions(playerId: number, data: AssignPositionsDto[]) {
+    return this.repo.replacePlayerPositions(playerId, data);
   }
 
   async updatePlayerPosition(
@@ -76,6 +76,21 @@ export class PlayersService {
     data: UpdatePlayerPositionDto,
   ) {
     await this.findPlayerById(playerId);
+
+    const playerPosition = await this.repo.findPlayerPosition(
+      playerId,
+      positionId,
+    );
+
+    const anotherMainPosition = await this.repo.findAnotherMainPosition(
+      playerId,
+      positionId,
+    );
+
+    if (playerPosition?.isPrimary && !data.isPrimary && !anotherMainPosition)
+      throw new ConflictException(
+        'A player cannot be left without a primary position.',
+      );
 
     if (data.isPrimary) await this.repo.makePositionsNotPrimary(playerId);
 
