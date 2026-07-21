@@ -17,7 +17,7 @@ export class PositionsController {
     status: HttpStatus.OK,
     description: 'Gets the positions',
   })
-  findAll() {
+  getAllPositions() {
     return this.positionsService.findPositions();
   }
 }
