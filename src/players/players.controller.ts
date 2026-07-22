@@ -9,13 +9,11 @@ import {
   Patch,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
@@ -23,7 +21,6 @@ import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
 import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
-import { PlayerTeamQueryDto } from './dto/teams/player-team-query.dto.ts';
 import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 import { PlayerPositionsEntity } from './entities/player-positions.entity.ts';
 import { PlayerEntity } from './entities/player.entity.ts';
@@ -322,7 +319,7 @@ export class PlayersController {
     return this.playersService.replacePlayerTeams(playerId, data);
   }
 
-  @Patch(':playerId/teams/:teamId')
+  @Patch(':playerId/teams/:playerTeamId')
   @ApiOperation({ summary: "Update a player's team" })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -340,25 +337,15 @@ export class PlayersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid start date.',
   })
-  @ApiQuery({
-    name: 'startDate',
-    required: true,
-    type: String,
-    example: '2026-07-01',
-    description: 'The contract start date.',
-  })
   updatePlayerTeam(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Query() query: PlayerTeamQueryDto,
+    @Param('playerTeamId', ParseIntPipe) playerTeamId: number,
     @Body() data: UpdatePlayerTeamDto,
   ) {
-    const date = new Date(query.startDate);
-
-    return this.playersService.updatePlayerTeam(playerId, teamId, date, data);
+    return this.playersService.updatePlayerTeam(playerId, playerTeamId, data);
   }
 
-  @Delete(':playerId/teams/:teamId')
+  @Delete(':playerId/teams/:playerTeamId')
   @ApiOperation({ summary: "Delete a player's team" })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -372,20 +359,10 @@ export class PlayersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid start date.',
   })
-  @ApiQuery({
-    name: 'startDate',
-    required: true,
-    type: String,
-    example: '2026-07-01',
-    description: 'The contract start date.',
-  })
   deletePlayerTeam(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Query() query: PlayerTeamQueryDto,
+    @Param('playerTeamId', ParseIntPipe) playerTeamId: number,
   ) {
-    const date = new Date(query.startDate);
-
-    return this.playersService.deletePlayerTeam(playerId, teamId, date);
+    return this.playersService.deletePlayerTeam(playerTeamId, playerId);
   }
 }

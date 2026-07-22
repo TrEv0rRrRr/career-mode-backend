@@ -177,14 +177,10 @@ export class PlayersRepository {
     });
   }
 
-  findPlayerTeam(playerId: number, teamId: number, startDate: Date) {
+  findPlayerTeam(playerTeamId: number) {
     return this.prisma.playerTeam.findUnique({
       where: {
-        playerId_teamId_startDate: {
-          playerId,
-          teamId,
-          startDate,
-        },
+        id: playerTeamId,
       },
     });
   }
@@ -233,32 +229,19 @@ export class PlayersRepository {
     });
   }
 
-  updatePlayerTeam(
-    playerId: number,
-    teamId: number,
-    startDate: Date,
-    data: UpdatePlayerTeamDto,
-  ) {
+  updatePlayerTeam(playerTeamId: number, data: UpdatePlayerTeamDto) {
     return this.prisma.playerTeam.update({
       where: {
-        playerId_teamId_startDate: {
-          playerId,
-          teamId,
-          startDate,
-        },
+        id: playerTeamId,
       },
       data,
     });
   }
 
-  deletePlayerTeam(playerId: number, teamId: number, startDate: Date) {
+  deletePlayerTeam(playerTeamId: number) {
     return this.prisma.playerTeam.delete({
       where: {
-        playerId_teamId_startDate: {
-          playerId,
-          teamId,
-          startDate,
-        },
+        id: playerTeamId,
       },
     });
   }

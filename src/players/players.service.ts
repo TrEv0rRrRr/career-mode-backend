@@ -127,12 +127,17 @@ export class PlayersService {
     return this.repo.findPlayerTeams(playerId);
   }
 
+  async findCurrentTeam(playerId: number) {
+    await this.findPlayerById(playerId);
+    return this.repo.findCurrentTeam(playerId);
+  }
+
   async assignTeam(playerId: number, data: AssignTeamDto) {
     await this.findPlayerById(playerId);
 
     await this.teamsService.findTeamById(data.teamId);
 
-    const isThePlayerOnATeam = await this.repo.findCurrentTeam(playerId);
+    const isThePlayerOnATeam = await this.findCurrentTeam(playerId);
 
     if (isThePlayerOnATeam)
       throw new ConflictException(
@@ -175,13 +180,12 @@ export class PlayersService {
 
   async updatePlayerTeam(
     playerId: number,
-    teamId: number,
-    startDate: Date,
+    playerTeamId: number,
     data: UpdatePlayerTeamDto,
   ) {
     await this.findPlayerById(playerId);
 
-    const playerCurrentTeam = await this.repo.findCurrentTeam(playerId);
+    const playerCurrentTeam = await this.findCurrentTeam(playerId);
 
     if (
       data.endDate &&
@@ -192,20 +196,16 @@ export class PlayersService {
         'The end date cannot be before the start date',
       );
 
-    return this.repo.updatePlayerTeam(playerId, teamId, startDate, data);
+    return this.repo.updatePlayerTeam(playerTeamId, data);
   }
 
-  async deletePlayerTeam(playerId: number, teamId: number, startDate: Date) {
+  async deletePlayerTeam(playerTeamId: number, playerId: number) {
     await this.findPlayerById(playerId);
 
-    const playerTeam = await this.repo.findPlayerTeam(
-      playerId,
-      teamId,
-      startDate,
-    );
+    const playerTeam = await this.repo.findPlayerTeam(playerTeamId);
 
     if (!playerTeam) throw new PlayerTeamNotFoundException();
 
-    return this.repo.deletePlayerTeam(playerId, teamId, startDate);
+    return this.repo.deletePlayerTeam(playerTeamId);
   }
 }
