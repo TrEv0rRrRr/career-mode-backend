@@ -1,14 +1,27 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { AssignPositionsDto } from './dto/assign-positions.dto.ts';
-import { CreatePlayerDto } from './dto/create-player.dto.ts';
-import { UpdatePlayerPositionDto } from './dto/update-player-position.dto.ts';
-import { UpdatePlayerDto } from './dto/update-player.dto.ts';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { TeamsService } from '../teams/teams.service.ts';
+import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
+import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
+import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
+import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
+import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
+import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 import { PlayerNotFoundException } from './exceptions/player-not-found.exception.ts';
+import { PlayerTeamNotFoundException } from './exceptions/player-team-not-found.exception.ts';
 import { PlayersRepository } from './players.repository.ts';
 
 @Injectable()
 export class PlayersService {
-  constructor(private repo: PlayersRepository) {}
+  constructor(
+    private repo: PlayersRepository,
+    private teamsService: TeamsService,
+  ) {}
+
+  // ! Player Methods
 
   findPlayers() {
     return this.repo.findAll();
@@ -51,6 +64,8 @@ export class PlayersService {
     return this.repo.delete(id);
   }
 
+  // ! Player Position Methods
+
   async findPlayerPositions(playerId: number) {
     await this.findPlayerById(playerId);
 
@@ -66,7 +81,9 @@ export class PlayersService {
     return this.repo.assignPositions(playerId, data);
   }
 
-  replacePlayerPositions(playerId: number, data: AssignPositionsDto[]) {
+  async replacePlayerPositions(playerId: number, data: AssignPositionsDto[]) {
+    await this.findPlayerById(playerId);
+
     return this.repo.replacePlayerPositions(playerId, data);
   }
 
@@ -101,5 +118,94 @@ export class PlayersService {
     await this.findPlayerById(playerId);
 
     return this.repo.deletePlayerPosition(playerId, positionId);
+  }
+
+  // ! Player Team Methods
+
+  async findPlayerTeams(playerId: number) {
+    await this.findPlayerById(playerId);
+    return this.repo.findPlayerTeams(playerId);
+  }
+
+  async assignTeam(playerId: number, data: AssignTeamDto) {
+    await this.findPlayerById(playerId);
+
+    await this.teamsService.findTeamById(data.teamId);
+
+    const isThePlayerOnATeam = await this.repo.findCurrentTeam(playerId);
+
+    if (isThePlayerOnATeam)
+      throw new ConflictException(
+        'This player is currently playing for a team. You must end his contract first',
+      );
+
+    if (data.endDate && data.endDate < data.startDate)
+      throw new BadRequestException(
+        'The end date cannot be before the start date',
+      );
+
+    return this.repo.assignTeam(playerId, data);
+  }
+
+  async replacePlayerTeams(playerId: number, data: AssignTeamDto[]) {
+    await this.findPlayerById(playerId);
+
+    for (const team of data) {
+      if (team.endDate && team.endDate < team.startDate) {
+        throw new BadRequestException(
+          'The end date cannot be before the start date.',
+        );
+      }
+    }
+
+    await Promise.all(
+      data.map((team) => this.teamsService.findTeamById(team.teamId)),
+    );
+
+    const activeContracts = data.filter((team) => team.endDate === null);
+
+    if (activeContracts.length > 1) {
+      throw new ConflictException(
+        'A player cannot have more than one active contract.',
+      );
+    }
+
+    return this.repo.replacePlayerTeams(playerId, data);
+  }
+
+  async updatePlayerTeam(
+    playerId: number,
+    teamId: number,
+    startDate: Date,
+    data: UpdatePlayerTeamDto,
+  ) {
+    await this.findPlayerById(playerId);
+
+    const playerCurrentTeam = await this.repo.findCurrentTeam(playerId);
+
+    if (
+      data.endDate &&
+      playerCurrentTeam &&
+      data.endDate < playerCurrentTeam.startDate
+    )
+      throw new BadRequestException(
+        'The end date cannot be before the start date',
+      );
+
+    return this.repo.updatePlayerTeam(playerId, teamId, startDate, data);
+  }
+
+  async deletePlayerTeam(playerId: number, teamId: number, startDate: Date) {
+    await this.findPlayerById(playerId);
+
+    const playerTeam = await this.repo.findPlayerTeam(
+      playerId,
+      teamId,
+      startDate,
+    );
+
+    if (!playerTeam) throw new PlayerTeamNotFoundException();
+
+    return this.repo.deletePlayerTeam(playerId, teamId, startDate);
   }
 }

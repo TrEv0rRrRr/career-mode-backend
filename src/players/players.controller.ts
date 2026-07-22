@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,17 +10,22 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
-import { AssignPositionsDto } from './dto/assign-positions.dto.ts';
-import { CreatePlayerDto } from './dto/create-player.dto.ts';
-import { UpdatePlayerPositionDto } from './dto/update-player-position.dto.ts';
-import { UpdatePlayerDto } from './dto/update-player.dto.ts';
+import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
+import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
+import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
+import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
+import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
+import { PlayerTeamQueryDto } from './dto/teams/player-team-query.dto.ts';
+import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 import { PlayerPositionsEntity } from './entities/player-positions.entity.ts';
 import { PlayerEntity } from './entities/player.entity.ts';
 import { PlayersService } from './players.service.ts';
@@ -27,6 +33,7 @@ import { PlayersService } from './players.service.ts';
 @Controller('players')
 export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}
+  // ! Player Endpoints
 
   @Get()
   @ApiOkResponse({
@@ -121,6 +128,8 @@ export class PlayersController {
     return this.playersService.deletePlayer(id);
   }
 
+  // ! Player Position Endpoints
+
   @Get(':playerId/positions')
   @ApiOkResponse({
     type: PlayerPositionsEntity,
@@ -162,6 +171,10 @@ export class PlayersController {
     status: HttpStatus.OK,
     description: 'Player positions replaced!',
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
   @ApiBody({
     schema: {
       example: [
@@ -200,6 +213,7 @@ export class PlayersController {
   ) {
     return this.playersService.updatePlayerPosition(playerId, positionId, data);
   }
+
   @Delete(':playerId/positions/:positionId')
   @ApiOperation({ summary: "Deletes a player's position" })
   @ApiResponse({
@@ -215,5 +229,164 @@ export class PlayersController {
     @Param('positionId', ParseIntPipe) positionId: number,
   ) {
     return this.playersService.deletePlayerPosition(playerId, positionId);
+  }
+
+  // ! Player Team Endpoints
+
+  @Get(':playerId/teams')
+  @ApiOperation({ summary: "Get a player's teams record" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player teams found!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  getAllPlayerTeams(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerTeams(playerId);
+  }
+
+  @Post(':playerId/teams')
+  @ApiOperation({ summary: 'Sign a player for a team' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player signed for that team!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'The player is already playing for a team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  signPlayerToTeam(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: AssignTeamDto,
+  ) {
+    return this.playersService.assignTeam(playerId, data);
+  }
+
+  @Put(':playerId/teams')
+  @ApiOperation({ summary: "Update a player's teams record" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player teams replaced!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'The player is already playing for a team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  @ApiBody({
+    schema: {
+      example: [
+        {
+          teamId: 1,
+          jerseyNumber: 10,
+          startDate: '2026-07-21',
+          endDate: '2030-07-21',
+        },
+        {
+          teamId: 2,
+          jerseyNumber: 10,
+          startDate: '2030-08-21',
+          endDate: null,
+        },
+      ],
+    },
+  })
+  replacePlayerTeams(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: AssignTeamDto[],
+  ) {
+    return this.playersService.replacePlayerTeams(playerId, data);
+  }
+
+  @Patch(':playerId/teams/:teamId')
+  @ApiOperation({ summary: "Update a player's team" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player team update!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid start date.',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    type: String,
+    example: '2026-07-01',
+    description: 'The contract start date.',
+  })
+  updatePlayerTeam(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Query() query: PlayerTeamQueryDto,
+    @Body() data: UpdatePlayerTeamDto,
+  ) {
+    const date = new Date(query.startDate);
+
+    return this.playersService.updatePlayerTeam(playerId, teamId, date, data);
+  }
+
+  @Delete(':playerId/teams/:teamId')
+  @ApiOperation({ summary: "Delete a player's team" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player team deleted!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid start date.',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: true,
+    type: String,
+    example: '2026-07-01',
+    description: 'The contract start date.',
+  })
+  deletePlayerTeam(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Query() query: PlayerTeamQueryDto,
+  ) {
+    const date = new Date(query.startDate);
+
+    return this.playersService.deletePlayerTeam(playerId, teamId, date);
   }
 }

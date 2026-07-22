@@ -1,17 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.ts';
-import { AssignPositionsDto } from './dto/assign-positions.dto.ts';
-import { CreatePlayerDto } from './dto/create-player.dto.ts';
-import { UpdatePlayerPositionDto } from './dto/update-player-position.dto.ts';
-import { UpdatePlayerDto } from './dto/update-player.dto.ts';
+import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
+import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
+import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
+import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
+import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
+import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 
 const playerInclude = {
   playerPositions: true,
+  playerTeams: true,
 } as const;
 
 @Injectable()
 export class PlayersRepository {
   constructor(private prisma: PrismaService) {}
+
+  // ! Player Queries
 
   findById(id: number) {
     return this.prisma.player.findUnique({
@@ -48,6 +53,8 @@ export class PlayersRepository {
       where: { id },
     });
   }
+
+  // ! Player position Queries
 
   findPlayerPositions(playerId: number) {
     return this.prisma.playerPosition.findMany({
@@ -151,6 +158,106 @@ export class PlayersRepository {
         playerId_positionId: {
           playerId,
           positionId,
+        },
+      },
+    });
+  }
+
+  // ! Player team Queries
+
+  findPlayerTeams(playerId: number) {
+    return this.prisma.playerTeam.findMany({
+      where: { playerId },
+      include: {
+        team: true,
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
+  }
+
+  findPlayerTeam(playerId: number, teamId: number, startDate: Date) {
+    return this.prisma.playerTeam.findUnique({
+      where: {
+        playerId_teamId_startDate: {
+          playerId,
+          teamId,
+          startDate,
+        },
+      },
+    });
+  }
+
+  findCurrentTeam(playerId: number) {
+    return this.prisma.playerTeam.findFirst({
+      where: {
+        playerId,
+        endDate: null,
+      },
+      include: {
+        team: true,
+      },
+    });
+  }
+
+  assignTeam(playerId: number, data: AssignTeamDto) {
+    return this.prisma.playerTeam.create({
+      data: {
+        playerId,
+        teamId: data.teamId,
+        jerseyNumber: data.jerseyNumber,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      },
+    });
+  }
+
+  replacePlayerTeams(playerId: number, data: AssignTeamDto[]) {
+    const playerTeams = data.map((team) => ({
+      playerId,
+      teamId: team.teamId,
+      jerseyNumber: team.jerseyNumber,
+      startDate: team.startDate,
+      endDate: team.endDate,
+    }));
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.playerTeam.deleteMany({
+        where: { playerId },
+      });
+
+      return tx.playerTeam.createMany({
+        data: playerTeams,
+      });
+    });
+  }
+
+  updatePlayerTeam(
+    playerId: number,
+    teamId: number,
+    startDate: Date,
+    data: UpdatePlayerTeamDto,
+  ) {
+    return this.prisma.playerTeam.update({
+      where: {
+        playerId_teamId_startDate: {
+          playerId,
+          teamId,
+          startDate,
+        },
+      },
+      data,
+    });
+  }
+
+  deletePlayerTeam(playerId: number, teamId: number, startDate: Date) {
+    return this.prisma.playerTeam.delete({
+      where: {
+        playerId_teamId_startDate: {
+          playerId,
+          teamId,
+          startDate,
         },
       },
     });
