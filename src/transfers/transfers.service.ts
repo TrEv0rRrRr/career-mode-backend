@@ -5,6 +5,7 @@ import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CreateTransferDto } from './dto/create-transfer.dto.ts';
 
+import { SeasonNotFoundException } from '../seasons/exceptions/season-not-found.exception.ts';
 import { TransferNotFoundException } from './exceptions/transfer-not-found.exception.ts';
 import { TransfersRepository } from './transfers.repository.ts';
 
@@ -40,7 +41,14 @@ export class TransfersService {
 
     await this.teamsService.findTeamById(data.toTeamId);
 
-    await this.seasonService.findSeasonById(data.seasonId);
+    const season = await this.seasonService.findSeasonById(data.seasonId);
+
+    if (!season) throw new SeasonNotFoundException();
+
+    if (data.date < season.startDate || data.date > season.endDate)
+      throw new BadRequestException(
+        'The transfer date must be within the selected season.',
+      );
 
     if (0 > data.fee)
       throw new BadRequestException('The transfer fee cannot be negative');
