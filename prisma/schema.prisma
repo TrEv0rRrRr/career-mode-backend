@@ -318,6 +318,7 @@ model PlayerSeasonStats {
 }
 
 model PlayerTeam {
+  id           Int       @id @default(autoincrement())
   playerId     Int       @map("player_id")
   teamId       Int       @map("team_id")
   jerseyNumber Int       @map("jersey_number")
@@ -327,7 +328,7 @@ model PlayerTeam {
   player Player @relation(fields: [playerId], references: [id])
   team   Team   @relation(fields: [teamId], references: [id])
 
-  @@id([playerId, teamId, startDate])
+  @@unique([playerId, teamId, startDate])
   @@map("player_team")
 }
 
