@@ -9,6 +9,7 @@ import { PrismaService } from './prisma/prisma.service.ts';
 import { SeasonsModule } from './seasons/seasons.module.ts';
 import { StadiumsModule } from './stadiums/stadiums.module.ts';
 import { TeamsModule } from './teams/teams.module.ts';
+import { TransfersModule } from './transfers/transfers.module.ts';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TeamsModule } from './teams/teams.module.ts';
     CareerModule,
     SeasonsModule,
     PositionsModule,
+    TransfersModule,
   ],
   providers: [PrismaService],
 })
