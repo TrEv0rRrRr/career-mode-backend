@@ -38,15 +38,25 @@ export class SeasonsRepository {
     });
   }
 
-  findByYear(year: string) {
+  findByCode(code: string) {
     return this.prisma.season.findUnique({
-      where: { year },
+      where: { code },
       include: seasonInclude,
     });
   }
 
   create(data: CreateSeasonDto) {
-    return this.prisma.season.create({ data });
+    const [firstYear, secondYear] = data.code.split('/');
+
+    return this.prisma.season.create({
+      data: {
+        code: data.code,
+        careerId: data.careerId,
+        notes: data.notes,
+        startDate: new Date(`${firstYear}-07-01`),
+        endDate: new Date(`${secondYear}-06-30`),
+      },
+    });
   }
 
   delete(id: number) {

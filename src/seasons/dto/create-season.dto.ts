@@ -1,14 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
+import { IsSeasonYear } from '../../common/validators/is-season-year.validator.ts';
 
 export class CreateSeasonDto {
   @ApiProperty({
-    example: '26/27',
-    description: 'This is the seasonal year.',
+    example: '2025/2026',
+    description: 'This is a code for the season. It should be year1/year2.',
   })
+  @IsSeasonYear()
   @IsNotEmpty()
   @IsString()
-  year!: string;
+  @MaxLength(9)
+  @MinLength(1)
+  code!: string;
 
   @ApiProperty({
     example: 'Barça treble',

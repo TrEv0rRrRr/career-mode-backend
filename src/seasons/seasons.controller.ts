@@ -48,11 +48,11 @@ export class SeasonsController {
     return this.seasonsService.findSeasonById(id);
   }
 
-  @Get('year/:year')
+  @Get('code/:code')
   @ApiOkResponse({
     type: SeasonEntity,
   })
-  @ApiOperation({ summary: 'Get a season by its year' })
+  @ApiOperation({ summary: 'Get a season by its code' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the season',
@@ -61,8 +61,8 @@ export class SeasonsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Season not found',
   })
-  getSeasonByYear(@Param('year') year: string) {
-    return this.seasonsService.findSeasonByYear(year);
+  getSeasonByYear(@Param('code') code: string) {
+    return this.seasonsService.findSeasonByCode(code);
   }
 
   @Post()

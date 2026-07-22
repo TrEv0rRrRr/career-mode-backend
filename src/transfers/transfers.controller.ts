@@ -89,6 +89,10 @@ export class TransfersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'The player already belongs to a team.',
   })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The transfer date must be within the selected season.',
+  })
   completeTransfer(@Body() data: CreateTransferDto) {
     return this.transfersService.completeTransfer(data);
   }

@@ -19,8 +19,8 @@ export class SeasonsService {
     return season;
   }
 
-  async findSeasonByYear(year: string) {
-    const season = await this.repo.findByYear(year);
+  async findSeasonByCode(code: string) {
+    const season = await this.repo.findByCode(code);
 
     if (!season) throw new SeasonNotFoundException();
 
@@ -28,7 +28,7 @@ export class SeasonsService {
   }
 
   async createSeason(data: CreateSeasonDto) {
-    const existing = await this.repo.findByYear(data.year);
+    const existing = await this.repo.findByCode(data.code);
 
     if (existing)
       throw new ConflictException('That season has already been created.');

@@ -1,6 +1,8 @@
 export class SeasonEntity {
   id!: number;
-  year!: string;
+  code!: string;
   notes?: string;
+  startDate!: Date;
+  endDate!: Date;
   careerId!: number;
 }
