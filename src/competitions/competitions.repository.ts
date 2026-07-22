@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CompetitionType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
+import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
+import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
+
+const competitionEditionInclude = {
+  competition: true,
+  season: true,
+  winnerTeam: true,
+} as const;
 
 @Injectable()
 export class CompetitionsRepository {
@@ -19,6 +27,59 @@ export class CompetitionsRepository {
       where: {
         type,
       },
+    });
+  }
+
+  findEditionsByCompetition(competitionId: number) {
+    return this.prisma.competitionEdition.findMany({
+      where: {
+        competitionId,
+      },
+      include: competitionEditionInclude,
+    });
+  }
+
+  findEdition(editionId: number) {
+    return this.prisma.competitionEdition.findUnique({
+      where: { id: editionId },
+    });
+  }
+
+  findCompetitionEditionById(competitionId: number, editionId: number) {
+    return this.prisma.competitionEdition.findUnique({
+      where: {
+        id: editionId,
+        competitionId,
+      },
+      include: competitionEditionInclude,
+    });
+  }
+
+  findEditionByCompetitionAndSeason(competitionId: number, seasonId: number) {
+    return this.prisma.competitionEdition.findUnique({
+      where: {
+        seasonId_competitionId: {
+          seasonId,
+          competitionId,
+        },
+      },
+    });
+  }
+
+  createEdition(competitionId: number, data: CreateCompetitionEditionDto) {
+    return this.prisma.competitionEdition.create({
+      data: {
+        competitionId,
+        seasonId: data.seasonId,
+        winnerTeamId: data.winnerTeamId,
+      },
+    });
+  }
+
+  assignWinnerTeam(editionId: number, data: UpdateCompetitionEditionDto) {
+    return this.prisma.competitionEdition.update({
+      where: { id: editionId },
+      data,
     });
   }
 }
