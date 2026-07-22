@@ -7,9 +7,10 @@ CREATE TABLE `player` (
     `preferred_foot` ENUM('LEFT', 'RIGHT') NOT NULL,
     `overall` INTEGER NOT NULL,
     `height` DECIMAL(3, 2) NOT NULL,
-    `weight` DECIMAL(5, 2) NOT NULL,
+    `weight` INTEGER NOT NULL,
     `face` VARCHAR(191) NULL,
 
+    UNIQUE INDEX `player_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -21,6 +22,7 @@ CREATE TABLE `manager` (
     `nationality` VARCHAR(191) NOT NULL,
     `face` VARCHAR(191) NULL,
 
+    UNIQUE INDEX `manager_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -31,6 +33,7 @@ CREATE TABLE `competition` (
     `type` ENUM('LEAGUE', 'CUP', 'SUPER_CUP', 'INTERNATIONAL') NOT NULL,
     `logo` VARCHAR(191) NULL,
 
+    UNIQUE INDEX `competition_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -43,6 +46,7 @@ CREATE TABLE `stadium` (
     `capacity` INTEGER NOT NULL,
     `opening_date` DATE NOT NULL,
 
+    UNIQUE INDEX `stadium_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -93,6 +97,7 @@ CREATE TABLE `season` (
     `notes` VARCHAR(191) NULL,
     `career_id` INTEGER NOT NULL,
 
+    UNIQUE INDEX `season_year_key`(`year`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -101,6 +106,8 @@ CREATE TABLE `career` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `manager_name` VARCHAR(191) NOT NULL,
     `team_id` INTEGER NOT NULL,
+    `start_date` DATE NOT NULL,
+    `end_date` DATE NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -119,6 +126,7 @@ CREATE TABLE `team` (
     `manager_id` INTEGER NOT NULL,
     `league_id` INTEGER NOT NULL,
 
+    UNIQUE INDEX `team_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -158,6 +166,8 @@ CREATE TABLE `competition_edition` (
     `season_id` INTEGER NOT NULL,
     `competition_id` INTEGER NOT NULL,
     `winner_team_id` INTEGER NULL,
+    `runner_up_team_id` INTEGER NULL,
+    `teamId` INTEGER NULL,
 
     UNIQUE INDEX `competition_edition_season_id_competition_id_key`(`season_id`, `competition_id`),
     PRIMARY KEY (`id`)
@@ -280,6 +290,12 @@ ALTER TABLE `competition_edition` ADD CONSTRAINT `competition_edition_competitio
 
 -- AddForeignKey
 ALTER TABLE `competition_edition` ADD CONSTRAINT `competition_edition_winner_team_id_fkey` FOREIGN KEY (`winner_team_id`) REFERENCES `team`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `competition_edition` ADD CONSTRAINT `competition_edition_runner_up_team_id_fkey` FOREIGN KEY (`runner_up_team_id`) REFERENCES `team`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `competition_edition` ADD CONSTRAINT `competition_edition_teamId_fkey` FOREIGN KEY (`teamId`) REFERENCES `team`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `team_season` ADD CONSTRAINT `team_season_season_id_fkey` FOREIGN KEY (`season_id`) REFERENCES `season`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

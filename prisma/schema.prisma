@@ -202,6 +202,8 @@ model Team {
 
   wonCompetitions CompetitionEdition[] @relation("CompetitionWinner")
 
+  lostCompetitions CompetitionEdition[] @relation("CompetitionRunnerUp")
+
   careers           Career[]
   teamSeasonStats   TeamSeasonStats[]
   teamSeasons       TeamSeason[]
@@ -250,15 +252,17 @@ model TeamSeasonStats {
 }
 
 model CompetitionEdition {
-  id            Int  @id @default(autoincrement())
-  seasonId      Int  @map("season_id")
-  competitionId Int  @map("competition_id")
-  winnerTeamId  Int? @map("winner_team_id")
+  id             Int  @id @default(autoincrement())
+  seasonId       Int  @map("season_id")
+  competitionId  Int  @map("competition_id")
+  winnerTeamId   Int? @map("winner_team_id")
+  runnerUpTeamId Int? @map("runner_up_team_id")
 
-  season      Season      @relation(fields: [seasonId], references: [id])
-  competition Competition @relation(fields: [competitionId], references: [id])
-  matches     Match[]
-  winnerTeam  Team?       @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
+  season       Season      @relation(fields: [seasonId], references: [id])
+  competition  Competition @relation(fields: [competitionId], references: [id])
+  matches      Match[]
+  winnerTeam   Team?       @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
+  runnerUpTeam Team?       @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
 
   @@unique([seasonId, competitionId])
   @@map("competition_edition")
