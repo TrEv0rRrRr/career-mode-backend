@@ -56,4 +56,10 @@ export class TeamsService {
 
     return this.repo.delete(id);
   }
+
+  async findPlayers(teamId: number) {
+    await this.findTeamById(teamId);
+
+    return this.repo.findPlayers(teamId);
+  }
 }

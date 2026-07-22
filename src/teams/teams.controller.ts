@@ -124,4 +124,20 @@ export class TeamsController {
   deleteTeam(@Param('id', ParseIntPipe) id: number) {
     return this.teamsService.deleteTeam(id);
   }
+
+  @Get(':teamId/players')
+  @ApiOperation({
+    summary: 'Gets the players that are currently playing for the given team',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the players',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getTeamPlayers(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findPlayers(teamId);
+  }
 }

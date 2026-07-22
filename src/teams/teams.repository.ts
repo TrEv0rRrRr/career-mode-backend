@@ -58,4 +58,15 @@ export class TeamsRepository {
   delete(id: number) {
     return this.prisma.team.delete({ where: { id } });
   }
+
+  findPlayers(teamId: number) {
+    return this.prisma.playerTeam.findMany({
+      where: {
+        teamId,
+      },
+      include: {
+        player: true,
+      },
+    });
+  }
 }
