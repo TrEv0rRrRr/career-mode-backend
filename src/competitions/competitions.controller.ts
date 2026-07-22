@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
@@ -131,11 +132,11 @@ export class CompetitionsController {
 
   @Patch(':editionId')
   @ApiOperation({
-    summary: 'Assign a winner team to a competition edition',
+    summary: 'Assign a winner and a runner-up team to a competition edition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Winner team assigned!',
+    description: 'Teams assigned!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -145,10 +146,31 @@ export class CompetitionsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Competition not found',
   })
-  assignWinnerTeamToCompetition(
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Edition not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'The winner and the runner-up teams must be different',
+  })
+  @ApiBody({
+    schema: {
+      example: {
+        winnerTeamId: 1,
+        runnerUpTeamId: 2,
+      },
+    },
+  })
+  assignTeamsToCompetition(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
     @Param('editionId', ParseIntPipe) editionId: number,
     @Body() data: UpdateCompetitionEditionDto,
   ) {
-    return this.competitionsService.assignWinnerTeam(editionId, data);
+    return this.competitionsService.assignWinnerAndRunnerUp(
+      competitionId,
+      editionId,
+      data,
+    );
   }
 }

@@ -3,4 +3,5 @@ export class CompetitionEditionEntity {
   seasonId!: number;
   competitionId!: number;
   winnerTeamId?: number;
+  runnerUpTeamId?: number;
 }

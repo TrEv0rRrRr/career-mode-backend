@@ -39,12 +39,6 @@ export class CompetitionsRepository {
     });
   }
 
-  findEdition(editionId: number) {
-    return this.prisma.competitionEdition.findUnique({
-      where: { id: editionId },
-    });
-  }
-
   findCompetitionEditionById(competitionId: number, editionId: number) {
     return this.prisma.competitionEdition.findUnique({
       where: {
@@ -76,7 +70,10 @@ export class CompetitionsRepository {
     });
   }
 
-  assignWinnerTeam(editionId: number, data: UpdateCompetitionEditionDto) {
+  assignWinnerAndRunnerUp(
+    editionId: number,
+    data: UpdateCompetitionEditionDto,
+  ) {
     return this.prisma.competitionEdition.update({
       where: { id: editionId },
       data,

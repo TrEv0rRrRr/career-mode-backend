@@ -1,5 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CompetitionType } from '@prisma/client';
+import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
@@ -12,6 +17,7 @@ export class CompetitionsService {
   constructor(
     private repo: CompetitionsRepository,
     private teamsService: TeamsService,
+    private seasonService: SeasonsService,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -39,37 +45,59 @@ export class CompetitionsService {
   async findCompetitionEditionById(competitionId: number, editionId: number) {
     await this.findCompetitionById(competitionId);
 
-    const edition = await this.repo.findEdition(editionId);
+    const edition = await this.repo.findCompetitionEditionById(
+      competitionId,
+      editionId,
+    );
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    return this.repo.findCompetitionEditionById(competitionId, editionId);
+    return edition;
   }
 
   async createEdition(
     competitionId: number,
     data: CreateCompetitionEditionDto,
   ) {
+    await this.findCompetitionById(competitionId);
+    await this.seasonService.findSeasonById(data.seasonId);
+
     const edition = await this.repo.findEditionByCompetitionAndSeason(
       competitionId,
       data.seasonId,
     );
 
     if (edition)
-      throw new ConflictException(
+      throw new BadRequestException(
         'This competition already has an edition for this season.',
       );
 
     return this.repo.createEdition(competitionId, data);
   }
 
-  async assignWinnerTeam(editionId: number, data: UpdateCompetitionEditionDto) {
+  async assignWinnerAndRunnerUp(
+    competitionId: number,
+    editionId: number,
+    data: UpdateCompetitionEditionDto,
+  ) {
+    await this.findCompetitionById(competitionId);
+
     await this.teamsService.findTeamById(data.winnerTeamId);
 
-    const edition = await this.repo.findEdition(editionId);
+    await this.teamsService.findTeamById(data.runnerUpTeamId);
+
+    if (data.winnerTeamId === data.runnerUpTeamId)
+      throw new ConflictException(
+        'The winner and the runner-up teams must be different',
+      );
+
+    const edition = await this.repo.findCompetitionEditionById(
+      competitionId,
+      editionId,
+    );
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    return this.repo.assignWinnerTeam(editionId, data);
+    return this.repo.assignWinnerAndRunnerUp(editionId, data);
   }
 }
