@@ -134,14 +134,14 @@ model Transfer {
   type       TransferType
   playerId   Int          @map("player_id")
   seasonId   Int          @map("season_id")
-  fromTeamId Int          @map("from_team_id")
+  fromTeamId Int?         @map("from_team_id")
   toTeamId   Int          @map("to_team_id")
 
   player Player @relation(fields: [playerId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
 
-  fromTeam Team @relation("FromTeam", fields: [fromTeamId], references: [id])
-  toTeam   Team @relation("ToTeam", fields: [toTeamId], references: [id])
+  fromTeam Team? @relation("FromTeam", fields: [fromTeamId], references: [id])
+  toTeam   Team  @relation("ToTeam", fields: [toTeamId], references: [id])
 
   @@map("transfer")
 }
