@@ -328,6 +328,7 @@ model PlayerTeam {
   team   Team   @relation(fields: [teamId], references: [id])
 
   @@id([playerId, teamId, startDate])
+  @@map("player_team")
 }
 
 model PlayerPosition {
