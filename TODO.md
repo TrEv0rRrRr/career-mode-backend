@@ -17,11 +17,26 @@
 
 ## PlayerSeasonStats Table
 
-- [ ] Algo
+### Desde la tabla Player
+
+- [x] Crear endpoint para traer las stats de la temporada. _GET /players/:playerId/stats_
+- [x] Crear endpoint para traer las stats de una temporada específica _GET /players/:playerId/team/:teamId/stats/:seasonId_
+
+### Desde la tabla Team
+
+- [x] Crear endpoint para traer las stats de la plantilla. _GET /teams/:teamId/player-stats_
+- [x] Crear endpoint para traer las stats de la plantilla en una temporada en específico. _GET /teams/:teamId/player-stats/:seasonId_
 
 ## TeamSeasonStats Table
 
-- [ ] Algo
+### Desde la tabla Team
+
+- [x] Crear endpoint para traer las stats de un equipo de todas las temporadas. _GET /teams/:teamId/stats_
+- [x] Crear endpoint para traer las stats de un equipo por temporada. _GET /teams/:teamId/stats/:seasonId_
+
+### Desde la tabla Season
+
+- [x] Crear endpoint para traer las stats de todos los equipos. _GET /seasons/:seasonId/team-stats_
 
 ## Match Table
 
