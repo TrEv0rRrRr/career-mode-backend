@@ -41,4 +41,10 @@ export class SeasonsService {
 
     return this.repo.delete(id);
   }
+
+  async findAllTeamStats(seasonId: number) {
+    await this.findSeasonById(seasonId);
+
+    return this.repo.findAllTeamStats(seasonId);
+  }
 }

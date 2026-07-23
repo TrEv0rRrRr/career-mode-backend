@@ -92,4 +92,18 @@ export class SeasonsController {
   deleteSeason(@Param('id') id: string) {
     return this.seasonsService.deleteSeason(+id);
   }
+
+  @Get(':seasonId/team-stats')
+  @ApiOperation({ summary: 'Get the stats of all teams for the given season' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Teams stats found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getAllTeamStats(@Param('seasonId', ParseIntPipe) seasonId: number) {
+    return this.seasonsService.findAllTeamStats(seasonId);
+  }
 }

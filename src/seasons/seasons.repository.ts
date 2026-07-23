@@ -62,4 +62,8 @@ export class SeasonsRepository {
   delete(id: number) {
     return this.prisma.season.delete({ where: { id } });
   }
+
+  findAllTeamStats(seasonId: number) {
+    return this.prisma.teamSeasonStats.findMany({ where: { seasonId } });
+  }
 }
