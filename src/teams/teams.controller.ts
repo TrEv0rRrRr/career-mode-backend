@@ -125,6 +125,8 @@ export class TeamsController {
     return this.teamsService.deleteTeam(id);
   }
 
+  // ! Player Team Endpoint
+
   @Get(':teamId/players')
   @ApiOperation({
     summary: 'Gets the players that are currently playing for the given team',
@@ -139,5 +141,87 @@ export class TeamsController {
   })
   getTeamPlayers(@Param('teamId', ParseIntPipe) teamId: number) {
     return this.teamsService.findPlayers(teamId);
+  }
+
+  // ! Player Season Stats Endpoints
+
+  @Get(':teamId/player-stats')
+  @ApiOperation({
+    summary: 'Gets the squad stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getSquadStats(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findTeamPlayerStats(teamId);
+  }
+
+  @Get(':teamId/player-stats/:seasonId')
+  @ApiOperation({
+    summary: 'Gets the squad stats by season',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getSquadStatsBySeason(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+  ) {
+    return this.teamsService.findTeamPlayerStatsBySeason(teamId, seasonId);
+  }
+
+  // ! Team Season Endpoints
+
+  @Get(':teamId/team-stats')
+  @ApiOperation({
+    summary: 'Gets the team stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getTeamStats(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findTeamStats(teamId);
+  }
+
+  @Get(':teamId/team-stats/:seasonId')
+  @ApiOperation({
+    summary: 'Gets the team stats by season',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the stats',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getTeamStatsBySeason(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+  ) {
+    return this.teamsService.findTeamStatsBySeason(teamId, seasonId);
   }
 }

@@ -13,6 +13,8 @@ const teamInclude = {
 export class TeamsRepository {
   constructor(private prisma: PrismaService) {}
 
+  // ! Team Queries
+
   findById(id: number) {
     return this.prisma.team.findUnique({
       where: { id },
@@ -59,6 +61,8 @@ export class TeamsRepository {
     return this.prisma.team.delete({ where: { id } });
   }
 
+  // ! Player Team Queries
+
   findPlayers(teamId: number) {
     return this.prisma.playerTeam.findMany({
       where: {
@@ -67,6 +71,38 @@ export class TeamsRepository {
       include: {
         player: true,
       },
+    });
+  }
+
+  // ! Player Season Stats Queries
+
+  findTeamPlayerStats(teamId: number) {
+    return this.prisma.playerSeasonStats.findMany({
+      where: { teamId },
+      include: {
+        player: true,
+      },
+    });
+  }
+
+  findTeamPlayerStatsBySeason(teamId: number, seasonId: number) {
+    return this.prisma.playerSeasonStats.findMany({
+      where: { teamId, seasonId },
+      include: {
+        player: true,
+      },
+    });
+  }
+
+  // ! Team Season Queries
+
+  findTeamStats(teamId: number) {
+    return this.prisma.teamSeasonStats.findMany({ where: { teamId } });
+  }
+
+  findTeamStatsBySeason(teamId: number, seasonId: number) {
+    return this.prisma.teamSeasonStats.findUnique({
+      where: { teamId_seasonId: { teamId, seasonId } },
     });
   }
 }

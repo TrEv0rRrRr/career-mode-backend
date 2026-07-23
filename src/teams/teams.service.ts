@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { SeasonsService } from '../seasons/seasons.service.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
 import { TeamNotFoundException } from './exceptions/team-not-found.exception.ts';
@@ -6,7 +7,10 @@ import { TeamsRepository } from './teams.repository.ts';
 
 @Injectable()
 export class TeamsService {
-  constructor(private repo: TeamsRepository) {}
+  constructor(
+    private repo: TeamsRepository,
+    private seasonsService: SeasonsService,
+  ) {}
 
   findTeams() {
     return this.repo.findAll();
@@ -57,9 +61,41 @@ export class TeamsService {
     return this.repo.delete(id);
   }
 
+  // ! Player Team Method
+
   async findPlayers(teamId: number) {
     await this.findTeamById(teamId);
 
     return this.repo.findPlayers(teamId);
+  }
+
+  // ! Player Season Stats Methods
+
+  async findTeamPlayerStats(teamId: number) {
+    await this.findTeamById(teamId);
+
+    return this.repo.findTeamPlayerStats(teamId);
+  }
+
+  async findTeamPlayerStatsBySeason(teamId: number, seasonId: number) {
+    await this.findTeamById(teamId);
+    await this.seasonsService.findSeasonById(seasonId);
+
+    return this.repo.findTeamPlayerStatsBySeason(teamId, seasonId);
+  }
+
+  // ! Team Season Methods
+
+  async findTeamStats(teamId: number) {
+    await this.findTeamById(teamId);
+
+    return this.repo.findTeamStats(teamId);
+  }
+
+  async findTeamStatsBySeason(teamId: number, seasonId: number) {
+    await this.findTeamById(teamId);
+    await this.seasonsService.findSeasonById(seasonId);
+
+    return this.repo.findTeamStatsBySeason(teamId, seasonId);
   }
 }
