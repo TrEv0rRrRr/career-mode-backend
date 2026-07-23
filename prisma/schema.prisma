@@ -271,15 +271,15 @@ model CompetitionEdition {
 }
 
 model TeamSeason {
-  teamId   Int @map("team_id")
-  seasonId Int @map("season_id")
-  leagueId Int @map("league_id")
+  teamId        Int @map("team_id")
+  seasonId      Int @map("season_id")
+  competitionId Int @map("competition_id")
 
   season      Season      @relation(fields: [seasonId], references: [id])
-  competition Competition @relation(fields: [leagueId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
   team        Team        @relation(fields: [teamId], references: [id])
 
-  @@id([teamId, seasonId, leagueId])
+  @@id([teamId, seasonId, competitionId])
   @@map("team_season")
 }
 
