@@ -365,4 +365,52 @@ export class PlayersController {
   ) {
     return this.playersService.deletePlayerTeam(playerTeamId, playerId);
   }
+
+  // ! Player season stats Endpoints
+
+  @Get(':playerId/stats')
+  @ApiOperation({ summary: "Get the player's stats from all seasons" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Stats retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  getPlayerSeasonStats(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerSeasonStats(playerId);
+  }
+
+  @Get(':playerId/team/:teamId/stats/:seasonId')
+  @ApiOperation({
+    summary: "Get the player's stats from a specific team of a specific season",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Stats retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getPlayerTeamSeasonStats(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+  ) {
+    return this.playersService.findPlayerTeamSeasonStats(
+      playerId,
+      teamId,
+      seasonId,
+    );
+  }
 }

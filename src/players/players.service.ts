@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
+import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
@@ -19,6 +20,7 @@ export class PlayersService {
   constructor(
     private repo: PlayersRepository,
     private teamsService: TeamsService,
+    private seasonsService: SeasonsService,
   ) {}
 
   // ! Player Methods
@@ -207,5 +209,25 @@ export class PlayersService {
     if (!playerTeam) throw new PlayerTeamNotFoundException();
 
     return this.repo.deletePlayerTeam(playerTeamId);
+  }
+
+  // ! Player season stats Methods
+
+  async findPlayerSeasonStats(playerId: number) {
+    await this.findPlayerById(playerId);
+
+    return this.repo.findPlayerSeasonStats(playerId);
+  }
+
+  async findPlayerTeamSeasonStats(
+    playerId: number,
+    teamId: number,
+    seasonId: number,
+  ) {
+    await this.findPlayerById(playerId);
+    await this.teamsService.findTeamById(teamId);
+    await this.seasonsService.findSeasonById(seasonId);
+
+    return this.repo.findPlayerStatsBySeasonAndTeam(playerId, teamId, seasonId);
   }
 }

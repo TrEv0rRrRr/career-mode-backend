@@ -245,4 +245,22 @@ export class PlayersRepository {
       },
     });
   }
+
+  // ! Player season stats Queries
+
+  findPlayerSeasonStats(playerId: number) {
+    return this.prisma.playerSeasonStats.findMany({ where: { playerId } });
+  }
+
+  findPlayerStatsBySeasonAndTeam(
+    playerId: number,
+    teamId: number,
+    seasonId: number,
+  ) {
+    return this.prisma.playerSeasonStats.findUnique({
+      where: {
+        playerId_teamId_seasonId: { playerId, teamId, seasonId },
+      },
+    });
+  }
 }
