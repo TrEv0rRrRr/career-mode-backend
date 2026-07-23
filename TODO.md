@@ -38,6 +38,10 @@
 
 - [x] Crear endpoint para traer las stats de todos los equipos. _GET /seasons/:seasonId/team-stats_
 
+## TeamSeason Table
+
+- [x] Renombrar leagueId -> competitionId.
+
 ## Match Table
 
 - [ ] Algo
