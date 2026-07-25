@@ -133,7 +133,7 @@ model Match {
   awayPenaltyGoals     Int?               @map("away_penalty_goals")
   competitionEditionId Int                @map("competition_edition_id")
   type                 MatchType
-  finishType           MatchFinishType    @map("finish_type")
+  finishType           MatchFinishType?   @map("finish_type")
   matchPlayerStats     MatchPlayerStats[]
 
   stadium            Stadium            @relation(fields: [stadiumId], references: [id])
