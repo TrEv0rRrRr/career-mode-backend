@@ -48,7 +48,39 @@
 
 ## Match Table
 
-- [ ] Algo
+- [ ] Desarrollar endpoint para consultar un partido _GET /matches/:matchId_
+- [ ] Desarrollar endpoint para consultar los partidos que jugará un equipo _GET /teams/:teamId/matches_
+
+- [ ] Desarrollar endpoint para generar calendario. _POST /competitions/:competitionEditionId/generate-fixtures_
+  - [ ] Crear los partidos con la siguiente data:
+    ```ts
+    {
+      status = SCHEDULED;
+      homeGoals = 0;
+      awayGoals = 0;
+      homePenaltyGoals = null;
+      awayPenaltyGoals = null;
+    }
+    ```
+  - [ ] Validar que existan suficientes equipos inscritos en TeamSeason.
+    - [ ] Debe ser número par en caso de ligas.
+  - [ ] Evitar generar el fixture más de una vez para una misma CompetitionEdition
+
+- [ ] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
+
+- [ ] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
+  - [ ] Validar que el partido esté en estado SCHEDULED
+  - [ ] Validar el resultado
+    - [ ] Los goles no pueden ser negativos
+    - [ ] Si _finishType = PENALTIES_, el marcador debe ser empate
+    - [ ] Si hay penales, la tanda no puede quedar en empate
+    - [ ] Si _finishType = EXTRA TIME_ o _finishType = REGULAR TIME_, los penales deben ser _null_
+  - [ ] Actualizar Match _(SCHEDULED -> PLAY)_
+  - [ ] Crear MatchPlayerStats
+  - [ ] Crear MatchTeamStats
+  - [ ] Actualizar PlayerSeasonStats
+  - [ ] Actualizar TeamSeasonStats
+  - [ ] Actualizar futura clasificación
 
 ## MatchPlayerStats Table
 
