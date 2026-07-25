@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -68,6 +70,8 @@ export class CompetitionsController {
   getCompetition(@Param('id', ParseIntPipe) id: number) {
     return this.competitionsService.findCompetitionById(id);
   }
+
+  // ! Competition Edition Endpoints
 
   @Get(':competitionId/editions')
   @ApiOperation({
@@ -172,5 +176,124 @@ export class CompetitionsController {
       editionId,
       data,
     );
+  }
+
+  // ! Team Season Endpoints
+
+  @Get(':competitionId/season/:seasonId/teams')
+  @ApiOperation({
+    summary:
+      'Get the list of teams that are participating in the given competition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the teams',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition not found',
+  })
+  getCompetitionTeams(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+  ) {
+    return this.competitionsService.findCompetitionTeams(
+      competitionId,
+      seasonId,
+    );
+  }
+
+  @Post(':competitionId/season/:seasonId/team/:teamId')
+  @ApiOperation({
+    summary: 'Assign a team to a competition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Team assigned!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition not found',
+  })
+  assignTeamToCompetition(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+  ) {
+    return this.competitionsService.assignTeam(competitionId, seasonId, teamId);
+  }
+
+  @Put(':competitionId/season/:seasonId/teams')
+  @ApiOperation({
+    summary:
+      'Updates the entire list of teams that are participating in the given competition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the teams',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition not found',
+  })
+  @ApiBody({
+    schema: {
+      example: [{ teamId: 1 }, { teamId: 2 }, { teamId: 3 }],
+    },
+  })
+  replaceCompetitionTeams(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+    @Body() teamIds: number[],
+  ) {
+    return this.competitionsService.replaceCompetitionTeams(
+      competitionId,
+      seasonId,
+      teamIds,
+    );
+  }
+
+  @Delete(':competitionId/season/:seasonId/team/:teamId')
+  @ApiOperation({
+    summary: 'Deletes a team from a competition',
+  })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Team deleted!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition not found',
+  })
+  deleteTeam(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+  ) {
+    return this.competitionsService.deleteTeam(competitionId, seasonId, teamId);
   }
 }

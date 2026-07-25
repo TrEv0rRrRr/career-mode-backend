@@ -36,6 +36,7 @@ export class CompetitionsService {
     return this.repo.findByType(type);
   }
 
+  // ! Competition Edition methods
   async findEditionsByCompetition(competitionId: number) {
     await this.findCompetitionById(competitionId);
 
@@ -99,5 +100,57 @@ export class CompetitionsService {
     if (!edition) throw new CompetitionEditionNotFoundException();
 
     return this.repo.assignWinnerAndRunnerUp(editionId, data);
+  }
+
+  // ! Team Season Methods
+
+  async validateData(competitionId: number, seasonId: number, teamId: number) {
+    await this.findCompetitionById(competitionId);
+    await this.seasonService.findSeasonById(seasonId);
+    await this.teamsService.findTeamById(teamId);
+  }
+
+  async findCompetitionTeams(competitionId: number, seasonId: number) {
+    await this.findCompetitionById(competitionId);
+    await this.seasonService.findSeasonById(seasonId);
+
+    return this.repo.findCompetitionTeams(competitionId, seasonId);
+  }
+
+  async assignTeam(competitionId: number, seasonId: number, teamId: number) {
+    await this.validateData(competitionId, seasonId, teamId);
+
+    return this.repo.assignTeam(competitionId, seasonId, teamId);
+  }
+
+  async replaceCompetitionTeams(
+    competitionId: number,
+    seasonId: number,
+    teamIds: number[],
+  ) {
+    await this.findCompetitionById(competitionId);
+    await this.seasonService.findSeasonById(seasonId);
+
+    await Promise.all(
+      teamIds.map((teamId) => this.teamsService.findTeamById(teamId)),
+    );
+
+    return this.repo.replaceCompetitionTeams(competitionId, seasonId, teamIds);
+  }
+
+  async deleteTeam(competitionId: number, seasonId: number, teamId: number) {
+    await this.validateData(competitionId, seasonId, teamId);
+
+    return this.repo.removeTeam(competitionId, seasonId, teamId);
+  }
+
+  async findTeamSeason(
+    competitionId: number,
+    seasonId: number,
+    teamId: number,
+  ) {
+    await this.validateData(competitionId, seasonId, teamId);
+
+    return this.repo.findTeamSeason(competitionId, seasonId, teamId);
   }
 }

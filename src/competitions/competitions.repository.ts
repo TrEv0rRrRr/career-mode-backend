@@ -30,6 +30,8 @@ export class CompetitionsRepository {
     });
   }
 
+  // ! Competition Edition queries
+
   findEditionsByCompetition(competitionId: number) {
     return this.prisma.competitionEdition.findMany({
       where: {
@@ -77,6 +79,79 @@ export class CompetitionsRepository {
     return this.prisma.competitionEdition.update({
       where: { id: editionId },
       data,
+    });
+  }
+
+  // ! Team Season queries
+
+  findCompetitionTeams(competitionId: number, seasonId: number) {
+    return this.prisma.teamSeason.findMany({
+      where: {
+        competitionId,
+        seasonId,
+      },
+      include: {
+        team: true,
+      },
+    });
+  }
+
+  assignTeam(competitionId: number, seasonId: number, teamId: number) {
+    return this.prisma.teamSeason.create({
+      data: {
+        competitionId,
+        teamId,
+        seasonId,
+      },
+    });
+  }
+
+  replaceCompetitionTeams(
+    competitionId: number,
+    seasonId: number,
+    teamIds: number[],
+  ) {
+    const teamSeasonData = teamIds.map((teamId) => ({
+      competitionId,
+      seasonId,
+      teamId,
+    }));
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.teamSeason.deleteMany({
+        where: {
+          competitionId,
+          seasonId,
+        },
+      });
+
+      await tx.teamSeason.createMany({
+        data: teamSeasonData,
+      });
+    });
+  }
+
+  removeTeam(competitionId: number, seasonId: number, teamId: number) {
+    return this.prisma.teamSeason.delete({
+      where: {
+        teamId_seasonId_competitionId: {
+          competitionId,
+          seasonId,
+          teamId,
+        },
+      },
+    });
+  }
+
+  findTeamSeason(competitionId: number, seasonId: number, teamId: number) {
+    return this.prisma.teamSeason.findUnique({
+      where: {
+        teamId_seasonId_competitionId: {
+          competitionId,
+          seasonId,
+          teamId,
+        },
+      },
     });
   }
 }
