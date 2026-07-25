@@ -8,6 +8,7 @@ const competitionEditionInclude = {
   competition: true,
   season: true,
   winnerTeam: true,
+  runnerUpTeam: true,
 } as const;
 
 @Injectable()
@@ -67,7 +68,6 @@ export class CompetitionsRepository {
       data: {
         competitionId,
         seasonId: data.seasonId,
-        winnerTeamId: data.winnerTeamId,
       },
     });
   }

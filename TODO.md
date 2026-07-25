@@ -60,8 +60,8 @@
 
 ## Competition Edition Table and Teams Table
 
-- [ ] Registrar equipos participantes de cada edición con una tabla intermedia nueva.
-- [ ] Validar que campeón y subcampeón pertenezcan a la competición.
+- [x] Registrar equipos participantes de cada edición con una tabla intermedia nueva.
+- [x] Validar que campeón y subcampeón pertenezcan a la competición.
 - [ ] Generar automáticamente los participantes de cada temporada.
 
 ## Backend en general

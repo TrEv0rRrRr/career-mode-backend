@@ -134,7 +134,7 @@ export class CompetitionsController {
     return this.competitionsService.createEdition(competitionId, data);
   }
 
-  @Patch(':editionId')
+  @Patch(':competitionId/edition/:editionId')
   @ApiOperation({
     summary: 'Assign a winner and a runner-up team to a competition edition',
   })
@@ -157,6 +157,11 @@ export class CompetitionsController {
   @ApiResponse({
     status: HttpStatus.CONFLICT,
     description: 'The winner and the runner-up teams must be different',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      "You can't assign a team that is not participating in the given competition",
   })
   @ApiBody({
     schema: {

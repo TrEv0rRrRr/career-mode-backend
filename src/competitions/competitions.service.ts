@@ -99,6 +99,23 @@ export class CompetitionsService {
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
+    const winnerTeam = await this.repo.findTeamSeason(
+      competitionId,
+      edition.seasonId,
+      data.winnerTeamId,
+    );
+
+    const runnerUpTeam = await this.repo.findTeamSeason(
+      competitionId,
+      edition.seasonId,
+      data.runnerUpTeamId,
+    );
+
+    if (!winnerTeam || !runnerUpTeam)
+      throw new BadRequestException(
+        "You can't assign a team that is not participating in the given competition",
+      );
+
     return this.repo.assignWinnerAndRunnerUp(editionId, data);
   }
 
