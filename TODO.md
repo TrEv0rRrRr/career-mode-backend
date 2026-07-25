@@ -41,6 +41,10 @@
 ## TeamSeason Table
 
 - [x] Renombrar leagueId -> competitionId.
+- [x] Desarrollar endpoint para traer todos los equipos que participan en una competición. _GET /competitions/:competitionId/season/:seasonId/teams_
+- [x] Desarrollar endpoint para actualizar la lista de equipos participantes _PUT /competitions/:competitionId/season/:seasonId/teams_
+- [x] Desarrollar endpoint para asignar equipos participantes _POST /competitions/:competitionId/season/:seasonId/team/:teamId_
+- [x] Desarrollar endpoint para borrar un equipo participante _DELETE /competitions/:competitionId/season/:seasonId/team/:teamId_
 
 ## Match Table
 
