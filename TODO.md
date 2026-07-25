@@ -60,6 +60,7 @@
       awayGoals = 0;
       homePenaltyGoals = null;
       awayPenaltyGoals = null;
+      finishType = null;
     }
     ```
   - [ ] Validar que existan suficientes equipos inscritos en TeamSeason.
