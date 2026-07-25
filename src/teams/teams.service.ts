@@ -98,4 +98,11 @@ export class TeamsService {
 
     return this.repo.findTeamStatsBySeason(teamId, seasonId);
   }
+
+  // ! Team Maches Methods
+
+  async findTeamMatches(teamId: number) {
+    await this.findTeamById(teamId);
+    return this.repo.findTeamMatches(teamId);
+  }
 }
