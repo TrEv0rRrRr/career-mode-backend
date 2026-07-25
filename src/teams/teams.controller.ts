@@ -224,4 +224,22 @@ export class TeamsController {
   ) {
     return this.teamsService.findTeamStatsBySeason(teamId, seasonId);
   }
+
+  // ! Team Matches Endpoint
+
+  @Get(':teamId/matches')
+  @ApiOperation({
+    summary: 'Gets the team matches or filter them by home or away',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Matches retrieved',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getTeamMatches(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findTeamMatches(teamId);
+  }
 }
