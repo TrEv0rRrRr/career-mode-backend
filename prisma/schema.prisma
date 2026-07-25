@@ -37,6 +37,22 @@ enum MatchStatus {
   PLAYED
 }
 
+enum MatchType {
+  LEAGUE
+  PLAYOFF
+  GROUP_STAGE
+  ROUND_OF_16
+  QUARTER_FINAL
+  SEMI_FINAL
+  FINAL
+}
+
+enum MatchFinishType {
+  REGULAR_TIME
+  EXTRA_TIME
+  PENALTIES
+}
+
 // TABLAS SIN FK
 model Player {
   id                Int                 @id @default(autoincrement())
@@ -105,15 +121,19 @@ model Position {
 // TABLAS CON FK
 model Match {
   id                   Int                @id @default(autoincrement())
-  round                String
   date                 DateTime           @db.Date
-  homeGoals            Int                @map("home_goals")
-  awayGoals            Int                @map("away_goals")
+  homeGoals            Int                @default(0) @map("home_goals")
+  awayGoals            Int                @default(0) @map("away_goals")
   status               MatchStatus
   stadiumId            Int                @map("stadium_id")
+  matchday             Int?
   homeTeamId           Int                @map("home_team_id")
   awayTeamId           Int                @map("away_team_id")
+  homePenaltyGoals     Int?               @map("home_penalty_goals")
+  awayPenaltyGoals     Int?               @map("away_penalty_goals")
   competitionEditionId Int                @map("competition_edition_id")
+  type                 MatchType
+  finishType           MatchFinishType    @map("finish_type")
   matchPlayerStats     MatchPlayerStats[]
 
   stadium            Stadium            @relation(fields: [stadiumId], references: [id])
