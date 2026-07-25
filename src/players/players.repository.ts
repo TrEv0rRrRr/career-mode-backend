@@ -200,22 +200,16 @@ export class PlayersRepository {
   assignTeam(playerId: number, data: AssignTeamDto) {
     return this.prisma.playerTeam.create({
       data: {
+        ...data,
         playerId,
-        teamId: data.teamId,
-        jerseyNumber: data.jerseyNumber,
-        startDate: data.startDate,
-        endDate: data.endDate,
       },
     });
   }
 
   replacePlayerTeams(playerId: number, data: AssignTeamDto[]) {
     const playerTeams = data.map((team) => ({
+      ...team,
       playerId,
-      teamId: team.teamId,
-      jerseyNumber: team.jerseyNumber,
-      startDate: team.startDate,
-      endDate: team.endDate,
     }));
 
     return this.prisma.$transaction(async (tx) => {

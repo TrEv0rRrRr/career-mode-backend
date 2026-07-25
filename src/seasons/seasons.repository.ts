@@ -50,9 +50,7 @@ export class SeasonsRepository {
 
     return this.prisma.season.create({
       data: {
-        code: data.code,
-        careerId: data.careerId,
-        notes: data.notes,
+        ...data,
         startDate: new Date(`${firstYear}-07-01`),
         endDate: new Date(`${secondYear}-06-30`),
       },
