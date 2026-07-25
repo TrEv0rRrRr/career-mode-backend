@@ -105,4 +105,14 @@ export class TeamsRepository {
       where: { teamId_seasonId: { teamId, seasonId } },
     });
   }
+
+  // ! Team Matches Queries
+
+  findTeamMatches(teamId: number) {
+    return this.prisma.match.findMany({
+      where: {
+        OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }],
+      },
+    });
+  }
 }
