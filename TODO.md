@@ -48,8 +48,12 @@
 
 ## Match Table
 
-- [ ] Desarrollar endpoint para consultar un partido _GET /matches/:matchId_
+- [x] Desarrollar endpoint para consultar un partido _GET /matches/:matchId_
 - [ ] Desarrollar endpoint para consultar los partidos que jugará un equipo _GET /teams/:teamId/matches_
+
+- [ ] Desarrollar endpoint para crear partido _POST /matches/competition/:competitionId/create-match_
+  - [x] Validar datos
+  - [ ] Hacer que el backend infiera el tipo de partido que se juega dependiendo de la competición.
 
 - [ ] Desarrollar endpoint para generar calendario. _POST /competitions/:competitionEditionId/generate-fixtures_
   - [ ] Crear los partidos con la siguiente data:
@@ -76,7 +80,7 @@
     - [ ] Si _finishType = PENALTIES_, el marcador debe ser empate
     - [ ] Si hay penales, la tanda no puede quedar en empate
     - [ ] Si _finishType = EXTRA TIME_ o _finishType = REGULAR TIME_, los penales deben ser _null_
-  - [ ] Actualizar Match _(SCHEDULED -> PLAY)_
+  - [x] Actualizar Match _(SCHEDULED -> PLAY)_
   - [ ] Crear MatchPlayerStats
   - [ ] Crear MatchTeamStats
   - [ ] Actualizar PlayerSeasonStats
