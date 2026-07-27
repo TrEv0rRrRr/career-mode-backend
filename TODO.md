@@ -74,7 +74,6 @@
 - [ ] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
 
 - [ ] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
-  - [ ] Validar que el partido esté en estado SCHEDULED
   - [ ] Validar el resultado
     - [ ] Los goles no pueden ser negativos
     - [ ] Si _finishType = PENALTIES_, el marcador debe ser empate
