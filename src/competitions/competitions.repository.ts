@@ -9,6 +9,7 @@ const competitionEditionInclude = {
   season: true,
   winnerTeam: true,
   runnerUpTeam: true,
+  competitionParticipants: true,
 } as const;
 
 @Injectable()
@@ -42,11 +43,10 @@ export class CompetitionsRepository {
     });
   }
 
-  findCompetitionEditionById(competitionId: number, editionId: number) {
+  findEditionById(editionId: number) {
     return this.prisma.competitionEdition.findUnique({
       where: {
         id: editionId,
-        competitionId,
       },
       include: competitionEditionInclude,
     });
@@ -60,6 +60,7 @@ export class CompetitionsRepository {
           competitionId,
         },
       },
+      include: competitionEditionInclude,
     });
   }
 
@@ -82,13 +83,12 @@ export class CompetitionsRepository {
     });
   }
 
-  // ! Team Season queries
+  // ! Competition Participant queries
 
-  findCompetitionTeams(competitionId: number, seasonId: number) {
-    return this.prisma.teamSeason.findMany({
+  findCompetitionParticipants(competitionEditionId: number) {
+    return this.prisma.competitionParticipant.findMany({
       where: {
-        competitionId,
-        seasonId,
+        competitionEditionId,
       },
       include: {
         team: true,
@@ -96,59 +96,61 @@ export class CompetitionsRepository {
     });
   }
 
-  assignTeam(competitionId: number, seasonId: number, teamId: number) {
-    return this.prisma.teamSeason.create({
+  registerParticipant(competitionEditionId: number, teamId: number) {
+    return this.prisma.competitionParticipant.create({
       data: {
-        competitionId,
+        competitionEditionId,
         teamId,
-        seasonId,
       },
     });
   }
 
-  replaceCompetitionTeams(
-    competitionId: number,
-    seasonId: number,
+  countCompetitionParticipants(competitionEditionId: number) {
+    return this.prisma.competitionParticipant.count({
+      where: {
+        competitionEditionId,
+      },
+    });
+  }
+
+  replaceCompetitionParticipants(
+    competitionEditionId: number,
     teamIds: number[],
   ) {
     const teamSeasonData = teamIds.map((teamId) => ({
-      competitionId,
-      seasonId,
+      competitionEditionId,
       teamId,
     }));
 
     return this.prisma.$transaction(async (tx) => {
-      await tx.teamSeason.deleteMany({
+      await tx.competitionParticipant.deleteMany({
         where: {
-          competitionId,
-          seasonId,
+          competitionEditionId,
         },
       });
 
-      await tx.teamSeason.createMany({
+      await tx.competitionParticipant.createMany({
         data: teamSeasonData,
       });
     });
   }
 
-  removeTeam(competitionId: number, seasonId: number, teamId: number) {
-    return this.prisma.teamSeason.delete({
+  deleteCompetitionParticipant(competitionEditionId: number, teamId: number) {
+    return this.prisma.competitionParticipant.delete({
       where: {
-        teamId_seasonId_competitionId: {
-          competitionId,
-          seasonId,
+        teamId_competitionEditionId: {
+          competitionEditionId,
           teamId,
         },
       },
     });
   }
 
-  findTeamSeason(competitionId: number, seasonId: number, teamId: number) {
-    return this.prisma.teamSeason.findUnique({
+  findCompetitionParticipant(competitionEditionId: number, teamId: number) {
+    return this.prisma.competitionParticipant.findUnique({
       where: {
-        teamId_seasonId_competitionId: {
-          competitionId,
-          seasonId,
+        teamId_competitionEditionId: {
+          competitionEditionId,
           teamId,
         },
       },

@@ -43,12 +43,24 @@ export class CompetitionsService {
     return this.repo.findEditionsByCompetition(competitionId);
   }
 
-  async findCompetitionEditionById(competitionId: number, editionId: number) {
-    await this.findCompetitionById(competitionId);
+  async findCompetitionEditionById(editionId: number) {
+    const edition = await this.repo.findEditionById(editionId);
 
-    const edition = await this.repo.findCompetitionEditionById(
+    if (!edition) throw new CompetitionEditionNotFoundException();
+
+    return edition;
+  }
+
+  async findEditionByCompetitionAndSeason(
+    competitionId: number,
+    seasonId: number,
+  ) {
+    await this.findCompetitionById(competitionId);
+    await this.seasonService.findSeasonById(seasonId);
+
+    const edition = await this.repo.findEditionByCompetitionAndSeason(
       competitionId,
-      editionId,
+      seasonId,
     );
 
     if (!edition) throw new CompetitionEditionNotFoundException();
@@ -92,22 +104,17 @@ export class CompetitionsService {
         'The winner and the runner-up teams must be different',
       );
 
-    const edition = await this.repo.findCompetitionEditionById(
-      competitionId,
-      editionId,
-    );
+    const edition = await this.repo.findEditionById(editionId);
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    const winnerTeam = await this.repo.findTeamSeason(
-      competitionId,
-      edition.seasonId,
+    const winnerTeam = await this.repo.findCompetitionParticipant(
+      editionId,
       data.winnerTeamId,
     );
 
-    const runnerUpTeam = await this.repo.findTeamSeason(
-      competitionId,
-      edition.seasonId,
+    const runnerUpTeam = await this.repo.findCompetitionParticipant(
+      editionId,
       data.runnerUpTeamId,
     );
 
@@ -119,55 +126,75 @@ export class CompetitionsService {
     return this.repo.assignWinnerAndRunnerUp(editionId, data);
   }
 
-  // ! Team Season Methods
+  // ! Competition Participant Methods
 
-  async validateData(competitionId: number, seasonId: number, teamId: number) {
-    await this.findCompetitionById(competitionId);
-    await this.seasonService.findSeasonById(seasonId);
+  async validateData(competitionEditionId: number, teamId: number) {
+    await this.findCompetitionEditionById(competitionEditionId);
     await this.teamsService.findTeamById(teamId);
   }
 
-  async findCompetitionTeams(competitionId: number, seasonId: number) {
-    await this.findCompetitionById(competitionId);
-    await this.seasonService.findSeasonById(seasonId);
+  async findCompetitionParticipants(competitionEditionId: number) {
+    await this.findCompetitionEditionById(competitionEditionId);
 
-    return this.repo.findCompetitionTeams(competitionId, seasonId);
+    return this.repo.findCompetitionParticipants(competitionEditionId);
   }
 
-  async assignTeam(competitionId: number, seasonId: number, teamId: number) {
-    await this.validateData(competitionId, seasonId, teamId);
+  async registerParticipant(competitionEditionId: number, teamId: number) {
+    await this.teamsService.findTeamById(teamId);
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
 
-    return this.repo.assignTeam(competitionId, seasonId, teamId);
+    if (!edition) throw new CompetitionEditionNotFoundException();
+
+    const participant = await this.findCompetitionParticipant(
+      competitionEditionId,
+      teamId,
+    );
+
+    if (participant)
+      throw new BadRequestException('This team has already been registered');
+
+    const registeredTeams =
+      await this.repo.countCompetitionParticipants(competitionEditionId);
+
+    if (registeredTeams >= edition.competition.maxTeamsNumber)
+      throw new BadRequestException(
+        "You can't register more teams, the maximum number has been reached",
+      );
+
+    return this.repo.registerParticipant(competitionEditionId, teamId);
   }
 
-  async replaceCompetitionTeams(
-    competitionId: number,
-    seasonId: number,
+  async replaceCompetitionParticipants(
+    competitionEditionId: number,
     teamIds: number[],
   ) {
-    await this.findCompetitionById(competitionId);
-    await this.seasonService.findSeasonById(seasonId);
+    await this.findCompetitionEditionById(competitionEditionId);
 
     await Promise.all(
       teamIds.map((teamId) => this.teamsService.findTeamById(teamId)),
     );
 
-    return this.repo.replaceCompetitionTeams(competitionId, seasonId, teamIds);
+    return this.repo.replaceCompetitionParticipants(
+      competitionEditionId,
+      teamIds,
+    );
   }
 
-  async deleteTeam(competitionId: number, seasonId: number, teamId: number) {
-    await this.validateData(competitionId, seasonId, teamId);
-
-    return this.repo.removeTeam(competitionId, seasonId, teamId);
-  }
-
-  async findTeamSeason(
-    competitionId: number,
-    seasonId: number,
+  async deleteCompetitionParticipant(
+    competitionEditionId: number,
     teamId: number,
   ) {
-    await this.validateData(competitionId, seasonId, teamId);
+    await this.validateData(competitionEditionId, teamId);
 
-    return this.repo.findTeamSeason(competitionId, seasonId, teamId);
+    return this.repo.deleteCompetitionParticipant(competitionEditionId, teamId);
+  }
+
+  async findCompetitionParticipant(
+    competitionEditionId: number,
+    teamId: number,
+  ) {
+    await this.validateData(competitionEditionId, teamId);
+
+    return this.repo.findCompetitionParticipant(competitionEditionId, teamId);
   }
 }

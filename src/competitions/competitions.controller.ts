@@ -91,7 +91,7 @@ export class CompetitionsController {
     return this.competitionsService.findEditionsByCompetition(competitionId);
   }
 
-  @Get(':competitionId/editions/:editionId')
+  @Get('/editions/:editionId')
   @ApiOperation({
     summary: 'Get an specific edition',
   })
@@ -108,16 +108,42 @@ export class CompetitionsController {
     description: 'Edition not found',
   })
   getCompetitionEditionById(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
     @Param('editionId', ParseIntPipe) editionId: number,
   ) {
-    return this.competitionsService.findCompetitionEditionById(
+    return this.competitionsService.findCompetitionEditionById(editionId);
+  }
+
+  @Get(':competitionId/editions/season/:seasonId')
+  @ApiOperation({
+    summary: 'Get an specific edition by competition and season',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the edition',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getEditionByCompetitionAndSeason(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('seasonId', ParseIntPipe) seasonId: number,
+  ) {
+    return this.competitionsService.findEditionByCompetitionAndSeason(
       competitionId,
-      editionId,
+      seasonId,
     );
   }
 
-  @Post(':competitionId')
+  @Post(':competitionId/editions')
   @ApiOperation({ summary: 'Create a new edition for a competition' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -134,7 +160,7 @@ export class CompetitionsController {
     return this.competitionsService.createEdition(competitionId, data);
   }
 
-  @Patch(':competitionId/edition/:editionId')
+  @Patch(':competitionId/editions/:editionId')
   @ApiOperation({
     summary: 'Assign a winner and a runner-up team to a competition edition',
   })
@@ -183,9 +209,9 @@ export class CompetitionsController {
     );
   }
 
-  // ! Team Season Endpoints
+  // ! Competition Participant Endpoints
 
-  @Get(':competitionId/season/:seasonId/teams')
+  @Get('/editions/:competitionEditionId/teams')
   @ApiOperation({
     summary:
       'Get the list of teams that are participating in the given competition',
@@ -200,29 +226,23 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Competition not found',
+    description: 'Competition Edition not found',
   })
-  getCompetitionTeams(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
-    @Param('seasonId', ParseIntPipe) seasonId: number,
+  getCompetitionParticipants(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
   ) {
-    return this.competitionsService.findCompetitionTeams(
-      competitionId,
-      seasonId,
+    return this.competitionsService.findCompetitionParticipants(
+      competitionEditionId,
     );
   }
 
-  @Post(':competitionId/season/:seasonId/team/:teamId')
+  @Post('/editions/:competitionEditionId/teams/:teamId')
   @ApiOperation({
-    summary: 'Assign a team to a competition',
+    summary: 'Register a team to a competition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Team assigned!',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Season not found',
+    description: 'Team registered!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -230,17 +250,28 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Competition not found',
+    description: 'Competition Edition not found',
   })
-  assignTeamToCompetition(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
-    @Param('seasonId', ParseIntPipe) seasonId: number,
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This team has already been registered',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      "You can't register more teams, the maximum number has been reached",
+  })
+  registerParticipant(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Param('teamId', ParseIntPipe) teamId: number,
   ) {
-    return this.competitionsService.assignTeam(competitionId, seasonId, teamId);
+    return this.competitionsService.registerParticipant(
+      competitionEditionId,
+      teamId,
+    );
   }
 
-  @Put(':competitionId/season/:seasonId/teams')
+  @Put('/editions/:competitionEditionId/teams')
   @ApiOperation({
     summary:
       'Updates the entire list of teams that are participating in the given competition',
@@ -255,26 +286,24 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Competition not found',
+    description: 'Competition Edition not found',
   })
   @ApiBody({
     schema: {
       example: [{ teamId: 1 }, { teamId: 2 }, { teamId: 3 }],
     },
   })
-  replaceCompetitionTeams(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
-    @Param('seasonId', ParseIntPipe) seasonId: number,
+  replaceCompetitionParticipants(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Body() teamIds: number[],
   ) {
-    return this.competitionsService.replaceCompetitionTeams(
-      competitionId,
-      seasonId,
+    return this.competitionsService.replaceCompetitionParticipants(
+      competitionEditionId,
       teamIds,
     );
   }
 
-  @Delete(':competitionId/season/:seasonId/team/:teamId')
+  @Delete('/editions/:competitionEditionId/teams/:teamId')
   @ApiOperation({
     summary: 'Deletes a team from a competition',
   })
@@ -292,13 +321,15 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Competition not found',
+    description: 'Competition Edition not found',
   })
-  deleteTeam(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
-    @Param('seasonId', ParseIntPipe) seasonId: number,
+  disqualifyParticipant(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Param('teamId', ParseIntPipe) teamId: number,
   ) {
-    return this.competitionsService.deleteTeam(competitionId, seasonId, teamId);
+    return this.competitionsService.deleteCompetitionParticipant(
+      competitionEditionId,
+      teamId,
+    );
   }
 }
