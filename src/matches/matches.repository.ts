@@ -22,8 +22,8 @@ export class MatchesRepository {
   create(type: MatchType, data: CreateMatchDto) {
     const matchData = {
       ...data,
-      status: MatchStatus.SCHEDULED,
       type,
+      status: MatchStatus.SCHEDULED,
       homeGoals: 0,
       awayGoals: 0,
       homePenaltyGoals: null,

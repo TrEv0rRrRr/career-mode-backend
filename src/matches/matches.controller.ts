@@ -33,7 +33,7 @@ export class MatchesController {
     return this.matchesService.findMatch(matchId);
   }
 
-  @Post('/competition/:competitionId/create-match')
+  @Post('/competition/editions/:competitionEditionId/create-match')
   @ApiOperation({
     summary: 'Creates a match',
   })
@@ -53,11 +53,23 @@ export class MatchesController {
     status: HttpStatus.NOT_FOUND,
     description: 'Competition edition not found',
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "The home team doesn't participate in the given competition",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "The away team doesn't participate in the given competition",
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The teams must be different',
+  })
   createMatch(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('competitionId', ParseIntPipe) competitionEditionId: number,
     @Body() data: CreateMatchDto,
   ) {
-    return this.matchesService.createMatch(competitionId, data);
+    return this.matchesService.createMatch(competitionEditionId, data);
   }
 
   @Patch(':matchId/play')
@@ -71,6 +83,25 @@ export class MatchesController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Match not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'If the match reached the penalties, you should enter a tied score',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'If the match reached the penalties, you should enter the penalty score for both home and away team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "The penalties can't end in a tie",
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      "If the match didn't reached the penalties, you shouldn't enter them",
   })
   playMatch(
     @Param('matchId', ParseIntPipe) matchId: number,
