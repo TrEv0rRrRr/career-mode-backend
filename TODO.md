@@ -51,9 +51,9 @@
 - [x] Desarrollar endpoint para consultar un partido _GET /matches/:matchId_
 - [ ] Desarrollar endpoint para consultar los partidos que jugará un equipo _GET /teams/:teamId/matches_
 
-- [ ] Desarrollar endpoint para crear partido _POST /matches/competition/:competitionId/create-match_
+- [x] Desarrollar endpoint para crear partido _POST /matches/competition/:competitionId/create-match_
   - [x] Validar datos
-  - [ ] Hacer que el backend infiera el tipo de partido que se juega dependiendo de la competición.
+  - [x] Hacer que el backend infiera el tipo de partido que se juega dependiendo de la competición.
 
 - [ ] Desarrollar endpoint para generar calendario. _POST /competitions/:competitionEditionId/generate-fixtures_
   - [ ] Crear los partidos con la siguiente data:
@@ -74,11 +74,11 @@
 - [ ] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
 
 - [ ] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
-  - [ ] Validar el resultado
-    - [ ] Los goles no pueden ser negativos
-    - [ ] Si _finishType = PENALTIES_, el marcador debe ser empate
-    - [ ] Si hay penales, la tanda no puede quedar en empate
-    - [ ] Si _finishType = EXTRA TIME_ o _finishType = REGULAR TIME_, los penales deben ser _null_
+  - [x] Validar el resultado
+    - [x] Los goles no pueden ser negativos
+    - [x] Si _finishType = PENALTIES_, el marcador debe ser empate
+    - [x] Si hay penales, la tanda no puede quedar en empate
+    - [x] Si _finishType = EXTRA TIME_ o _finishType = REGULAR TIME_, los penales deben ser _null_
   - [x] Actualizar Match _(SCHEDULED -> PLAY)_
   - [ ] Crear MatchPlayerStats
   - [ ] Crear MatchTeamStats
