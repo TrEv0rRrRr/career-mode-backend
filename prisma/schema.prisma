@@ -105,7 +105,6 @@ model Competition {
   teamsPerGroup        Int?
   teams                Team[]
   competitionEditions  CompetitionEdition[]
-  teamSeasons          TeamSeason[]
 
   @@map("competition")
 }
@@ -192,7 +191,6 @@ model Season {
   transfers           Transfer[]
   teamSeasonStats     TeamSeasonStats[]
   competitionEditions CompetitionEdition[]
-  teamSeasons         TeamSeason[]
   playerSeasonStats   PlayerSeasonStats[]
 
   @@map("season")
@@ -242,7 +240,7 @@ model Team {
 
   careers           Career[]
   teamSeasonStats   TeamSeasonStats[]
-  teamSeasons       TeamSeason[]
+  teamSeasons       CompetitionParticipant[]
   matchTeamStats    MatchTeamStats[]
   playerSeasonStats PlayerSeasonStats[]
   playerTeams       PlayerTeam[]
@@ -294,27 +292,26 @@ model CompetitionEdition {
   winnerTeamId   Int? @map("winner_team_id")
   runnerUpTeamId Int? @map("runner_up_team_id")
 
-  season       Season      @relation(fields: [seasonId], references: [id])
-  competition  Competition @relation(fields: [competitionId], references: [id])
-  matches      Match[]
-  winnerTeam   Team?       @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
-  runnerUpTeam Team?       @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
+  season                  Season                   @relation(fields: [seasonId], references: [id])
+  competition             Competition              @relation(fields: [competitionId], references: [id])
+  matches                 Match[]
+  winnerTeam              Team?                    @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
+  runnerUpTeam            Team?                    @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
+  competitionParticipants CompetitionParticipant[]
 
   @@unique([seasonId, competitionId])
   @@map("competition_edition")
 }
 
-model TeamSeason {
-  teamId        Int @map("team_id")
-  seasonId      Int @map("season_id")
-  competitionId Int @map("competition_id")
+model CompetitionParticipant {
+  teamId               Int @map("team_id")
+  competitionEditionId Int @map("competition_edition_id")
 
-  season      Season      @relation(fields: [seasonId], references: [id])
-  competition Competition @relation(fields: [competitionId], references: [id])
-  team        Team        @relation(fields: [teamId], references: [id])
+  competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
+  team               Team               @relation(fields: [teamId], references: [id])
 
-  @@id([teamId, seasonId, competitionId])
-  @@map("team_season")
+  @@id([teamId, competitionEditionId])
+  @@map("competition_participant")
 }
 
 model MatchTeamStats {
