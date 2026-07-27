@@ -1,6 +1,9 @@
-import { MatchType } from '@prisma/client';
+import { Competition, MatchType } from '@prisma/client';
 
-export const getKnockoutRound = (remainingTeams: number) => {
+export const inferMatchType = (
+  competition: Competition,
+  remainingTeams: number,
+) => {
   switch (remainingTeams) {
     case 32:
       return MatchType.ROUND_OF_32;
