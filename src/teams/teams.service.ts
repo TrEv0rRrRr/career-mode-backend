@@ -16,10 +16,10 @@ export class TeamsService {
     return this.repo.findAll();
   }
 
-  async findTeamById(id: number) {
+  async findTeamById(id: number, errorMsg?: string) {
     const team = await this.repo.findById(id);
 
-    if (!team) throw new TeamNotFoundException();
+    if (!team) throw new TeamNotFoundException(errorMsg);
 
     return team;
   }
@@ -35,7 +35,8 @@ export class TeamsService {
   async findTeamByName(name: string) {
     const team = await this.repo.findByName(name);
 
-    if (!team) throw new TeamNotFoundException();
+    if (!team)
+      throw new TeamNotFoundException(`The team "${name}" doesn't exist`);
 
     return team;
   }

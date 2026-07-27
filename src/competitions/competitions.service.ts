@@ -11,6 +11,7 @@ import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dt
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionNotFoundException } from './exceptions/competition-not-found.exception.ts';
 import { CompetitionEditionNotFoundException } from './exceptions/edition-not-found.exception.ts';
+import { ParticipantNotFoundException } from './exceptions/participant-not-found.exception.ts';
 
 @Injectable()
 export class CompetitionsService {
@@ -139,6 +140,12 @@ export class CompetitionsService {
     return this.repo.findCompetitionParticipants(competitionEditionId);
   }
 
+  async countCompetitionParticipants(competitionEditionId: number) {
+    await this.findCompetitionEditionById(competitionEditionId);
+
+    return this.repo.countCompetitionParticipants(competitionEditionId);
+  }
+
   async registerParticipant(competitionEditionId: number, teamId: number) {
     await this.teamsService.findTeamById(teamId);
     const edition = await this.findCompetitionEditionById(competitionEditionId);
@@ -154,7 +161,7 @@ export class CompetitionsService {
       throw new BadRequestException('This team has already been registered');
 
     const registeredTeams =
-      await this.repo.countCompetitionParticipants(competitionEditionId);
+      await this.countCompetitionParticipants(competitionEditionId);
 
     if (registeredTeams >= edition.competition.maxTeamsNumber)
       throw new BadRequestException(
@@ -192,9 +199,17 @@ export class CompetitionsService {
   async findCompetitionParticipant(
     competitionEditionId: number,
     teamId: number,
+    errorMsg?: string,
   ) {
     await this.validateData(competitionEditionId, teamId);
 
-    return this.repo.findCompetitionParticipant(competitionEditionId, teamId);
+    const participant = await this.repo.findCompetitionParticipant(
+      competitionEditionId,
+      teamId,
+    );
+
+    if (!participant) throw new ParticipantNotFoundException(errorMsg);
+
+    return participant;
   }
 }
