@@ -61,6 +61,11 @@ enum CompetitionFormat {
   SUPER_CUP
 }
 
+enum MatchLeg {
+  FIRST
+  SECOND
+}
+
 // TABLAS SIN FK
 model Player {
   id                Int                 @id @default(autoincrement())
@@ -144,6 +149,7 @@ model Match {
   awayTeamId           Int                @map("away_team_id")
   homePenaltyGoals     Int?               @map("home_penalty_goals")
   awayPenaltyGoals     Int?               @map("away_penalty_goals")
+  leg                  MatchLeg?
   competitionEditionId Int                @map("competition_edition_id")
   type                 MatchType
   finishType           MatchFinishType?   @map("finish_type")
