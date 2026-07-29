@@ -1,4 +1,4 @@
-import { Team } from '@prisma/client';
+import { MatchType, Team } from '@prisma/client';
 import { MatchPairing } from '../types/MatchPairing.ts';
 
 export const generateSuperCupPairing = (teams: Team[]): MatchPairing => {
@@ -7,5 +7,6 @@ export const generateSuperCupPairing = (teams: Team[]): MatchPairing => {
   return {
     homeTeamId: homeTeam.id,
     awayTeamId: awayTeam.id,
+    matchType: MatchType.FINAL,
   };
 };
