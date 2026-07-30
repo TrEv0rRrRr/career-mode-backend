@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MatchFinishType } from '@prisma/client';
-import { inferMatchType } from '../common/helpers/inferMatchType.ts';
+import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
@@ -58,12 +58,7 @@ export class MatchesService {
     if (data.homeTeamId === data.awayTeamId)
       throw new BadRequestException('The teams must be different');
 
-    const registeredTeams =
-      await this.competitionsService.countCompetitionParticipants(
-        competitionEditionId,
-      );
-
-    const type = inferMatchType(edition.competition, registeredTeams);
+    const type = inferFirstKnockoutRound(edition.competition);
 
     return this.repo.create(type, data);
   }
