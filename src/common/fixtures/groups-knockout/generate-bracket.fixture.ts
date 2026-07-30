@@ -1,8 +1,9 @@
-import { MatchLeg, MatchType, Team } from '@prisma/client';
+import { MatchLeg, MatchType } from '@prisma/client';
 import { MatchPairing } from '../../types/MatchPairing.ts';
+import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
 
 export const generateKnockoutBracket = (
-  teams: Team[],
+  teams: ParticipatingTeam[],
   matchType: MatchType,
   isTwoLegged: boolean,
 ): MatchPairing[] => {
@@ -12,8 +13,8 @@ export const generateKnockoutBracket = (
   if (!isTwoLegged) {
     return [
       {
-        homeTeamId: teams[0].id,
-        awayTeamId: teams[1].id,
+        homeTeamId: teams[0].team.id,
+        awayTeamId: teams[1].team.id,
         matchType,
       },
     ];
@@ -21,14 +22,14 @@ export const generateKnockoutBracket = (
 
   return [
     {
-      homeTeamId: teams[0].id,
-      awayTeamId: teams[1].id,
+      homeTeamId: teams[0].team.id,
+      awayTeamId: teams[1].team.id,
       matchType,
       leg: MatchLeg.FIRST,
     },
     {
-      homeTeamId: teams[1].id,
-      awayTeamId: teams[0].id,
+      homeTeamId: teams[1].team.id,
+      awayTeamId: teams[0].team.id,
       matchType,
       leg: MatchLeg.SECOND,
     },

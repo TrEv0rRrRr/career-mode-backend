@@ -1,12 +1,17 @@
-import { MatchType, Team } from '@prisma/client';
+import { MatchType } from '@prisma/client';
 import { MatchPairing } from '../types/MatchPairing.ts';
+import { ParticipatingTeam } from '../types/ParticipatingTeams.ts';
 
-export const generateSuperCupPairing = (teams: Team[]): MatchPairing => {
-  const [homeTeam, awayTeam] = teams;
+export const generateSuperCupPairing = (
+  teams: ParticipatingTeam[],
+): MatchPairing => {
+  if (teams.length !== 2) {
+    throw new Error('Super Cup pairing requires exactly 2 teams');
+  }
 
   return {
-    homeTeamId: homeTeam.id,
-    awayTeamId: awayTeam.id,
+    homeTeamId: teams[0].team.id,
+    awayTeamId: teams[1].team.id,
     matchType: MatchType.FINAL,
   };
 };
