@@ -310,8 +310,9 @@ model CompetitionEdition {
 }
 
 model CompetitionParticipant {
-  teamId               Int @map("team_id")
-  competitionEditionId Int @map("competition_edition_id")
+  teamId               Int  @map("team_id")
+  competitionEditionId Int  @map("competition_edition_id")
+  position             Int?
 
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
   team               Team               @relation(fields: [teamId], references: [id])
