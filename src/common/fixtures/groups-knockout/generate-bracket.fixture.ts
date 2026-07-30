@@ -1,9 +1,9 @@
 import { MatchLeg, MatchType, Team } from '@prisma/client';
 import { MatchPairing } from '../../types/MatchPairing.ts';
 
-export const generateBracket = (
-  matchType: MatchType,
+export const generateKnockoutBracket = (
   teams: Team[],
+  matchType: MatchType,
   isTwoLegged: boolean,
 ): MatchPairing[] => {
   if (teams.length !== 2)
