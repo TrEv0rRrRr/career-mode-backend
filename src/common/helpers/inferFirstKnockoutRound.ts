@@ -1,12 +1,10 @@
 import { Competition, MatchType } from '@prisma/client';
 
-export const inferMatchType = (
-  competition: Competition,
-  remainingTeams: number,
-) => {
-  switch (remainingTeams) {
+export const inferFirstKnockoutRound = (competition: Competition) => {
+  switch (competition.maxTeamsNumber) {
     case 32:
       return MatchType.ROUND_OF_32;
+    case 18:
     case 16:
       return MatchType.ROUND_OF_16;
     case 8:
@@ -17,7 +15,7 @@ export const inferMatchType = (
       return MatchType.FINAL;
     default:
       throw new Error(
-        `Unsupported knockout stage for ${remainingTeams} teams.`,
+        `Unsupported knockout stage for ${competition.maxTeamsNumber} teams.`,
       );
   }
 };
