@@ -1,4 +1,7 @@
-export const fixture: Record<number, number[]> = {
+import { MatchType } from '@prisma/client';
+import type { MatchPairing } from '../../types/MatchPairing.ts';
+
+export const fixtureByTeam: Record<number, number[]> = {
   1: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   2: [1, 20, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
   3: [19, 1, 2, 20, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
@@ -21,5 +24,32 @@ export const fixture: Record<number, number[]> = {
   20: [11, 2, 12, 3, 13, 4, 14, 5, 15, 6, 16, 7, 17, 8, 18, 9, 19, 10, 1],
 };
 
-export const getRivalPosition = (position: number, matchday: number) =>
-  fixture[position][matchday];
+const getRivalPosition = (position: number, matchday: number) =>
+  fixtureByTeam[position][matchday - 1];
+
+const teamIdsByPosition = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+];
+
+export const generateLeagueFixture = (teamIdsByPosition: number[]) => {
+  const fixture: MatchPairing[] | null = [];
+
+  for (let matchday = 1; matchday <= 19; matchday++) {
+    for (let position = 1; position <= 20; position++) {
+      const rivalPosition = getRivalPosition(position, matchday);
+      const homeTeam = teamIdsByPosition[position - 1];
+      const awayTeam = teamIdsByPosition[rivalPosition - 1];
+
+      if (position < rivalPosition)
+        fixture.push({
+          matchday,
+          homeTeamId: homeTeam,
+          awayTeamId: awayTeam,
+          matchType: MatchType.LEAGUE,
+        });
+    }
+  }
+  return fixture;
+};
+
+console.log(generateLeagueFixture(teamIdsByPosition));
