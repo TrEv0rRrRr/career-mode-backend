@@ -3,7 +3,13 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { CompetitionType } from '@prisma/client';
+import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import { generateKnockoutBracket } from '../common/fixtures/groups-knockout/generate-bracket.fixture.ts';
+import { generateGroupFixture } from '../common/fixtures/groups-knockout/generate-group.fixture.ts';
+import { generateLeagueFixture } from '../common/fixtures/league/league-20.fixture.ts';
+import { generateSuperCupPairing } from '../common/fixtures/super-cup.fixture.ts';
+import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
+import { MatchPairing } from '../common/types/MatchPairing.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
@@ -137,7 +143,13 @@ export class CompetitionsService {
   async findCompetitionParticipants(competitionEditionId: number) {
     await this.findCompetitionEditionById(competitionEditionId);
 
-    return this.repo.findCompetitionParticipants(competitionEditionId);
+    const participants =
+      await this.repo.findCompetitionParticipants(competitionEditionId);
+
+    return participants.map((participant) => ({
+      team: participant.team,
+      position: participant.position,
+    }));
   }
 
   async countCompetitionParticipants(competitionEditionId: number) {
@@ -211,5 +223,46 @@ export class CompetitionsService {
     if (!participant) throw new ParticipantNotFoundException(errorMsg);
 
     return participant;
+  }
+
+  async generateCompetitionFixture(
+    competitionEditionId: number,
+    competitionId: number,
+  ) {
+    const competition = await this.findCompetitionById(competitionId);
+
+    const participantTeams =
+      await this.findCompetitionParticipants(competitionEditionId);
+
+    const teamIdsByPosition = participantTeams
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map(({ team }) => team.id);
+
+    if (participantTeams.length <= 1)
+      throw new BadRequestException(
+        'To generate a fixture, you have to register at least 2 teams in a competition',
+      );
+
+    let fixture: MatchPairing | MatchPairing[] | MatchPairing[][];
+    const matchType = inferFirstKnockoutRound(competition);
+
+    switch (competition.format) {
+      case CompetitionFormat.SUPER_CUP:
+        fixture = generateSuperCupPairing(participantTeams);
+        break;
+      case CompetitionFormat.GROUPS_AND_KNOCKOUT:
+        fixture = generateGroupFixture(participantTeams);
+        break;
+      case CompetitionFormat.LEAGUE:
+        fixture = generateLeagueFixture(teamIdsByPosition);
+        break;
+      case CompetitionFormat.KNOCKOUT:
+        fixture = generateKnockoutBracket(
+          participantTeams,
+          matchType,
+          competition.hasTwoLeggedKnockout,
+        );
+        break;
+    }
   }
 }
