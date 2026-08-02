@@ -4,6 +4,7 @@ import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRou
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
+import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { UpdateMatchDto } from './dto/update-match.dto.ts';
 import { MatchNotFoundException } from './exceptions/match-not-found.exception.ts';
@@ -24,6 +25,13 @@ export class MatchesService {
     if (!match) throw new MatchNotFoundException();
 
     return match;
+  }
+
+  async changeStadium(matchId: number, data: ChangeMatchStadiumDTO) {
+    await this.findMatch(matchId);
+    await this.stadiumsService.findStadiumById(data.stadiumId);
+
+    return this.repo.changeStadium(matchId, data);
   }
 
   async createMatch(competitionEditionId: number, data: CreateMatchDto) {
