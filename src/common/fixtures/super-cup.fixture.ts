@@ -4,14 +4,16 @@ import { ParticipatingTeam } from '../types/ParticipatingTeams.ts';
 
 export const generateSuperCupPairing = (
   teams: ParticipatingTeam[],
-): MatchPairing => {
+): MatchPairing[] => {
   if (teams.length !== 2) {
     throw new Error('Super Cup pairing requires exactly 2 teams');
   }
 
-  return {
-    homeTeamId: teams[0].team.id,
-    awayTeamId: teams[1].team.id,
-    matchType: MatchType.FINAL,
-  };
+  return [
+    {
+      homeTeamId: teams[0].team.id,
+      awayTeamId: teams[1].team.id,
+      matchType: MatchType.FINAL,
+    },
+  ];
 };

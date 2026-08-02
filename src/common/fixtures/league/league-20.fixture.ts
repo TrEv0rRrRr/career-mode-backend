@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
 import type { MatchPairing } from '../../types/MatchPairing.ts';
+import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
 
 export const fixtureByTeam: Record<number, number[]> = {
   1: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
@@ -27,12 +29,19 @@ export const fixtureByTeam: Record<number, number[]> = {
 const getRivalPosition = (position: number, matchday: number) =>
   fixtureByTeam[position][matchday - 1];
 
-const teamIdsByPosition = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-];
-
-export const generateLeagueFixture = (teamIdsByPosition: number[]) => {
+export const generateLeagueFixture = (
+  participatingTeams: ParticipatingTeam[],
+) => {
   const fixture: MatchPairing[] | null = [];
+
+  if (participatingTeams.some((team) => team.position == null))
+    throw new BadRequestException(
+      'All teams must have a league position before generating the fixture.',
+    );
+
+  const teamIdsByPosition = participatingTeams
+    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+    .map(({ team }) => team.id);
 
   for (let matchday = 1; matchday <= 19; matchday++) {
     for (let position = 1; position <= 20; position++) {
@@ -52,4 +61,4 @@ export const generateLeagueFixture = (teamIdsByPosition: number[]) => {
   return fixture;
 };
 
-console.log(generateLeagueFixture(teamIdsByPosition));
+// console.log(generateLeagueFixture(teamIdsByPosition));
