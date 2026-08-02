@@ -3,13 +3,23 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import {
+  CompetitionEdition,
+  CompetitionFormat,
+  CompetitionType,
+  MatchType,
+} from '@prisma/client';
+import { calendarTemplates } from '../common/calendar/calendarTemplates.ts';
 import { generateKnockoutBracket } from '../common/fixtures/groups-knockout/generate-bracket.fixture.ts';
 import { generateGroupFixture } from '../common/fixtures/groups-knockout/generate-group.fixture.ts';
 import { generateLeagueFixture } from '../common/fixtures/league/league-20.fixture.ts';
 import { generateSuperCupPairing } from '../common/fixtures/super-cup.fixture.ts';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
+import { CalendarEntry } from '../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../common/types/MatchPairing.ts';
+import { ParticipatingTeam } from '../common/types/ParticipatingTeams.ts';
+import { CreateMatchDto } from '../matches/dto/create-match.dto.ts';
+import { MatchesService } from '../matches/matches.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
@@ -25,6 +35,7 @@ export class CompetitionsService {
     private repo: CompetitionsRepository,
     private teamsService: TeamsService,
     private seasonService: SeasonsService,
+    private matchesService: MatchesService,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -79,7 +90,7 @@ export class CompetitionsService {
     competitionId: number,
     data: CreateCompetitionEditionDto,
   ) {
-    await this.findCompetitionById(competitionId);
+    const competition = await this.findCompetitionById(competitionId);
     await this.seasonService.findSeasonById(data.seasonId);
 
     const edition = await this.repo.findEditionByCompetitionAndSeason(
@@ -90,6 +101,11 @@ export class CompetitionsService {
     if (edition)
       throw new BadRequestException(
         'This competition already has an edition for this season.',
+      );
+
+    if (competition.format !== CompetitionFormat.LEAGUE && !data.finalStadiumId)
+      throw new BadRequestException(
+        "If the competition doesn't have a league format, then you have to assign a stadium for the final.",
       );
 
     return this.repo.createEdition(competitionId, data);
@@ -231,19 +247,24 @@ export class CompetitionsService {
   ) {
     const competition = await this.findCompetitionById(competitionId);
 
+    const competitionEdition =
+      await this.findCompetitionEditionById(competitionEditionId);
+
+    const season = await this.seasonService.findSeasonById(
+      competitionEdition.seasonId,
+    );
+
+    const [year1, year2] = season.code.split('/');
+
     const participantTeams =
       await this.findCompetitionParticipants(competitionEditionId);
-
-    const teamIdsByPosition = participantTeams
-      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-      .map(({ team }) => team.id);
 
     if (participantTeams.length <= 1)
       throw new BadRequestException(
         'To generate a fixture, you have to register at least 2 teams in a competition',
       );
 
-    let fixture: MatchPairing | MatchPairing[] | MatchPairing[][];
+    let fixture: MatchPairing[];
     const matchType = inferFirstKnockoutRound(competition);
 
     switch (competition.format) {
@@ -254,7 +275,7 @@ export class CompetitionsService {
         fixture = generateGroupFixture(participantTeams);
         break;
       case CompetitionFormat.LEAGUE:
-        fixture = generateLeagueFixture(teamIdsByPosition);
+        fixture = generateLeagueFixture(participantTeams);
         break;
       case CompetitionFormat.KNOCKOUT:
         fixture = generateKnockoutBracket(
@@ -263,6 +284,59 @@ export class CompetitionsService {
           competition.hasTwoLeggedKnockout,
         );
         break;
+      default:
+        throw new BadRequestException('Unsupported competition format');
     }
+
+    // Obtener el calendario correspondiente (fechas)
+    const calendar = calendarTemplates[competition.name](year1, year2);
+
+    // Combinar fixture + calendario
+
+    const scheduledMatches = this.mergeFixtureWithCalendar(
+      fixture,
+      calendar,
+      participantTeams,
+      competitionEdition,
+    );
+
+    // Llamar a MatchesService para crear cada Match
+    return this.matchesService.createManyMatches(
+      competitionEditionId,
+      scheduledMatches,
+    );
+  }
+
+  mergeFixtureWithCalendar(
+    fixture: MatchPairing[],
+    calendar: CalendarEntry[],
+    participantTeams: ParticipatingTeam[],
+    competitionEdition: CompetitionEdition,
+  ) {
+    const matches: CreateMatchDto[] = [];
+
+    const calendarMap = new Map(calendar.map((c) => [c.matchday, c]));
+
+    const teamsMap = new Map(participantTeams.map((t) => [t.team.id, t.team]));
+
+    for (const match of fixture) {
+      const day = calendarMap.get(match.matchday)!;
+      const homeTeam = teamsMap.get(match.homeTeamId)!;
+
+      matches.push({
+        homeTeamId: match.homeTeamId,
+        awayTeamId: match.awayTeamId,
+        competitionEditionId: competitionEdition.id,
+        date: day.date,
+        stadiumId:
+          match.matchType === MatchType.FINAL &&
+          competitionEdition.finalStadiumId
+            ? competitionEdition.finalStadiumId
+            : homeTeam.stadiumId,
+        matchday: day.matchday,
+      });
+    }
+
+    return matches;
   }
 }
