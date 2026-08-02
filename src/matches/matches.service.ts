@@ -34,6 +34,19 @@ export class MatchesService {
     return this.repo.changeStadium(matchId, data);
   }
 
+  async createManyMatches(
+    competitionEditionId: number,
+    data: CreateMatchDto[],
+  ) {
+    const edition =
+      await this.competitionsService.findCompetitionEditionById(
+        competitionEditionId,
+      );
+    const type = inferFirstKnockoutRound(edition.competition);
+
+    return this.repo.createMany(type, data);
+  }
+
   async createMatch(competitionEditionId: number, data: CreateMatchDto) {
     await this.teamsService.findTeamById(
       data.homeTeamId,
