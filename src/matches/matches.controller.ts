@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { UpdateMatchDto } from './dto/update-match.dto.ts';
 import { MatchesService } from './matches.service.ts';
@@ -31,6 +32,29 @@ export class MatchesController {
   })
   getMatch(@Param('matchId', ParseIntPipe) matchId: number) {
     return this.matchesService.findMatch(matchId);
+  }
+
+  @Patch(':matchId/stadium')
+  @ApiOperation({
+    summary: 'Changes the stadium of the match',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Stadium changed!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Match not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Stadium not found',
+  })
+  changeMatchStadium(
+    @Param('matchId', ParseIntPipe) matchId: number,
+    @Body() data: ChangeMatchStadiumDTO,
+  ) {
+    return this.matchesService.changeStadium(matchId, data);
   }
 
   @Post('/competition/editions/:competitionEditionId/create-match')
