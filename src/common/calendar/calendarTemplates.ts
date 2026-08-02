@@ -1,3 +1,4 @@
+import { CalendarEntry } from '../types/CalendarEntry.ts';
 import { getClubWorldCupCalendar } from './calendarTemplates/club-world-cup.calendar.ts';
 import { getCupCalendar } from './calendarTemplates/cup.calendar.ts';
 import { getLeagueCalendar } from './calendarTemplates/league.calendar.ts';
@@ -6,7 +7,9 @@ import { getChampionsLeagueCalendar } from './calendarTemplates/ucl.calendar.ts'
 import { getEuropaLeagueCalendar } from './calendarTemplates/uel.calendar.ts';
 import { getSuperCupCalendar } from './calendarTemplates/usc.calendar.ts';
 
-export const calendarTemplates = {
+type CalendarGenerator = (year1: string, year2: string) => CalendarEntry[];
+
+export const calendarTemplates: Record<string, CalendarGenerator> = {
   Bundesliga: getLeagueCalendar,
   LaLiga: getLeagueCalendar,
   'Premier League': getLeagueCalendar,
