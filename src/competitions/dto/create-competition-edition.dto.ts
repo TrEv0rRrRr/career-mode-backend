@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class CreateCompetitionEditionDto {
   @ApiProperty({
@@ -10,4 +10,14 @@ export class CreateCompetitionEditionDto {
   @IsInt()
   @Min(1)
   seasonId!: number;
+
+  @ApiProperty({
+    example: 1,
+    description:
+      'The id of the stadium where the final will be played if the competition have one.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  finalStadiumId?: number;
 }
