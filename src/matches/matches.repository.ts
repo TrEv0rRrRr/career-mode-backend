@@ -37,6 +37,25 @@ export class MatchesRepository {
     });
   }
 
+  createMany(type: MatchType, data: CreateMatchDto[]) {
+    const matchData = data.map((data) => {
+      return {
+        ...data,
+        type,
+        status: MatchStatus.SCHEDULED,
+        homeGoals: 0,
+        awayGoals: 0,
+        homePenaltyGoals: null,
+        awayPenaltyGoals: null,
+        finishType: null,
+      };
+    });
+
+    return this.prisma.$transaction(async (tx) => {
+      return tx.match.createMany({ data: matchData });
+    });
+  }
+
   update(matchId: number, data: UpdateMatchDto) {
     return this.prisma.match.update({
       where: { id: matchId },
