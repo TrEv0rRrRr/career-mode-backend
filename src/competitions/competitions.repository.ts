@@ -69,6 +69,7 @@ export class CompetitionsRepository {
       data: {
         competitionId,
         seasonId: data.seasonId,
+        finalStadiumId: data.finalStadiumId,
       },
     });
   }
