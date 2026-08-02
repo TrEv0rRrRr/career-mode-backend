@@ -6,7 +6,7 @@ export const getNationalSuperCupsCalendar = (
 ): CalendarEntry[] => {
   return [
     {
-      type: MatchType.FINAL,
+      matchType: MatchType.FINAL,
       date: new Date(`${year1}-08-16`),
     },
   ];

@@ -1,8 +1,8 @@
 import { MatchLeg, MatchType } from '@prisma/client';
 
 export interface CalendarEntry {
-  type: MatchType;
   date: Date;
+  matchType: MatchType;
   matchday?: number;
   leg?: MatchLeg;
 }

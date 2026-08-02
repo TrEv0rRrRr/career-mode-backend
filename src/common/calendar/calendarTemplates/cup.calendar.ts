@@ -7,23 +7,23 @@ export const getCupCalendar = (
 ): CalendarEntry[] => {
   return [
     {
-      type: MatchType.ROUND_OF_32,
+      matchType: MatchType.ROUND_OF_32,
       date: new Date(`${year1}-10-17`),
     },
     {
-      type: MatchType.ROUND_OF_16,
+      matchType: MatchType.ROUND_OF_16,
       date: new Date(`${year2}-01-10`),
     },
     {
-      type: MatchType.QUARTER_FINAL,
+      matchType: MatchType.QUARTER_FINAL,
       date: new Date(`${year2}-02-14`),
     },
     {
-      type: MatchType.SEMI_FINAL,
+      matchType: MatchType.SEMI_FINAL,
       date: new Date(`${year2}-03-28`),
     },
     {
-      type: MatchType.FINAL,
+      matchType: MatchType.FINAL,
       date: new Date(`${year2}-05-16`),
     },
   ];
