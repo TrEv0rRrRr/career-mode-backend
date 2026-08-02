@@ -115,14 +115,15 @@ model Competition {
 }
 
 model Stadium {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  country     String
-  image       String?
-  capacity    Int
-  openingDate DateTime @map("opening_date") @db.Date
-  matches     Match[]
-  teams       Team[]
+  id                  Int                  @id @default(autoincrement())
+  name                String               @unique
+  country             String
+  image               String?
+  capacity            Int
+  openingDate         DateTime             @map("opening_date") @db.Date
+  matches             Match[]
+  teams               Team[]
+  competitionEditions CompetitionEdition[]
 
   @@map("stadium")
 }
@@ -297,8 +298,10 @@ model CompetitionEdition {
   competitionId  Int  @map("competition_id")
   winnerTeamId   Int? @map("winner_team_id")
   runnerUpTeamId Int? @map("runner_up_team_id")
+  finalStadiumId Int? @map("final_stadium_id")
 
   season                  Season                   @relation(fields: [seasonId], references: [id])
+  stadium                 Stadium?                 @relation(fields: [finalStadiumId], references: [id])
   competition             Competition              @relation(fields: [competitionId], references: [id])
   matches                 Match[]
   winnerTeam              Team?                    @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
