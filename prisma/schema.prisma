@@ -151,6 +151,7 @@ model Match {
   homePenaltyGoals     Int?               @map("home_penalty_goals")
   awayPenaltyGoals     Int?               @map("away_penalty_goals")
   leg                  MatchLeg?
+  winnerTeamId         Int?               @map("winner_team_id")
   competitionEditionId Int                @map("competition_edition_id")
   type                 MatchType
   finishType           MatchFinishType?   @map("finish_type")
@@ -161,7 +162,9 @@ model Match {
 
   homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
 
-  awayTeam       Team             @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  winnerTeam     Team?            @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
   matchTeamStats MatchTeamStats[]
 
   @@map("match")
@@ -236,6 +239,8 @@ model Team {
   homeMatches Match[] @relation("HomeTeam")
 
   awayMatches Match[] @relation("AwayTeam")
+
+  winnerMatches Match[] @relation("WinnerTeam")
 
   incomingTransfers Transfer[] @relation("ToTeam")
 
