@@ -11,7 +11,7 @@ import {
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
-import { UpdateMatchDto } from './dto/update-match.dto.ts';
+import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchesService } from './matches.service.ts';
 
 @Controller('matches')
@@ -129,7 +129,7 @@ export class MatchesController {
   })
   playMatch(
     @Param('matchId', ParseIntPipe) matchId: number,
-    @Body() data: UpdateMatchDto,
+    @Body() data: PlayMatchDto,
   ) {
     return this.matchesService.updateMatch(matchId, data);
   }
