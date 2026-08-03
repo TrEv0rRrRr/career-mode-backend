@@ -60,13 +60,18 @@ export class MatchesRepository {
     });
   }
 
-  playMatch(matchId: number, data: PlayMatchDto) {
+  playMatch(
+    matchId: number,
+    winnerTeamId: number | undefined,
+    data: PlayMatchDto,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const updatedMatch = await tx.match.update({
         where: { id: matchId },
         data: {
           ...data.match,
           status: MatchStatus.PLAYED,
+          winnerTeamId,
         },
       });
 
