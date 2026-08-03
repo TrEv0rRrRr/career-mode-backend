@@ -362,4 +362,22 @@ export class CompetitionsController {
       competitionId,
     );
   }
+
+  @Get('/edition/:competitionEditionId/matches')
+  @ApiOperation({ summary: 'Gets the fixture of a competition' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Fixture retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition Edition not found',
+  })
+  getCompetitionFixture(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+  ) {
+    return this.competitionsService.findCompetitionEditionMatches(
+      competitionEditionId,
+    );
+  }
 }
