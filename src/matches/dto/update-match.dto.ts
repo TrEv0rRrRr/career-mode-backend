@@ -51,15 +51,4 @@ export class UpdateMatchDto {
   @IsNotEmpty()
   @IsEnum(MatchFinishType)
   finishType!: MatchFinishType;
-
-  @ApiProperty({
-    example: 1,
-    description:
-      'This saves the id of the team that won the match. In case of a tie, it should be null',
-    required: false,
-  })
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  winnerTeamId?: number;
 }
