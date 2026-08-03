@@ -8,11 +8,6 @@ export class CreateMatchTeamStatsDto {
 
   @IsNotEmpty()
   @IsInt()
-  @Min(1)
-  matchId!: number;
-
-  @IsNotEmpty()
-  @IsInt()
   @Min(0)
   @Max(100)
   possession!: number;

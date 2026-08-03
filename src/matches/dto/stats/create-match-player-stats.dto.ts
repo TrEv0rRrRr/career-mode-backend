@@ -4,11 +4,6 @@ export class CreateMatchPlayerStatsDto {
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  matchId!: number;
-
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
   playerId!: number;
 
   @IsNotEmpty()
