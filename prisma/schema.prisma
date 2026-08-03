@@ -266,7 +266,7 @@ model MatchPlayerStats {
   playerId    Int     @map("player_id")
   goals       Int     @default(0)
   assists     Int     @default(0)
-  rating      Decimal @default(0) @db.Decimal(3, 1)
+  rating      Decimal @default(5) @db.Decimal(3, 1)
   yellowCards Int     @default(0) @map("yellow_cards")
   redCards    Int     @default(0) @map("red_cards")
 
