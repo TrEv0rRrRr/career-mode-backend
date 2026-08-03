@@ -38,7 +38,7 @@
 
 - [x] Crear endpoint para traer las stats de todos los equipos. _GET /seasons/:seasonId/team-stats_
 
-## TeamSeason Table
+## CompetitionParticipant Table
 
 - [x] Renombrar leagueId -> competitionId.
 - [x] Desarrollar endpoint para traer todos los equipos que participan en una competición. _GET /competitions/:competitionId/season/:seasonId/teams_
@@ -49,14 +49,14 @@
 ## Match Table
 
 - [x] Desarrollar endpoint para consultar un partido _GET /matches/:matchId_
-- [ ] Desarrollar endpoint para consultar los partidos que jugará un equipo _GET /teams/:teamId/matches_
+- [x] Desarrollar endpoint para consultar los partidos que jugará un equipo _GET /teams/:teamId/matches_
 
 - [x] Desarrollar endpoint para crear partido _POST /matches/competition/:competitionId/create-match_
   - [x] Validar datos
   - [x] Hacer que el backend infiera el tipo de partido que se juega dependiendo de la competición.
 
-- [ ] Desarrollar endpoint para generar calendario. _POST /competitions/:competitionEditionId/generate-fixtures_
-  - [ ] Crear los partidos con la siguiente data:
+- [x] Desarrollar endpoint para generar calendario. _POST /competitions/:competitionEditionId/generate-fixtures_
+  - [x] Crear los partidos con la siguiente data:
     ```ts
     {
       status = SCHEDULED;
@@ -67,9 +67,9 @@
       finishType = null;
     }
     ```
-  - [ ] Validar que existan suficientes equipos inscritos en TeamSeason.
-    - [ ] Debe ser número par en caso de ligas.
-  - [ ] Evitar generar el fixture más de una vez para una misma CompetitionEdition
+  - [x] Validar que existan suficientes equipos inscritos en CompetitionParticipant.
+    - [x] Debe ser número par en caso de ligas.
+  - [x] Evitar generar el fixture más de una vez para una misma CompetitionEdition
 
 - [ ] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
 
