@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MatchLeg } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  Min,
+} from 'class-validator';
 
 export class CreateMatchDto {
   @ApiProperty({
@@ -30,6 +38,16 @@ export class CreateMatchDto {
   @IsInt()
   @Min(1)
   matchday?: number;
+
+  @ApiProperty({
+    example: MatchLeg.FIRST,
+    enum: MatchLeg,
+    description:
+      'In case the competition has home/away matches, this is the way to identify which match goes first.',
+  })
+  @IsOptional()
+  @IsEnum(MatchLeg)
+  leg?: MatchLeg;
 
   @ApiProperty({
     example: 1,
