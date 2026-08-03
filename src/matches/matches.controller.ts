@@ -131,6 +131,6 @@ export class MatchesController {
     @Param('matchId', ParseIntPipe) matchId: number,
     @Body() data: PlayMatchDto,
   ) {
-    return this.matchesService.updateMatch(matchId, data);
+    return this.matchesService.playMatch(matchId, data);
   }
 }
