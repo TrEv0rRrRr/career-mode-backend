@@ -157,4 +157,14 @@ export class CompetitionsRepository {
       },
     });
   }
+
+  // ! Competition Matches
+  findCompetitionMatches(competitionEditionId: number) {
+    return this.prisma.competitionEdition.findMany({
+      where: {
+        id: competitionEditionId,
+      },
+      select: { matches: true },
+    });
+  }
 }
