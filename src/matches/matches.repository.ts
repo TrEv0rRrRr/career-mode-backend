@@ -2,7 +2,7 @@ import { MatchStatus, MatchType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
-import { UpdateMatchDto } from './dto/update-match.dto.ts';
+import { UpdateMatchDto } from './dto/play-match.dto.ts';
 
 export class MatchesRepository {
   constructor(private prisma: PrismaService) {}
