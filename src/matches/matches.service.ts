@@ -148,6 +148,9 @@ export class MatchesService {
     else return undefined;
   }
 
+  // match: Match, playerStats: CreateMatchPlayerStatsDto[]
+  async validateMatchPlayerStats() {}
+
   async playMatch(matchId: number, data: PlayMatchDto) {
     const match = await this.findMatch(matchId);
 
@@ -156,6 +159,8 @@ export class MatchesService {
 
     this.validateMatchResult(data.match);
     this.validateMatchTeamStats(data.teamStats, match);
+
+    await this.validateMatchPlayerStats();
 
     const winnerTeamId = this.getWinnerTeamId(match, data.match);
 
