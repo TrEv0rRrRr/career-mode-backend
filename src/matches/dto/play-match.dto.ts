@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { MatchFinishType } from '@prisma/client';
 import { IsEnum, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
-export class UpdateMatchDto {
+export class PlayMatchDto {
   @ApiProperty({
     example: 2,
     description: 'The number of goals the home team scored',
