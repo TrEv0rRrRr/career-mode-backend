@@ -6,7 +6,7 @@ import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
-import { UpdateMatchDto } from './dto/update-match.dto.ts';
+import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchNotFoundException } from './exceptions/match-not-found.exception.ts';
 import { MatchesRepository } from './matches.repository.ts';
 
@@ -97,7 +97,7 @@ export class MatchesService {
     return this.repo.create(type, data);
   }
 
-  async updateMatch(matchId: number, data: UpdateMatchDto) {
+  async playMatch(matchId: number, data: PlayMatchDto) {
     await this.findMatch(matchId);
     const matchFinishType = data.finishType;
 
