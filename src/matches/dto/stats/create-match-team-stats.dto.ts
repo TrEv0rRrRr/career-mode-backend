@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 
 export class CreateMatchTeamStatsDto {
   @IsNotEmpty()
@@ -14,6 +14,7 @@ export class CreateMatchTeamStatsDto {
   @IsNotEmpty()
   @IsInt()
   @Min(0)
+  @Max(100)
   possession!: number;
 
   @IsNotEmpty()
