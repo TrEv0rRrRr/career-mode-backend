@@ -1,4 +1,9 @@
-import { MatchFinishType, MatchStatus, MatchType } from '@prisma/client';
+import {
+  MatchFinishType,
+  MatchLeg,
+  MatchStatus,
+  MatchType,
+} from '@prisma/client';
 
 export class MatchEntity {
   id!: number;
@@ -15,4 +20,5 @@ export class MatchEntity {
   competitionEditionId!: number;
   type!: MatchType;
   finishType?: MatchFinishType;
+  leg?: MatchLeg;
 }
