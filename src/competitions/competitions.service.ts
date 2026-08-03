@@ -264,6 +264,16 @@ export class CompetitionsService {
         'To generate a fixture, you have to register at least 2 teams in a competition',
       );
 
+    const existingMatches =
+      await this.matchesService.countMatchesByCompetitionEdition(
+        competitionEditionId,
+      );
+
+    if (existingMatches > 0)
+      throw new BadRequestException(
+        'The fixture has already been generated for this competition edition.',
+      );
+
     let fixture: MatchPairing[];
     const matchType = inferFirstKnockoutRound(competition);
 
@@ -307,6 +317,20 @@ export class CompetitionsService {
     );
   }
 
+  findCalendarEntry(calendar: CalendarEntry[], match: MatchPairing) {
+    return calendar.find((entry) => {
+      if (match.matchday !== undefined) {
+        return entry.matchday === match.matchday;
+      }
+
+      if (match.leg !== undefined) {
+        return entry.matchType === match.matchType && entry.leg === match.leg;
+      }
+
+      return entry.matchType === match.matchType;
+    });
+  }
+
   mergeFixtureWithCalendar(
     fixture: MatchPairing[],
     calendar: CalendarEntry[],
@@ -315,12 +339,11 @@ export class CompetitionsService {
   ) {
     const matches: CreateMatchDto[] = [];
 
-    const calendarMap = new Map(calendar.map((c) => [c.matchday, c]));
-
     const teamsMap = new Map(participantTeams.map((t) => [t.team.id, t.team]));
 
     for (const match of fixture) {
-      const day = calendarMap.get(match.matchday)!;
+      const day = this.findCalendarEntry(calendar, match)!;
+
       const homeTeam = teamsMap.get(match.homeTeamId)!;
 
       matches.push({
@@ -334,6 +357,7 @@ export class CompetitionsService {
             ? competitionEdition.finalStadiumId
             : homeTeam.stadiumId,
         matchday: day.matchday,
+        leg: match.leg,
       });
     }
 
