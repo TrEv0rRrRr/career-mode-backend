@@ -332,4 +332,34 @@ export class CompetitionsController {
       teamId,
     );
   }
+
+  @Post(':competitionId/edition/:competitionEditionId/generate-fixtures')
+  @ApiOperation({ summary: 'Create the fixtures for a competition' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Fixture created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'To generate a fixture, you have to register at least 2 teams in a competition',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Unsupported competition format',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'The fixture has already been generated for this competition edition.',
+  })
+  generateCompetitionFixture(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+  ) {
+    return this.competitionsService.generateCompetitionFixture(
+      competitionEditionId,
+      competitionId,
+    );
+  }
 }
