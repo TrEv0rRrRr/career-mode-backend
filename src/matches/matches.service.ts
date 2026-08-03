@@ -47,6 +47,14 @@ export class MatchesService {
     return this.repo.createMany(type, data);
   }
 
+  async countMatchesByCompetitionEdition(competitionEditionId: number) {
+    await this.competitionsService.findCompetitionEditionById(
+      competitionEditionId,
+    );
+
+    return this.repo.countByCompetitionEdition(competitionEditionId);
+  }
+
   async createMatch(competitionEditionId: number, data: CreateMatchDto) {
     await this.teamsService.findTeamById(
       data.homeTeamId,
@@ -74,6 +82,11 @@ export class MatchesService {
     const edition =
       await this.competitionsService.findCompetitionEditionById(
         competitionEditionId,
+      );
+
+    if (edition.competition.hasTwoLeggedKnockout && !data.leg)
+      throw new BadRequestException(
+        'Since the competition has a two legged knockout, you have to enter the match leg',
       );
 
     if (data.homeTeamId === data.awayTeamId)
