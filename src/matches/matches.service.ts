@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MatchFinishType } from '@prisma/client';
+import { Match, MatchFinishType, MatchStatus } from '@prisma/client';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
@@ -7,6 +7,8 @@ import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
+import { CreateMatchTeamStatsDto } from './dto/stats/create-match-team-stats.dto.ts';
+import { UpdateMatchDto } from './dto/update-match.dto.ts';
 import { MatchNotFoundException } from './exceptions/match-not-found.exception.ts';
 import { MatchesRepository } from './matches.repository.ts';
 
@@ -97,32 +99,66 @@ export class MatchesService {
     return this.repo.create(type, data);
   }
 
-  async playMatch(matchId: number, data: PlayMatchDto) {
-    await this.findMatch(matchId);
-    const matchFinishType = data.finishType;
+  validateMatchResult(match: UpdateMatchDto) {
+    const matchFinishType = match.finishType;
 
     switch (matchFinishType) {
       case MatchFinishType.PENALTIES:
-        if (data.homeGoals !== data.awayGoals)
+        if (match.homeGoals !== match.awayGoals)
           throw new BadRequestException(
             'If the match reached the penalties, you should enter a tied score',
           );
-        if (!data.homePenaltyGoals || !data.awayPenaltyGoals)
+        if (!match.homePenaltyGoals || !match.awayPenaltyGoals)
           throw new BadRequestException(
             'If the match reached the penalties, you should enter the penalty score for both home and away team',
           );
-        if (data.homePenaltyGoals === data.awayPenaltyGoals)
+        if (match.homePenaltyGoals === match.awayPenaltyGoals)
           throw new BadRequestException("The penalties can't end in a tie");
         break;
       case MatchFinishType.REGULAR_TIME:
       case MatchFinishType.EXTRA_TIME:
-        if (data.homePenaltyGoals || data.awayPenaltyGoals)
+        if (match.homePenaltyGoals || match.awayPenaltyGoals)
           throw new BadRequestException(
             "If the match didn't reached the penalties, you shouldn't enter them",
           );
         break;
     }
+  }
 
-    return this.repo.update(matchId, data);
+  validateMatchTeamStats(teamStats: CreateMatchTeamStatsDto[], match: Match) {
+    const homeTeam = teamStats[0];
+    const awayTeam = teamStats[1];
+
+    if (
+      homeTeam.teamId !== match.homeTeamId ||
+      awayTeam.teamId !== match.awayTeamId
+    )
+      throw new BadRequestException(
+        "One of the teams you are trying to create its stats didn't play match.",
+      );
+  }
+
+  getWinnerTeamId(match: Match, data: UpdateMatchDto) {
+    if (data.homeGoals > data.awayGoals) return match.homeTeamId;
+    else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
+    else if (match.finishType === MatchFinishType.PENALTIES)
+      return data.homePenaltyGoals! > data.awayPenaltyGoals!
+        ? match.homeTeamId
+        : match.awayTeamId;
+    else return undefined;
+  }
+
+  async playMatch(matchId: number, data: PlayMatchDto) {
+    const match = await this.findMatch(matchId);
+
+    if (match.status === MatchStatus.PLAYED)
+      throw new BadRequestException('This match has already been played');
+
+    this.validateMatchResult(data.match);
+    this.validateMatchTeamStats(data.teamStats, match);
+
+    const winnerTeamId = this.getWinnerTeamId(match, data.match);
+
+    return this.repo.playMatch(matchId, winnerTeamId, data);
   }
 }
