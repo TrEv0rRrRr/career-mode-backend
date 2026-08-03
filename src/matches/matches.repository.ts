@@ -2,7 +2,7 @@ import { MatchStatus, MatchType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
-import { UpdateMatchDto } from './dto/play-match.dto.ts';
+import { PlayMatchDto } from './dto/play-match.dto.ts';
 
 export class MatchesRepository {
   constructor(private prisma: PrismaService) {}
@@ -60,13 +60,31 @@ export class MatchesRepository {
     });
   }
 
-  update(matchId: number, data: UpdateMatchDto) {
-    return this.prisma.match.update({
-      where: { id: matchId },
-      data: {
-        ...data,
-        status: MatchStatus.PLAYED,
-      },
+  playMatch(matchId: number, data: PlayMatchDto) {
+    return this.prisma.$transaction(async (tx) => {
+      const updatedMatch = await tx.match.update({
+        where: { id: matchId },
+        data: {
+          ...data.match,
+          status: MatchStatus.PLAYED,
+        },
+      });
+
+      await tx.matchPlayerStats.createMany({
+        data: data.playerStats.map((stats) => ({
+          ...stats,
+          matchId,
+        })),
+      });
+
+      await tx.matchTeamStats.createMany({
+        data: data.teamStats.map((stats) => ({
+          ...stats,
+          matchId,
+        })),
+      });
+
+      return updatedMatch;
     });
   }
 
@@ -74,6 +92,31 @@ export class MatchesRepository {
     return this.prisma.match.update({
       where: { id: matchId },
       data,
+    });
+  }
+
+  // ! Match Player Stats Queries
+  findMatchPlayerStats(matchId: number, playerId: number) {
+    return this.prisma.matchPlayerStats.findUnique({
+      where: {
+        matchId_playerId: {
+          matchId,
+          playerId,
+        },
+      },
+    });
+  }
+
+  // ! Match Team Stats Queries
+
+  findMatchTeamStats(matchId: number, teamId: number) {
+    return this.prisma.matchTeamStats.findUnique({
+      where: {
+        teamId_matchId: {
+          teamId,
+          matchId,
+        },
+      },
     });
   }
 }
