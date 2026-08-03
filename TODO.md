@@ -71,7 +71,7 @@
     - [x] Debe ser número par en caso de ligas.
   - [x] Evitar generar el fixture más de una vez para una misma CompetitionEdition
 
-- [ ] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
+- [x] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
 
 - [ ] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
   - [x] Validar el resultado
