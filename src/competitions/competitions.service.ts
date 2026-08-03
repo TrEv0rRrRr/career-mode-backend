@@ -317,6 +317,12 @@ export class CompetitionsService {
     );
   }
 
+  async findCompetitionEditionMatches(competitionEditionId: number) {
+    await this.findCompetitionEditionById(competitionEditionId);
+
+    return this.repo.findCompetitionMatches(competitionEditionId);
+  }
+
   findCalendarEntry(calendar: CalendarEntry[], match: MatchPairing) {
     return calendar.find((entry) => {
       if (match.matchday !== undefined) {
