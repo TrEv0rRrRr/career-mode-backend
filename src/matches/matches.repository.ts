@@ -20,6 +20,10 @@ export class MatchesRepository {
     });
   }
 
+  countByCompetitionEdition(competitionEditionId: number) {
+    return this.prisma.match.count({ where: { competitionEditionId } });
+  }
+
   create(type: MatchType, data: CreateMatchDto) {
     const matchData = {
       ...data,
