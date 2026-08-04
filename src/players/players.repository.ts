@@ -191,8 +191,10 @@ export class PlayersRepository {
         playerId,
         endDate: null,
       },
-      include: {
+      select: {
         team: true,
+        startDate: true,
+        endDate: true,
       },
     });
   }
