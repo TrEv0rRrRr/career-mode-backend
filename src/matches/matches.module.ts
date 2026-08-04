@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { CompetitionsModule } from '../competitions/competitions.module.ts';
 import { CompetitionsRepository } from '../competitions/competitions.repository.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
+import { PlayersModule } from '../players/players.module.ts';
+import { PlayersRepository } from '../players/players.repository.ts';
+import { PlayersService } from '../players/players.service.ts';
 import { PrismaModule } from '../prisma/prisma.module.ts';
 import { SeasonsModule } from '../seasons/seasons.module.ts';
 import { SeasonsRepository } from '../seasons/seasons.repository.ts';
@@ -20,6 +23,7 @@ import { MatchesService } from './matches.service.ts';
   imports: [
     PrismaModule,
     TeamsModule,
+    PlayersModule,
     CompetitionsModule,
     StadiumsModule,
     SeasonsModule,
@@ -30,6 +34,8 @@ import { MatchesService } from './matches.service.ts';
     MatchesRepository,
     TeamsService,
     TeamsRepository,
+    PlayersService,
+    PlayersRepository,
     CompetitionsService,
     CompetitionsRepository,
     StadiumsService,
