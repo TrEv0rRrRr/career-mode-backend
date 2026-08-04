@@ -124,6 +124,12 @@ export class PlayersService {
 
   // ! Player Team Methods
 
+  async findPlayerTeam(playerTeamId: number) {
+    const playerTeam = await this.repo.findPlayerTeam(playerTeamId);
+    if (!playerTeam) throw new PlayerTeamNotFoundException();
+    return playerTeam;
+  }
+
   async findPlayerTeams(playerId: number) {
     await this.findPlayerById(playerId);
     return this.repo.findPlayerTeams(playerId);
@@ -204,9 +210,7 @@ export class PlayersService {
   async deletePlayerTeam(playerTeamId: number, playerId: number) {
     await this.findPlayerById(playerId);
 
-    const playerTeam = await this.repo.findPlayerTeam(playerTeamId);
-
-    if (!playerTeam) throw new PlayerTeamNotFoundException();
+    await this.findPlayerTeam(playerTeamId);
 
     return this.repo.deletePlayerTeam(playerTeamId);
   }
