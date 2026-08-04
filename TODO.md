@@ -80,19 +80,11 @@
     - [x] Si hay penales, la tanda no puede quedar en empate
     - [x] Si _finishType = EXTRA TIME_ o _finishType = REGULAR TIME_, los penales deben ser _null_
   - [x] Actualizar Match _(SCHEDULED -> PLAY)_
-  - [ ] Crear MatchPlayerStats
-  - [ ] Crear MatchTeamStats
+  - [x] Crear MatchPlayerStats
+  - [x] Crear MatchTeamStats
   - [ ] Actualizar PlayerSeasonStats
   - [ ] Actualizar TeamSeasonStats
   - [ ] Actualizar futura clasificación
-
-## MatchPlayerStats Table
-
-- [ ] Algo
-
-## MatchTeamStats Table
-
-- [ ] Algo
 
 ## Competition Edition Table and Teams Table
 
