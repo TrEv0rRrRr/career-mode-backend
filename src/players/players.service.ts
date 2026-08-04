@@ -140,6 +140,10 @@ export class PlayersService {
     return this.repo.findCurrentTeam(playerId);
   }
 
+  async findCurrentTeams(playerIds: number[]) {
+    return this.repo.findCurrentTeams(playerIds);
+  }
+
   async assignTeam(playerId: number, data: AssignTeamDto) {
     await this.findPlayerById(playerId);
 

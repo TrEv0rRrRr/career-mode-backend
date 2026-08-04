@@ -199,6 +199,21 @@ export class PlayersRepository {
     });
   }
 
+  findCurrentTeams(playerIds: number[]): Promise<Map<number, number>> {
+    return this.prisma.playerTeam
+      .findMany({
+        where: {
+          playerId: {
+            in: playerIds,
+          },
+        },
+      })
+      .then(
+        (playerTeam) =>
+          new Map(playerTeam.map((pt) => [pt.playerId, pt.teamId])),
+      );
+  }
+
   assignTeam(playerId: number, data: AssignTeamDto) {
     return this.prisma.playerTeam.create({
       data: {
