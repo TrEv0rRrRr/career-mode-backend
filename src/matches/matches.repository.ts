@@ -62,7 +62,9 @@ export class MatchesRepository {
 
   playMatch(
     matchId: number,
-    winnerTeamId: number | undefined,
+    playerTeamsIds: Map<number, number>,
+    seasonId: number,
+    winnerTeamId: number | null,
     data: PlayMatchDto,
   ) {
     return this.prisma.$transaction(async (tx) => {
@@ -89,6 +91,126 @@ export class MatchesRepository {
         })),
       });
 
+      for (const stats of data.playerStats) {
+        const playerId = stats.playerId;
+        const teamId = playerTeamsIds.get(playerId)!;
+
+        const currentStats = await tx.playerSeasonStats.findUnique({
+          where: {
+            playerId_teamId_seasonId: {
+              playerId,
+              teamId,
+              seasonId,
+            },
+          },
+        });
+
+        const newRating = currentStats
+          ? (Number(currentStats.rating) * currentStats.matches +
+              stats.rating) /
+            (currentStats.matches + 1)
+          : stats.rating;
+
+        await tx.playerSeasonStats.upsert({
+          where: {
+            playerId_teamId_seasonId: {
+              playerId,
+              teamId,
+              seasonId,
+            },
+          },
+          create: {
+            playerId,
+            teamId,
+            seasonId,
+            matches: 1,
+            assists: stats.assists,
+            goals: stats.goals,
+            rating: stats.rating,
+            redCards: stats.redCards,
+            yellowCards: stats.yellowCards,
+          },
+          update: {
+            matches: { increment: 1 },
+            goals: { increment: stats.goals },
+            assists: { increment: stats.assists },
+            yellowCards: { increment: stats.yellowCards },
+            redCards: { increment: stats.redCards },
+            rating: newRating,
+          },
+        });
+      }
+
+      const isHomeWinner = data.match.homeGoals > data.match.awayGoals;
+
+      const isDraw = data.match.homeGoals === data.match.awayGoals;
+
+      const isAwayWinner = data.match.awayGoals > data.match.homeGoals;
+
+      const updateHomeTeamSeasonStats = {
+        played: { increment: 1 },
+        wins: { increment: isHomeWinner ? 1 : 0 },
+        draws: { increment: isDraw ? 1 : 0 },
+        losses: { increment: isAwayWinner ? 1 : 0 },
+        gf: { increment: data.match.homeGoals },
+        ga: { increment: data.match.awayGoals },
+        gd: { increment: data.match.homeGoals - data.match.awayGoals },
+      };
+
+      const updateAwayTeamSeasonStats = {
+        played: { increment: 1 },
+        wins: { increment: isAwayWinner ? 1 : 0 },
+        draws: { increment: isDraw ? 1 : 0 },
+        losses: { increment: isHomeWinner ? 1 : 0 },
+        gf: { increment: data.match.awayGoals },
+        ga: { increment: data.match.homeGoals },
+        gd: { increment: data.match.awayGoals - data.match.homeGoals },
+      };
+
+      const homeTeamId = updatedMatch.homeTeamId;
+      const awayTeamId = updatedMatch.awayTeamId;
+
+      await tx.teamSeasonStats.upsert({
+        where: {
+          teamId_seasonId: {
+            teamId: homeTeamId,
+            seasonId,
+          },
+        },
+        create: {
+          teamId: homeTeamId,
+          seasonId,
+          played: 1,
+          wins: isHomeWinner ? 1 : 0,
+          draws: isDraw ? 1 : 0,
+          losses: isAwayWinner ? 1 : 0,
+          gf: data.match.homeGoals,
+          ga: data.match.awayGoals,
+          gd: data.match.homeGoals - data.match.awayGoals,
+        },
+        update: updateHomeTeamSeasonStats,
+      });
+
+      await tx.teamSeasonStats.upsert({
+        where: {
+          teamId_seasonId: {
+            teamId: awayTeamId,
+            seasonId,
+          },
+        },
+        create: {
+          teamId: awayTeamId,
+          seasonId,
+          played: 1,
+          wins: isAwayWinner ? 1 : 0,
+          draws: isDraw ? 1 : 0,
+          losses: isHomeWinner ? 1 : 0,
+          gf: data.match.awayGoals,
+          ga: data.match.homeGoals,
+          gd: data.match.awayGoals - data.match.homeGoals,
+        },
+        update: updateAwayTeamSeasonStats,
+      });
       return updatedMatch;
     });
   }
