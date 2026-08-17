@@ -287,8 +287,6 @@ model TeamSeasonStats {
   gf       Int @default(0)
   ga       Int @default(0)
   gd       Int @default(0)
-  points   Int @default(0)
-  position Int @default(0)
 
   team   Team   @relation(fields: [teamId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
@@ -318,9 +316,18 @@ model CompetitionEdition {
 }
 
 model CompetitionParticipant {
-  teamId               Int  @map("team_id")
-  competitionEditionId Int  @map("competition_edition_id")
+  teamId               Int     @map("team_id")
+  competitionEditionId Int     @map("competition_edition_id")
+  points               Int?
   position             Int?
+  played               Int     @default(0)
+  wins                 Int     @default(0)
+  draws                Int     @default(0)
+  losses               Int     @default(0)
+  gf                   Int     @default(0)
+  ga                   Int     @default(0)
+  gd                   Int     @default(0)
+  group                String?
 
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
   team               Team               @relation(fields: [teamId], references: [id])
