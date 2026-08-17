@@ -251,6 +251,7 @@ export class MatchesService {
 
     return this.repo.playMatch(
       matchId,
+      competitionEdition.competition.format,
       playerTeamsIds,
       competitionEdition.seasonId,
       winnerTeamId,
