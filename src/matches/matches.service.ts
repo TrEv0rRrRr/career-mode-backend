@@ -3,6 +3,7 @@ import { Match, MatchFinishType, MatchStatus } from '@prisma/client';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { PlayersService } from '../players/players.service.ts';
+import { SeasonsService } from '../seasons/seasons.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
@@ -20,6 +21,7 @@ export class MatchesService {
     private repo: MatchesRepository,
     private playersService: PlayersService,
     private teamsService: TeamsService,
+    private seasonsService: SeasonsService,
     private stadiumsService: StadiumsService,
     private competitionsService: CompetitionsService,
   ) {}
@@ -175,7 +177,7 @@ export class MatchesService {
       return data.homePenaltyGoals! > data.awayPenaltyGoals!
         ? match.homeTeamId
         : match.awayTeamId;
-    else return undefined;
+    else return null;
   }
 
   async validateMatchPlayerStats(
@@ -224,6 +226,14 @@ export class MatchesService {
 
   async playMatch(matchId: number, data: PlayMatchDto) {
     const match = await this.findMatch(matchId);
+    const competitionEdition =
+      await this.competitionsService.findCompetitionEditionById(
+        match.competitionEditionId,
+      );
+    const playerIds = data.playerStats.map(({ playerId }) => playerId);
+
+    const playerTeamsIds =
+      await this.playersService.findCurrentTeams(playerIds);
 
     if (match.status === MatchStatus.PLAYED)
       throw new BadRequestException('This match has already been played');
@@ -239,6 +249,12 @@ export class MatchesService {
 
     const winnerTeamId = this.getWinnerTeamId(match, data.match);
 
-    return this.repo.playMatch(matchId, winnerTeamId, data);
+    return this.repo.playMatch(
+      matchId,
+      playerTeamsIds,
+      competitionEdition.seasonId,
+      winnerTeamId,
+      data,
+    );
   }
 }
