@@ -362,7 +362,7 @@ model PlayerSeasonStats {
   assists     Int     @default(0)
   yellowCards Int     @default(0) @map("yellow_cards")
   redCards    Int     @default(0) @map("red_cards")
-  rating      Decimal @db.Decimal(3, 1)
+  rating      Decimal @default(5) @db.Decimal(3, 1)
 
   player Player @relation(fields: [playerId], references: [id])
   team   Team   @relation(fields: [teamId], references: [id])
