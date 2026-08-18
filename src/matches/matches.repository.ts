@@ -1,4 +1,4 @@
-import { MatchStatus, MatchType } from '@prisma/client';
+import { CompetitionFormat, MatchStatus, MatchType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
@@ -62,6 +62,7 @@ export class MatchesRepository {
 
   playMatch(
     matchId: number,
+    competitionFormat: CompetitionFormat,
     playerTeamsIds: Map<number, number>,
     seasonId: number,
     winnerTeamId: number | null,
@@ -211,6 +212,63 @@ export class MatchesRepository {
         },
         update: updateAwayTeamSeasonStats,
       });
+
+      const competitionEditionId = updatedMatch.competitionEditionId;
+
+      const usesStandings =
+        competitionFormat === CompetitionFormat.LEAGUE ||
+        competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT;
+
+      const homeParticipantUpdate = {
+        played: { increment: 1 },
+        wins: { increment: isHomeWinner ? 1 : 0 },
+        draws: { increment: isDraw ? 1 : 0 },
+        losses: { increment: isAwayWinner ? 1 : 0 },
+        gf: { increment: data.match.homeGoals },
+        ga: { increment: data.match.awayGoals },
+        gd: { increment: data.match.homeGoals - data.match.awayGoals },
+        ...(usesStandings && {
+          points: {
+            increment: isHomeWinner ? 3 : isDraw ? 1 : 0,
+          },
+        }),
+      };
+
+      const awayParticipantUpdate = {
+        played: { increment: 1 },
+        wins: { increment: isAwayWinner ? 1 : 0 },
+        draws: { increment: isDraw ? 1 : 0 },
+        losses: { increment: isHomeWinner ? 1 : 0 },
+        gf: { increment: data.match.awayGoals },
+        ga: { increment: data.match.homeGoals },
+        gd: { increment: data.match.awayGoals - data.match.homeGoals },
+        ...(usesStandings && {
+          points: {
+            increment: isAwayWinner ? 3 : isDraw ? 1 : 0,
+          },
+        }),
+      };
+
+      await tx.competitionParticipant.update({
+        where: {
+          teamId_competitionEditionId: {
+            teamId: homeTeamId,
+            competitionEditionId,
+          },
+        },
+        data: homeParticipantUpdate,
+      });
+
+      await tx.competitionParticipant.update({
+        where: {
+          teamId_competitionEditionId: {
+            teamId: awayTeamId,
+            competitionEditionId,
+          },
+        },
+        data: awayParticipantUpdate,
+      });
+
       return updatedMatch;
     });
   }
