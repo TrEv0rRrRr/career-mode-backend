@@ -1,4 +1,4 @@
-export type StandingTeam = {
+export type HeadToHeadStanding = {
   teamId: number;
   points: number;
   gf: number;
