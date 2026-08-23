@@ -1,10 +1,34 @@
-import { CompetitionFormat, MatchStatus, MatchType } from '@prisma/client';
+import {
+  CompetitionFormat,
+  CompetitionParticipant,
+  Match,
+  MatchStatus,
+  MatchType,
+  Prisma,
+  PrismaClient,
+} from '@prisma/client';
+import { DefaultArgs } from '@prisma/client/runtime/client';
 import { recalculateStandings } from '../common/helpers/recalculateStandings.ts';
 import { StandingTeam } from '../common/types/StandingTeam.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
+
+type fairPlayStatsType = (Prisma.PickEnumerable<
+  Prisma.MatchPlayerStatsGroupByOutputType,
+  'teamId'[]
+> & {
+  _sum: {
+    redCards: number | null;
+    yellowCards: number | null;
+  };
+})[];
+
+type txType = Omit<
+  PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  '$connect' | '$disconnect' | '$on' | '$use' | '$extends'
+>;
 
 export class MatchesRepository {
   constructor(private prisma: PrismaService) {}
@@ -60,6 +84,119 @@ export class MatchesRepository {
     return this.prisma.$transaction(async (tx) => {
       return tx.match.createMany({ data: matchData });
     });
+  }
+
+  async recalculateLeagueStandings(
+    matches: Match[],
+    competitionParticipants: CompetitionParticipant[],
+    fairPlayStats: fairPlayStatsType,
+    competitionEditionId: number,
+    tx: txType,
+  ) {
+    const participants: StandingTeam[] = competitionParticipants.map(
+      (participant) => {
+        const fairPlay = fairPlayStats.find(
+          (stat) => stat.teamId === participant.teamId,
+        );
+
+        if (participant.points === null) {
+          throw new Error(
+            'A competition participant with standings must have points.',
+          );
+        }
+
+        return {
+          teamId: participant.teamId,
+          points: participant.points,
+          group: participant.group,
+          gf: participant.gf,
+          ga: participant.ga,
+          gd: participant.gd,
+          redCards: fairPlay?._sum.redCards || 0,
+          yellowCards: fairPlay?._sum.yellowCards || 0,
+        };
+      },
+    );
+
+    const standings = recalculateStandings(participants, matches);
+
+    for (const [index, team] of standings.entries()) {
+      await tx.competitionParticipant.update({
+        where: {
+          teamId_competitionEditionId: {
+            teamId: team.teamId,
+            competitionEditionId,
+          },
+        },
+        data: {
+          position: index + 1,
+        },
+      });
+    }
+  }
+
+  async recalculateGroupStandings(
+    matches: Match[],
+    groups: string[],
+    competitionParticipants: CompetitionParticipant[],
+    competitionEditionId: number,
+    fairPlayStats: fairPlayStatsType,
+    tx: txType,
+  ) {
+    for (const group of groups) {
+      const groupParticipants = competitionParticipants.filter(
+        (participant) => participant.group === group,
+      );
+
+      const groupTeamIds = new Set(
+        groupParticipants.map(({ teamId }) => teamId),
+      );
+
+      const groupMatches = matches.filter(
+        (match) =>
+          groupTeamIds.has(match.homeTeamId) &&
+          groupTeamIds.has(match.awayTeamId) &&
+          match.type === MatchType.GROUP_STAGE,
+      );
+
+      const participants: StandingTeam[] = groupParticipants.map(
+        (participant) => {
+          const fairPlay = fairPlayStats.find(
+            (stats) => stats.teamId === participant.teamId,
+          );
+
+          if (participant.points === null) {
+            throw new Error('A group participant must have points.');
+          }
+
+          return {
+            teamId: participant.teamId,
+            points: participant.points,
+            gf: participant.gf,
+            ga: participant.ga,
+            gd: participant.gd,
+            redCards: fairPlay?._sum.redCards ?? 0,
+            yellowCards: fairPlay?._sum.yellowCards ?? 0,
+          };
+        },
+      );
+
+      const standings = recalculateStandings(participants, groupMatches);
+
+      for (const [index, team] of standings.entries()) {
+        await tx.competitionParticipant.update({
+          where: {
+            teamId_competitionEditionId: {
+              teamId: team.teamId,
+              competitionEditionId,
+            },
+          },
+          data: {
+            position: index + 1,
+          },
+        });
+      }
+    }
   }
 
   playMatch(
@@ -278,6 +415,10 @@ export class MatchesRepository {
 
       const matchIds = matches.map(({ id }) => id);
 
+      const competitionParticipants = await tx.competitionParticipant.findMany({
+        where: { competitionEditionId },
+      });
+
       const fairPlayStats = await tx.matchPlayerStats.groupBy({
         by: ['teamId'],
         where: {
@@ -291,49 +432,33 @@ export class MatchesRepository {
         },
       });
 
-      const competitionParticipants = await tx.competitionParticipant.findMany({
-        where: { competitionEditionId },
-      });
+      const groups = [
+        ...new Set(
+          competitionParticipants
+            .map((participant) => participant.group)
+            .filter((group): group is string => group !== null),
+        ),
+      ];
 
-      const participants: StandingTeam[] = competitionParticipants.map(
-        (participant) => {
-          const fairPlay = fairPlayStats.find(
-            (stat) => stat.teamId === participant.teamId,
-          );
+      if (competitionFormat === CompetitionFormat.LEAGUE) {
+        await this.recalculateLeagueStandings(
+          matches,
+          competitionParticipants,
+          fairPlayStats,
+          competitionEditionId,
+          tx,
+        );
+      }
 
-          if (participant.points === null) {
-            throw new Error(
-              'A competition participant with standings must have points.',
-            );
-          }
-
-          return {
-            teamId: participant.teamId,
-            points: participant.points,
-            group: participant.group,
-            gf: participant.gf,
-            ga: participant.ga,
-            gd: participant.gd,
-            redCards: fairPlay?._sum.redCards || 0,
-            yellowCards: fairPlay?._sum.yellowCards || 0,
-          };
-        },
-      );
-
-      const standings = recalculateStandings(participants, matches);
-
-      for (const [index, team] of standings.entries()) {
-        await tx.competitionParticipant.update({
-          where: {
-            teamId_competitionEditionId: {
-              teamId: team.teamId,
-              competitionEditionId,
-            },
-          },
-          data: {
-            position: index + 1,
-          },
-        });
+      if (competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT) {
+        await this.recalculateGroupStandings(
+          matches,
+          groups,
+          competitionParticipants,
+          competitionEditionId,
+          fairPlayStats,
+          tx,
+        );
       }
 
       return updatedMatch;
