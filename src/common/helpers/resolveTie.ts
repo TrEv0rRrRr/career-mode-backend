@@ -1,15 +1,6 @@
 import { Match } from '@prisma/client';
+import { StandingTeam } from '../types/StandingTeam.ts';
 import { buildHeadToHeadTable } from './buildHeadToHeadTable.ts';
-
-type StandingTeam = {
-  teamId: number;
-  points: number;
-  gf: number;
-  ga: number;
-  gd: number;
-  yellowCards: number;
-  redCards: number;
-};
 
 export const resolveTie = (
   tiedTeams: StandingTeam[],
