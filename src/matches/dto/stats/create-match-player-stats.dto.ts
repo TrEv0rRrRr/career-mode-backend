@@ -8,6 +8,11 @@ export class CreateMatchPlayerStatsDto {
 
   @IsNotEmpty()
   @IsInt()
+  @Min(1)
+  teamId!: number;
+
+  @IsNotEmpty()
+  @IsInt()
   @Min(0)
   goals!: number;
 
