@@ -310,6 +310,7 @@ export class MatchesRepository {
           return {
             teamId: participant.teamId,
             points: participant.points,
+            group: participant.group,
             gf: participant.gf,
             ga: participant.ga,
             gd: participant.gd,
