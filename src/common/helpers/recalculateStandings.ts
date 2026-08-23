@@ -6,7 +6,9 @@ export const recalculateStandings = (
   teams: StandingTeam[],
   matches: Match[],
 ): StandingTeam[] => {
-  const standings = [...teams].sort((a, b) => b.points - a.points);
+  const standings = [...teams].sort(
+    (a, b) => (b.points || 0) - (a.points || 0),
+  );
 
   const result: StandingTeam[] = [];
 
