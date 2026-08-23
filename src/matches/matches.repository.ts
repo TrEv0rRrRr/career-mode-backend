@@ -1,4 +1,6 @@
 import { CompetitionFormat, MatchStatus, MatchType } from '@prisma/client';
+import { recalculateStandings } from '../common/helpers/recalculateStandings.ts';
+import { StandingTeam } from '../common/types/StandingTeam.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
@@ -82,6 +84,7 @@ export class MatchesRepository {
         data: data.playerStats.map((stats) => ({
           ...stats,
           matchId,
+          teamId: playerTeamsIds.get(stats.playerId)!,
         })),
       });
 
@@ -268,6 +271,69 @@ export class MatchesRepository {
         },
         data: awayParticipantUpdate,
       });
+
+      const matches = await tx.match.findMany({
+        where: { competitionEditionId, status: MatchStatus.PLAYED },
+      });
+
+      const matchIds = matches.map(({ id }) => id);
+
+      const fairPlayStats = await tx.matchPlayerStats.groupBy({
+        by: ['teamId'],
+        where: {
+          matchId: {
+            in: matchIds,
+          },
+        },
+        _sum: {
+          redCards: true,
+          yellowCards: true,
+        },
+      });
+
+      const competitionParticipants = await tx.competitionParticipant.findMany({
+        where: { competitionEditionId },
+      });
+
+      const participants: StandingTeam[] = competitionParticipants.map(
+        (participant) => {
+          const fairPlay = fairPlayStats.find(
+            (stat) => stat.teamId === participant.teamId,
+          );
+
+          if (participant.points === null) {
+            throw new Error(
+              'A competition participant with standings must have points.',
+            );
+          }
+
+          return {
+            teamId: participant.teamId,
+            points: participant.points,
+            gf: participant.gf,
+            ga: participant.ga,
+            gd: participant.gd,
+            redCards: fairPlay?._sum.redCards || 0,
+            yellowCards: fairPlay?._sum.yellowCards || 0,
+          };
+        },
+      );
+
+      const standings = recalculateStandings(participants, matches);
+
+      for (const [index, team] of standings.entries()) {
+        await tx.competitionParticipant.update({
+          where: {
+            teamId_competitionEditionId: {
+              teamId: team.teamId,
+              competitionEditionId,
+            },
+          },
+          data: {
+            position: index + 1,
+          },
+        });
+      }
 
       return updatedMatch;
     });
