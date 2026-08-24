@@ -1,8 +1,13 @@
-import { Match, MatchLeg } from '@prisma/client';
+import { Match, MatchLeg, MatchStatus } from '@prisma/client';
 
 export const resolveTwoLeggedWinner = (matches: Match[]) => {
   if (matches.length != 2)
     throw new Error('A two-legged knockout must have only 2 matches.');
+
+  for (const match of matches)
+    if (match.status !== MatchStatus.PLAYED) {
+      throw new Error('The match has not been played yet.');
+    }
 
   const firstMatch = matches.find(({ leg }) => leg === MatchLeg.FIRST)!;
 
