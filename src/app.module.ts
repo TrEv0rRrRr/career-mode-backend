@@ -6,7 +6,6 @@ import { MatchesModule } from './matches/matches.module.ts';
 import { PlayersModule } from './players/players.module.ts';
 import { PositionsModule } from './positions/positions.module.ts';
 import { PrismaModule } from './prisma/prisma.module.ts';
-import { PrismaService } from './prisma/prisma.service.ts';
 import { SeasonsModule } from './seasons/seasons.module.ts';
 import { StadiumsModule } from './stadiums/stadiums.module.ts';
 import { TeamsModule } from './teams/teams.module.ts';
@@ -26,6 +25,5 @@ import { TransfersModule } from './transfers/transfers.module.ts';
     TransfersModule,
     MatchesModule,
   ],
-  providers: [PrismaService],
 })
 export class AppModule {}
