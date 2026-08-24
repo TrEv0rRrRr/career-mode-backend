@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CompetitionsModule } from '../competitions/competitions.module.ts';
-import { CompetitionsRepository } from '../competitions/competitions.repository.ts';
-import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { PlayersModule } from '../players/players.module.ts';
 import { PlayersRepository } from '../players/players.repository.ts';
 import { PlayersService } from '../players/players.service.ts';
@@ -36,12 +34,11 @@ import { MatchesService } from './matches.service.ts';
     TeamsRepository,
     PlayersService,
     PlayersRepository,
-    CompetitionsService,
-    CompetitionsRepository,
     StadiumsService,
     StadiumsRepository,
     SeasonsService,
     SeasonsRepository,
   ],
+  exports: [MatchesService],
 })
 export class MatchesModule {}

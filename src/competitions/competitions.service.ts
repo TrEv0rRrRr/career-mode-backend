@@ -19,7 +19,7 @@ import { CalendarEntry } from '../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../common/types/MatchPairing.ts';
 import { ParticipatingTeam } from '../common/types/ParticipatingTeams.ts';
 import { CreateMatchDto } from '../matches/dto/create-match.dto.ts';
-import { MatchesService } from '../matches/matches.service.ts';
+import { MatchesRepository } from '../matches/matches.repository.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
@@ -35,7 +35,7 @@ export class CompetitionsService {
     private repo: CompetitionsRepository,
     private teamsService: TeamsService,
     private seasonService: SeasonsService,
-    private matchesService: MatchesService,
+    private matchesRepo: MatchesRepository,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -265,9 +265,7 @@ export class CompetitionsService {
       );
 
     const existingMatches =
-      await this.matchesService.countMatchesByCompetitionEdition(
-        competitionEditionId,
-      );
+      await this.matchesRepo.countByCompetitionEdition(competitionEditionId);
 
     if (existingMatches > 0)
       throw new BadRequestException(
@@ -310,11 +308,7 @@ export class CompetitionsService {
       competitionEdition,
     );
 
-    // Llamar a MatchesService para crear cada Match
-    return this.matchesService.createManyMatches(
-      competitionEditionId,
-      scheduledMatches,
-    );
+    return this.matchesRepo.createMany(matchType, scheduledMatches);
   }
 
   async findCompetitionEditionMatches(competitionEditionId: number) {
