@@ -151,6 +151,7 @@ model Match {
   homePenaltyGoals     Int?               @map("home_penalty_goals")
   awayPenaltyGoals     Int?               @map("away_penalty_goals")
   leg                  MatchLeg?
+  tieId                Int?               @map("tie_id")
   winnerTeamId         Int?               @map("winner_team_id")
   competitionEditionId Int                @map("competition_edition_id")
   type                 MatchType
