@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Match, MatchFinishType, MatchStatus } from '@prisma/client';
+import { Match, MatchFinishType, MatchStatus, MatchType } from '@prisma/client';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { PlayersService } from '../players/players.service.ts';
@@ -32,6 +32,13 @@ export class MatchesService {
     if (!match) throw new MatchNotFoundException();
 
     return match;
+  }
+
+  async findMatchesByRound(competitionEditionId: number, matchType: MatchType) {
+    await this.competitionsService.findCompetitionEditionById(
+      competitionEditionId,
+    );
+    return this.repo.findMatchesByRound(competitionEditionId, matchType);
   }
 
   async changeStadium(matchId: number, data: ChangeMatchStadiumDTO) {
