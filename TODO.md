@@ -73,7 +73,7 @@
 
 - [x] Desarrollar endpoint para consultar el calendario _GET /competitions/:competitionEditionId/matches_
 
-- [ ] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
+- [x] Desarrollar endpoint para jugar el partido (actualizar datos del mismo). _PATCH /matches/:id/play_
   - [x] Validar el resultado
     - [x] Los goles no pueden ser negativos
     - [x] Si _finishType = PENALTIES_, el marcador debe ser empate
@@ -82,9 +82,9 @@
   - [x] Actualizar Match _(SCHEDULED -> PLAY)_
   - [x] Crear MatchPlayerStats
   - [x] Crear MatchTeamStats
-  - [ ] Actualizar PlayerSeasonStats
-  - [ ] Actualizar TeamSeasonStats
-  - [ ] Actualizar futura clasificación
+  - [x] Actualizar PlayerSeasonStats
+  - [x] Actualizar TeamSeasonStats
+  - [x] Actualizar futura clasificación
 
 ## Competition Edition Table and Teams Table
 
