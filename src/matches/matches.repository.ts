@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/client';
 import { recalculateStandings } from '../common/helpers/recalculateStandings.ts';
+import { resolveKnockoutWinners } from '../common/helpers/resolveKnockoutWinners.ts';
 import { StandingTeam } from '../common/types/StandingTeam.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
@@ -42,6 +43,15 @@ export class MatchesRepository {
         matchTeamStats: true,
         matchPlayerStats: true,
         stadium: true,
+      },
+    });
+  }
+
+  findMatchesByRound(competitionEditionId: number, matchType: MatchType) {
+    return this.prisma.match.findMany({
+      where: {
+        competitionEditionId,
+        type: matchType,
       },
     });
   }
@@ -459,6 +469,28 @@ export class MatchesRepository {
           fairPlayStats,
           tx,
         );
+      }
+
+      const matchesByRound = await tx.match.findMany({
+        where: {
+          competitionEditionId,
+          type: updatedMatch.type,
+        },
+      });
+
+      const edition = await tx.competitionEdition.findFirst({
+        where: { id: competitionEditionId },
+        select: {
+          competition: true,
+        },
+      });
+
+      const roundFinished = matchesByRound.every(
+        (match) => match.status === MatchStatus.PLAYED,
+      );
+
+      if (roundFinished) {
+        resolveKnockoutWinners(edition, matchesByRound);
       }
 
       return updatedMatch;
