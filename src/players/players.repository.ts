@@ -191,11 +191,6 @@ export class PlayersRepository {
         playerId,
         endDate: null,
       },
-      select: {
-        team: true,
-        startDate: true,
-        endDate: true,
-      },
     });
   }
 
