@@ -251,15 +251,42 @@ model Team {
 
   lostCompetitions CompetitionEdition[] @relation("CompetitionRunnerUp")
 
-  careers           Career[]
-  teamSeasonStats   TeamSeasonStats[]
-  teamSeasons       CompetitionParticipant[]
-  matchTeamStats    MatchTeamStats[]
-  playerSeasonStats PlayerSeasonStats[]
-  playerTeams       PlayerTeam[]
-  matchPlayerStats  MatchPlayerStats[]
+  careers            Career[]
+  teamSeasonStats    TeamSeasonStats[]
+  teamSeasons        CompetitionParticipant[]
+  matchTeamStats     MatchTeamStats[]
+  playerSeasonStats  PlayerSeasonStats[]
+  playerTeams        PlayerTeam[]
+  matchPlayerStats   MatchPlayerStats[]
+  knockoutRoundTeams KnockoutRoundTeam[]
 
   @@map("team")
+}
+
+model KnockoutRoundTeam {
+  knockoutRoundId Int @map("knockout_round_id")
+  teamId          Int @map("team_id")
+
+  knockoutRound KnockoutRound @relation(fields: [knockoutRoundId], references: [id])
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@id([knockoutRoundId, teamId])
+  @@map("knockout_round_team")
+}
+
+model KnockoutRound {
+  id                   Int       @id @default(autoincrement())
+  competitionEditionId Int       @map("competition_edition_id")
+  type                 MatchType
+  completed            Boolean   @default(false)
+
+  competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
+
+  qualifiedTeams KnockoutRoundTeam[]
+
+  @@unique([competitionEditionId, type])
+  @@map("knockout_round")
 }
 
 // TABLAS PUENTE
@@ -314,6 +341,7 @@ model CompetitionEdition {
   winnerTeam              Team?                    @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
   runnerUpTeam            Team?                    @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
   competitionParticipants CompetitionParticipant[]
+  knockoutRounds          KnockoutRound[]
 
   @@unique([seasonId, competitionId])
   @@map("competition_edition")
