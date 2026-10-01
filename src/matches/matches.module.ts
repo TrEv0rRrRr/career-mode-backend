@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CompetitionsModule } from '../competitions/competitions.module.ts';
+import { KnockoutRoundModule } from '../knockout-round/knockout-round.module.ts';
+import { KnockoutRoundRepository } from '../knockout-round/knockout-round.repository.ts';
+import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersModule } from '../players/players.module.ts';
 import { PlayersRepository } from '../players/players.repository.ts';
 import { PlayersService } from '../players/players.service.ts';
@@ -25,6 +28,7 @@ import { MatchesService } from './matches.service.ts';
     CompetitionsModule,
     StadiumsModule,
     SeasonsModule,
+    KnockoutRoundModule,
   ],
   controllers: [MatchesController],
   providers: [
@@ -38,6 +42,8 @@ import { MatchesService } from './matches.service.ts';
     StadiumsRepository,
     SeasonsService,
     SeasonsRepository,
+    KnockoutRoundService,
+    KnockoutRoundRepository,
   ],
   exports: [MatchesService],
 })
