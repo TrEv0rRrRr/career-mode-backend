@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
-import { UpdateKnockoutRoundDto } from './dto/update-knockout-round.dto.ts';
 
 @Injectable()
 export class KnockoutRoundRepository {
@@ -16,7 +15,7 @@ export class KnockoutRoundRepository {
     });
   }
 
-  findKnockoutRoundByCompetitionEditionId(
+  findKnockoutRoundByTypeAndCompetitionId(
     competitionEditionId: number,
     type: MatchType,
   ) {
@@ -33,12 +32,14 @@ export class KnockoutRoundRepository {
     });
   }
 
-  completeKnockoutRound(knockoutRoundId: number, data: UpdateKnockoutRoundDto) {
+  completeKnockoutRound(knockoutRoundId: number) {
     return this.prisma.knockoutRound.update({
       where: {
         id: knockoutRoundId,
       },
-      data,
+      data: {
+        completed: true,
+      },
     });
   }
 
