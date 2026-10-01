@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
-import { UpdateKnockoutRoundDto } from './dto/update-knockout-round.dto.ts';
 import { KnockoutRoundNotFoundException } from './exceptions/knockout-round-not-found.exception.ts';
 import { KnockoutRoundRepository } from './knockout-round.repository.ts';
 
@@ -22,7 +21,7 @@ export class KnockoutRoundService {
     return knockoutRound;
   }
 
-  async findKnockoutRoundByCompetitionEditionId(
+  async findKnockoutRoundByTypeAndCompetitionId(
     competitionEditionId: number,
     type: MatchType,
   ) {
@@ -30,19 +29,16 @@ export class KnockoutRoundService {
       competitionEditionId,
     );
 
-    return this.repo.findKnockoutRoundByCompetitionEditionId(
+    return this.repo.findKnockoutRoundByTypeAndCompetitionId(
       competitionEditionId,
       type,
     );
   }
 
-  async completeKnockoutRound(
-    knockoutRoundId: number,
-    data: UpdateKnockoutRoundDto,
-  ) {
+  async completeKnockoutRound(knockoutRoundId: number) {
     await this.findKnockoutRoundById(knockoutRoundId);
 
-    return this.repo.completeKnockoutRound(knockoutRoundId, data);
+    return this.repo.completeKnockoutRound(knockoutRoundId);
   }
 
   async createKnockoutRound(
