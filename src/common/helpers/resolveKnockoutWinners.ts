@@ -1,27 +1,17 @@
-import { $Enums, Match, MatchType } from '@prisma/client';
+import { Match, MatchType } from '@prisma/client';
+import { EditionType } from '../types/EditionType.ts';
 import { resolveSingleLegWinner } from './resolveSingleLegWinner.ts';
 import { resolveTwoLeggedWinner } from './resolveTwoLeggedWinner.ts';
-
-type EditionType = {
-  competition: {
-    name: string;
-    id: number;
-    type: $Enums.CompetitionType;
-    format: $Enums.CompetitionFormat;
-    logo: string | null;
-    hasThirdPlaceMatch: boolean;
-    maxTeamsNumber: number;
-    hasTwoLeggedKnockout: boolean;
-    groups: number | null;
-    teamsPerGroup: number | null;
-  };
-} | null;
 
 export const resolveKnockoutWinners = (
   edition: EditionType,
   matchesByRound: Match[],
 ) => {
   const ties = Object.groupBy(matchesByRound, (match) => match.tieId!);
+
+  if (!matchesByRound.length) {
+    throw new Error('No matches provided.');
+  }
 
   const isTwoLegged =
     edition &&
