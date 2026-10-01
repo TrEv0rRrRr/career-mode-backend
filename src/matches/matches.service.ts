@@ -1,7 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Match, MatchFinishType, MatchStatus, MatchType } from '@prisma/client';
+import { getNextKnockoutRounds } from '../common/helpers/getNextKnockoutRounds.ts';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
+import { resolveKnockoutLosers } from '../common/helpers/resolveKnockoutLosers.ts';
+import { resolveKnockoutWinners } from '../common/helpers/resolveKnockoutWinners.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
+import { CreateKnockoutRoundDto } from '../knockout-round/dto/create-knockout-round.dto.ts';
+import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersService } from '../players/players.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
@@ -24,6 +29,7 @@ export class MatchesService {
     private seasonsService: SeasonsService,
     private stadiumsService: StadiumsService,
     private competitionsService: CompetitionsService,
+    private knockoutRoundService: KnockoutRoundService,
   ) {}
 
   async findMatch(matchId: number) {
@@ -264,5 +270,83 @@ export class MatchesService {
       winnerTeamId,
       data,
     );
+  }
+
+  async findKnockoutRoundMatches(
+    competitionEditionId: number,
+    type: MatchType,
+  ) {
+    return this.repo.findMatchesByRound(competitionEditionId, type);
+  }
+
+  async resolveKnockoutRound(
+    competitionEditionId: number,
+    matchType: MatchType,
+  ) {
+    const matches = await this.repo.findMatchesByRound(
+      competitionEditionId,
+      matchType,
+    );
+
+    if (!matches.length) {
+      throw new Error('No knockout matches found for this round.');
+    }
+
+    const allPlayed = matches.every(
+      ({ status }) => status === MatchStatus.PLAYED,
+    );
+
+    if (!allPlayed) {
+      return;
+    }
+
+    const edition =
+      await this.competitionsService.findCompetitionEditionById(
+        competitionEditionId,
+      );
+
+    if (!edition?.competition) {
+      throw new Error('Competition edition has no competition.');
+    }
+
+    const winners = resolveKnockoutWinners(edition, matches);
+
+    const nextRounds = getNextKnockoutRounds(
+      matchType,
+      edition.competition.hasThirdPlaceMatch,
+    );
+
+    const currentRound =
+      await this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionId(
+        competitionEditionId,
+        matchType,
+      );
+
+    if (!currentRound) {
+      throw new Error('Knockout round not found.');
+    }
+
+    await this.knockoutRoundService.completeKnockoutRound(currentRound.id);
+
+    if (!nextRounds.length) {
+      return;
+    }
+
+    const losers =
+      matchType === MatchType.SEMI_FINAL
+        ? resolveKnockoutLosers(edition, matches)
+        : [];
+
+    for (const nextRound of nextRounds) {
+      const qualifiedTeams =
+        nextRound === MatchType.THIRD_PLACE ? losers : winners;
+
+      const data: CreateKnockoutRoundDto = {
+        competitionEditionId,
+        type: nextRound,
+      };
+
+      await this.knockoutRoundService.createKnockoutRound(data, qualifiedTeams);
+    }
   }
 }
