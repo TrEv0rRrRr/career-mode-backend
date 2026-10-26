@@ -7,7 +7,7 @@ export const generateKnockoutBracket = (
   matchType: MatchType,
   isTwoLegged: boolean,
 ): MatchPairing[] => {
-  if (teams.length !== 2)
+  if (teams.length < 2)
     throw new Error('A bracket must contain exactly 2 teams');
 
   if (!isTwoLegged) {
