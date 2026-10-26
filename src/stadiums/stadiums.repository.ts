@@ -25,6 +25,12 @@ export class StadiumsRepository {
     });
   }
 
+  createMany(data: CreateStadiumDto[]) {
+    return this.prisma.$transaction(async (tx) => {
+      return tx.stadium.createMany({ data });
+    });
+  }
+
   update(id: number, data: UpdateStadiumDto) {
     return this.prisma.stadium.update({ where: { id }, data });
   }

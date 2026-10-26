@@ -10,7 +10,12 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
 import { TeamQueryDto } from './dto/team-query.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
@@ -92,6 +97,21 @@ export class TeamsController {
   })
   createTeam(@Body() data: CreateTeamDto) {
     return this.teamsService.createTeam(data);
+  }
+
+  @Post('/many')
+  @ApiOperation({ summary: 'Create as many teams as you want' })
+  @ApiBody({ type: [CreateTeamDto] })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Team created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: "There's a team with that name already",
+  })
+  createManyTeams(@Body() data: CreateTeamDto[]) {
+    return this.teamsService.createManyTeams(data);
   }
 
   @Patch(':id')

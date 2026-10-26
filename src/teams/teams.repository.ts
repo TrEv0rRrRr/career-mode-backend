@@ -53,6 +53,12 @@ export class TeamsRepository {
     return this.prisma.team.create({ data });
   }
 
+  createMany(data: CreateTeamDto[]) {
+    return this.prisma.$transaction(async (tx) => {
+      return tx.team.createMany({ data });
+    });
+  }
+
   update(id: number, data: UpdateTeamDto) {
     return this.prisma.team.update({ where: { id }, data });
   }

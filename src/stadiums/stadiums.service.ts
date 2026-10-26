@@ -29,6 +29,19 @@ export class StadiumsService {
     return this.repo.create(data);
   }
 
+  async createManyStadiums(data: CreateStadiumDto[]) {
+    const stadiumNames = data.map((stadium) => stadium.name);
+
+    const existingStadiums = await Promise.all(
+      stadiumNames.map((name) => this.repo.findByName(name)),
+    );
+
+    if (existingStadiums.length !== 0)
+      throw new ConflictException("There's a stadium with that name already");
+
+    return this.repo.createMany(data);
+  }
+
   async updateStadium(id: number, data: UpdateStadiumDto) {
     await this.findStadiumById(id);
 

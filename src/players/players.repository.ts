@@ -44,6 +44,12 @@ export class PlayersRepository {
     });
   }
 
+  createMany(data: CreatePlayerDto[]) {
+    return this.prisma.$transaction(async (tx) => {
+      return tx.player.createMany({ data });
+    });
+  }
+
   update(id: number, data: UpdatePlayerDto) {
     return this.prisma.player.update({ where: { id }, data });
   }

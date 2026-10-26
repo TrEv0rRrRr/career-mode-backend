@@ -29,6 +29,19 @@ export class ManagersService {
     return this.repo.create(data);
   }
 
+  async createManyManagers(data: CreateManagerDto[]) {
+    const managerNames = data.map((manager) => manager.name);
+
+    const existingManagers = await Promise.all(
+      managerNames.map((name) => this.repo.findByName(name)),
+    );
+
+    if (existingManagers.length !== 0)
+      throw new ConflictException("There's a manager that already exists");
+
+    return this.repo.createMany(data);
+  }
+
   async updateManager(id: number, data: UpdateManagerDto) {
     await this.findManagerById(id);
 

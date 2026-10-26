@@ -9,7 +9,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { StadiumEntity } from '../stadiums/entities/stadium.entity.ts';
 import { CreateStadiumDto } from './dto/create-stadium.dto.ts';
 import { UpdateStadiumDto } from './dto/update-stadium.dto.ts';
@@ -62,6 +67,21 @@ export class StadiumsController {
   })
   createStadium(@Body() data: CreateStadiumDto) {
     return this.stadiumsService.createStadium(data);
+  }
+
+  @Post('/many')
+  @ApiOperation({ summary: 'Create as many stadiums as you want' })
+  @ApiBody({ type: [CreateStadiumDto] })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Stadium created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: "There's a stadium with that name already",
+  })
+  createManyStadiums(@Body() data: CreateStadiumDto[]) {
+    return this.stadiumsService.createManyStadiums(data);
   }
 
   @Patch(':id')

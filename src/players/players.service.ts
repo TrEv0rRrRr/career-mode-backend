@@ -54,6 +54,19 @@ export class PlayersService {
     return this.repo.create(data);
   }
 
+  async createManyPlayers(data: CreatePlayerDto[]) {
+    const playerNames = data.map((player) => player.name);
+
+    const existingPlayers = await Promise.all(
+      playerNames.map((name) => this.repo.findByName(name)),
+    );
+
+    if (existingPlayers.length !== 0)
+      throw new ConflictException("There's a player that already exists");
+
+    return this.repo.createMany(data);
+  }
+
   async updatePlayer(id: number, data: UpdatePlayerDto) {
     await this.findPlayerById(id);
 

@@ -25,6 +25,12 @@ export class ManagersRepository {
     });
   }
 
+  createMany(data: CreateManagerDto[]) {
+    return this.prisma.$transaction(async (tx) => {
+      return tx.manager.createMany({ data });
+    });
+  }
+
   update(id: number, data: UpdateManagerDto) {
     return this.prisma.manager.update({ where: { id }, data });
   }

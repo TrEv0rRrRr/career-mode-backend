@@ -93,6 +93,21 @@ export class PlayersController {
     return this.playersService.createPlayer(data);
   }
 
+  @Post('/many')
+  @ApiOperation({ summary: 'Create as many players as you want' })
+  @ApiBody({ type: [CreatePlayerDto] })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Player created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: "There's a player with that name already",
+  })
+  createManyPlayers(@Body() data: CreatePlayerDto[]) {
+    return this.playersService.createManyPlayers(data);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update a player' })
   @ApiResponse({

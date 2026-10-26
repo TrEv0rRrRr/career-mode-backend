@@ -50,6 +50,19 @@ export class TeamsService {
     return this.repo.create(data);
   }
 
+  async createManyTeams(data: CreateTeamDto[]) {
+    const teamNames = data.map((team) => team.name);
+
+    const existingTeams = await Promise.all(
+      teamNames.map((name) => this.repo.findByName(name)),
+    );
+
+    if (existingTeams.length !== 0)
+      throw new ConflictException("There's a team that already exists");
+
+    return this.repo.createMany(data);
+  }
+
   async updateTeam(id: number, data: UpdateTeamDto) {
     await this.findTeamById(id);
 
