@@ -1,5 +1,5 @@
 import { Match } from '@prisma/client';
-import type { HeadToHeadStanding } from '../types/HeadToHeadStanding.ts';
+import type { HeadToHeadStanding } from '../../types/HeadToHeadStanding.ts';
 
 export const buildHeadToHeadTable = (
   matches: Match[],

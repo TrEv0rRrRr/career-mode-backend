@@ -1,5 +1,5 @@
 import { Match, MatchType } from '@prisma/client';
-import { EditionType } from '../types/EditionType.ts';
+import { EditionType } from '../../types/EditionType.ts';
 import { resolveSingleLegWinner } from './resolveSingleLegWinner.ts';
 import { resolveTwoLeggedWinner } from './resolveTwoLeggedWinner.ts';
 

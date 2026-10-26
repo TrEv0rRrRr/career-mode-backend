@@ -1,5 +1,5 @@
 import { Match } from '@prisma/client';
-import { StandingTeam } from '../types/StandingTeam.ts';
+import { StandingTeam } from '../../types/StandingTeam.ts';
 import { resolveTie } from './resolveTie.ts';
 
 export const recalculateStandings = (
