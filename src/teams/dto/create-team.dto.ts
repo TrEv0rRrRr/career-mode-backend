@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsDate,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateTeamDto {
   @ApiProperty({
@@ -39,7 +47,8 @@ export class CreateTeamDto {
     description: 'The date when the team was founded',
   })
   @IsNotEmpty()
-  @IsString()
+  @Type(() => Date)
+  @IsDate()
   foundationDate!: Date;
 
   @ApiProperty({
