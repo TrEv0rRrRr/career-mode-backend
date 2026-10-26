@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import {
   CompetitionFormat,
   CompetitionParticipant,
@@ -31,6 +32,7 @@ type txType = Omit<
   '$connect' | '$disconnect' | '$on' | '$use' | '$extends'
 >;
 
+@Injectable()
 export class MatchesRepository {
   constructor(private prisma: PrismaService) {}
 
@@ -61,6 +63,7 @@ export class MatchesRepository {
   }
 
   create(type: MatchType, data: CreateMatchDto) {
+    const tieId = 0;
     const matchData = {
       ...data,
       type,
@@ -70,6 +73,7 @@ export class MatchesRepository {
       homePenaltyGoals: null,
       awayPenaltyGoals: null,
       finishType: null,
+      tieId,
     };
 
     return this.prisma.match.create({

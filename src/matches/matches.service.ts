@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Match, MatchFinishType, MatchStatus, MatchType } from '@prisma/client';
 import { getNextKnockoutRounds } from '../common/helpers/getNextKnockoutRounds.ts';
 import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
+import { isKnockoutMatch } from '../common/helpers/isKnockoutMatch.ts';
 import { resolveKnockoutLosers } from '../common/helpers/resolveKnockoutLosers.ts';
 import { resolveKnockoutWinners } from '../common/helpers/resolveKnockoutWinners.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
-import { CreateKnockoutRoundDto } from '../knockout-round/dto/create-knockout-round.dto.ts';
 import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersService } from '../players/players.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
@@ -262,7 +262,8 @@ export class MatchesService {
 
     const winnerTeamId = this.getWinnerTeamId(match, data.match);
 
-    return this.repo.playMatch(
+    // matches.service.ts
+    const playedMatch = await this.repo.playMatch(
       matchId,
       competitionEdition.competition.format,
       playerTeamsIds,
@@ -270,6 +271,12 @@ export class MatchesService {
       winnerTeamId,
       data,
     );
+
+    if (isKnockoutMatch(match.type)) {
+      await this.resolveKnockoutRound(competitionEdition.id, match.type);
+    }
+
+    return playedMatch;
   }
 
   async findKnockoutRoundMatches(
@@ -337,16 +344,14 @@ export class MatchesService {
         ? resolveKnockoutLosers(edition, matches)
         : [];
 
-    for (const nextRound of nextRounds) {
-      const qualifiedTeams =
-        nextRound === MatchType.THIRD_PLACE ? losers : winners;
+    const roundsToCreate = nextRounds.map((nextRound) => ({
+      type: nextRound,
+      qualifiedTeamIds: nextRound === MatchType.THIRD_PLACE ? losers : winners,
+    }));
 
-      const data: CreateKnockoutRoundDto = {
-        competitionEditionId,
-        type: nextRound,
-      };
-
-      await this.knockoutRoundService.createKnockoutRound(data, qualifiedTeams);
-    }
+    await this.knockoutRoundService.resolveRoundAndCreateNextRounds(
+      currentRound.id,
+      roundsToCreate,
+    );
   }
 }

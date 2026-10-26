@@ -90,7 +90,7 @@ export class MatchesController {
     description: 'The teams must be different',
   })
   createMatch(
-    @Param('competitionId', ParseIntPipe) competitionEditionId: number,
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Body() data: CreateMatchDto,
   ) {
     return this.matchesService.createMatch(competitionEditionId, data);
@@ -132,5 +132,21 @@ export class MatchesController {
     @Body() data: PlayMatchDto,
   ) {
     return this.matchesService.playMatch(matchId, data);
+  }
+
+  @Get('/competition/editions/:competitionEditionId/matches')
+  @ApiOperation({
+    summary: 'Counts the number of matches of a competition edition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Matches counted!',
+  })
+  countCompetitionEditionMatches(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+  ) {
+    return this.matchesService.countMatchesByCompetitionEdition(
+      competitionEditionId,
+    );
   }
 }
