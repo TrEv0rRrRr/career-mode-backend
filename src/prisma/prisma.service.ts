@@ -14,8 +14,16 @@ export class PrismaService
     if (!dbUrl)
       throw new Error('DATABASE_URL is required to initialize the Client.');
 
+    const parsedDbUrl = new URL(dbUrl);
+
     super({
-      adapter: new PrismaMariaDb(dbUrl),
+      adapter: new PrismaMariaDb({
+        host: parsedDbUrl.hostname,
+        port: Number(parsedDbUrl.port) || 3306,
+        user: decodeURIComponent(parsedDbUrl.username),
+        password: decodeURIComponent(parsedDbUrl.password),
+        database: parsedDbUrl.pathname.slice(1),
+      }),
     });
   }
 
