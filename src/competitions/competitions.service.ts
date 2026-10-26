@@ -180,13 +180,13 @@ export class CompetitionsService {
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    const participant = await this.findCompetitionParticipant(
+    const participant = await this.repo.findCompetitionParticipant(
       competitionEditionId,
       teamId,
     );
 
     if (participant)
-      throw new BadRequestException('This team has already been registered');
+      throw new ConflictException('This team has already been registered');
 
     const registeredTeams =
       await this.countCompetitionParticipants(competitionEditionId);
@@ -227,7 +227,7 @@ export class CompetitionsService {
   async findCompetitionParticipant(
     competitionEditionId: number,
     teamId: number,
-    errorMsg?: string,
+    message?: string,
   ) {
     await this.validateData(competitionEditionId, teamId);
 
@@ -236,7 +236,7 @@ export class CompetitionsService {
       teamId,
     );
 
-    if (!participant) throw new ParticipantNotFoundException(errorMsg);
+    if (!participant) throw new ParticipantNotFoundException(message);
 
     return participant;
   }
