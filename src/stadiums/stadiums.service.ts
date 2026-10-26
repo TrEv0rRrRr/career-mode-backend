@@ -36,8 +36,12 @@ export class StadiumsService {
       stadiumNames.map((name) => this.repo.findByName(name)),
     );
 
-    if (existingStadiums.length !== 0)
-      throw new ConflictException("There's a stadium with that name already");
+    const isFullOfNulls = !existingStadiums.every(
+      (stadium) => stadium === null,
+    );
+
+    if (isFullOfNulls)
+      throw new ConflictException(`There's a stadium that already exists`);
 
     return this.repo.createMany(data);
   }

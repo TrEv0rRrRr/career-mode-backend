@@ -57,7 +57,9 @@ export class TeamsService {
       teamNames.map((name) => this.repo.findByName(name)),
     );
 
-    if (existingTeams.length !== 0)
+    const isFullOfNulls = !existingTeams.every((team) => team === null);
+
+    if (isFullOfNulls)
       throw new ConflictException("There's a team that already exists");
 
     return this.repo.createMany(data);

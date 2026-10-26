@@ -16,7 +16,7 @@ export class StadiumsRepository {
   }
 
   findByName(name: string) {
-    return this.prisma.stadium.findFirst({ where: { name } });
+    return this.prisma.stadium.findUnique({ where: { name } });
   }
 
   create(data: CreateStadiumDto) {

@@ -36,7 +36,11 @@ export class ManagersService {
       managerNames.map((name) => this.repo.findByName(name)),
     );
 
-    if (existingManagers.length !== 0)
+    const isFullOfNulls = !existingManagers.every(
+      (manager) => manager === null,
+    );
+
+    if (isFullOfNulls)
       throw new ConflictException("There's a manager that already exists");
 
     return this.repo.createMany(data);

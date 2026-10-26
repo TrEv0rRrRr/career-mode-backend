@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -104,7 +105,10 @@ export class PlayersController {
     status: HttpStatus.CONFLICT,
     description: "There's a player with that name already",
   })
-  createManyPlayers(@Body() data: CreatePlayerDto[]) {
+  createManyPlayers(
+    @Body(new ParseArrayPipe({ items: CreatePlayerDto }))
+    data: CreatePlayerDto[],
+  ) {
     return this.playersService.createManyPlayers(data);
   }
 

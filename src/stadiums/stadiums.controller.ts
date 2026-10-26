@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -74,13 +75,16 @@ export class StadiumsController {
   @ApiBody({ type: [CreateStadiumDto] })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Stadium created!',
+    description: 'Stadiums created!',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
     description: "There's a stadium with that name already",
   })
-  createManyStadiums(@Body() data: CreateStadiumDto[]) {
+  createManyStadiums(
+    @Body(new ParseArrayPipe({ items: CreateStadiumDto }))
+    data: CreateStadiumDto[],
+  ) {
     return this.stadiumsService.createManyStadiums(data);
   }
 

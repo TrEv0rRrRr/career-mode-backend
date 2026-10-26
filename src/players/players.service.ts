@@ -61,8 +61,10 @@ export class PlayersService {
       playerNames.map((name) => this.repo.findByName(name)),
     );
 
-    if (existingPlayers.length !== 0)
-      throw new ConflictException("There's a player that already exists");
+    const isFullOfNulls = !existingPlayers.every((player) => player === null);
+
+    if (isFullOfNulls)
+      throw new ConflictException(`There's a player that already exists`);
 
     return this.repo.createMany(data);
   }

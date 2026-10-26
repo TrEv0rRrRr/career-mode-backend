@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -104,13 +105,15 @@ export class TeamsController {
   @ApiBody({ type: [CreateTeamDto] })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Team created!',
+    description: 'Teams created!',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
     description: "There's a team with that name already",
   })
-  createManyTeams(@Body() data: CreateTeamDto[]) {
+  createManyTeams(
+    @Body(new ParseArrayPipe({ items: CreateTeamDto })) data: CreateTeamDto[],
+  ) {
     return this.teamsService.createManyTeams(data);
   }
 

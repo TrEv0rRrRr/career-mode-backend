@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -81,7 +82,10 @@ export class ManagersController {
     status: HttpStatus.CONFLICT,
     description: "There's a manager with that name already",
   })
-  createManyManagers(@Body() data: CreateManagerDto[]) {
+  createManyManagers(
+    @Body(new ParseArrayPipe({ items: CreateManagerDto }))
+    data: CreateManagerDto[],
+  ) {
     return this.managersService.createManyManagers(data);
   }
 
