@@ -1,4 +1,4 @@
-import { HeadToHeadStanding } from '../types/HeadToHeadStanding.ts';
+import { HeadToHeadStanding } from '../../types/HeadToHeadStanding.ts';
 
 export const sortByHeadToHead = (
   standings: HeadToHeadStanding[],
