@@ -59,4 +59,40 @@ export const managers = [
     nationality: 'Italy',
     face: '/images/managers/massimiliano-allegri.png',
   },
+  {
+    name: 'Unai Emery',
+    birthDate: new Date('1971-11-03'),
+    nationality: 'Spain',
+    face: '/images/managers/unai-emery.png',
+  },
+  {
+    name: 'Pellegrino Matarazzo',
+    birthDate: new Date('1977-11-28'),
+    nationality: 'United States',
+    face: '/images/managers/pellegrino-matarazzo.png',
+  },
+  {
+    name: 'Kasper Hjulmand',
+    birthDate: new Date('1972-04-09'),
+    nationality: 'Denmark',
+    face: '/images/managers/kasper-hjulmand.png',
+  },
+  {
+    name: 'Antonio Conte',
+    birthDate: new Date('1969-07-31'),
+    nationality: 'Italy',
+    face: '/images/managers/antonio-conte.png',
+  },
+  {
+    name: 'Stefano Pioli',
+    birthDate: new Date('1965-10-20'),
+    nationality: 'Italy',
+    face: '/images/managers/stefano-pioli.png',
+  },
+  {
+    name: 'Bruno Genesio',
+    birthDate: new Date('1966-09-01'),
+    nationality: 'France',
+    face: '/images/managers/bruno-genesio.png',
+  },
 ];
