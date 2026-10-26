@@ -96,14 +96,8 @@ export class KnockoutRoundController {
     description:
       "They can't be more or less than 2 qualified teams for the third place match or the final.",
   })
-  createKnockoutRound(
-    @Body() createKnockoutRoundDto: CreateKnockoutRoundDto,
-    @Param('qualifiedTeamIds') qualifiedTeamIds: number[],
-  ) {
-    return this.knockoutRoundService.createKnockoutRound(
-      createKnockoutRoundDto,
-      qualifiedTeamIds,
-    );
+  createKnockoutRound(@Body() data: CreateKnockoutRoundDto) {
+    return this.knockoutRoundService.createKnockoutRound(data);
   }
 
   @Patch('/complete/:id')
