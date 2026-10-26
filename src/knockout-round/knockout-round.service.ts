@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
+import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundNotFoundException } from './exceptions/knockout-round-not-found.exception.ts';
@@ -82,5 +83,17 @@ export class KnockoutRoundService {
     }
 
     return this.repo.createKnockoutRound(data, qualifiedTeamIds);
+  }
+
+  async resolveRoundAndCreateNextRounds(
+    knockoutRoundId: number,
+    nextRounds: NextKnockoutRoundData[],
+  ) {
+    await this.findKnockoutRoundById(knockoutRoundId);
+
+    return this.repo.resolveRoundAndCreateNextRounds(
+      knockoutRoundId,
+      nextRounds,
+    );
   }
 }

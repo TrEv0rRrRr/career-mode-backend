@@ -35,7 +35,7 @@ export class KnockoutRoundController {
     return this.knockoutRoundService.findKnockoutRoundById(id);
   }
 
-  @Get()
+  @Get(':competitionEditionId')
   @ApiOperation({
     summary: 'Gets a knockout round by its round and competition edition id',
   })
@@ -53,16 +53,12 @@ export class KnockoutRoundController {
     enum: MatchType,
     description: 'Filter knockouts by round',
   })
-  @ApiQuery({
-    name: 'competitionEditionId',
-    required: true,
-    description: 'Filter knockouts by competitionId',
-  })
   getKnockoutRoundByTypeAndCompetitionId(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Query() query: KnockoutRoundQueryDto,
   ) {
     return this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionId(
-      query.competitionEditionId,
+      competitionEditionId,
       query.type,
     );
   }
