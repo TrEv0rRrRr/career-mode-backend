@@ -14,7 +14,7 @@ import { generateKnockoutBracket } from '../common/fixtures/groups-knockout/gene
 import { generateGroupFixture } from '../common/fixtures/groups-knockout/generate-group.fixture.ts';
 import { generateLeagueFixture } from '../common/fixtures/league/league-20.fixture.ts';
 import { generateSuperCupPairing } from '../common/fixtures/super-cup.fixture.ts';
-import { inferFirstKnockoutRound } from '../common/helpers/inferFirstKnockoutRound.ts';
+import { inferFirstKnockoutRound } from '../common/helpers/knockouts/inferFirstKnockoutRound.ts';
 import { CalendarEntry } from '../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../common/types/MatchPairing.ts';
 import { ParticipatingTeam } from '../common/types/ParticipatingTeams.ts';
@@ -317,7 +317,9 @@ export class CompetitionsService {
     return this.repo.findCompetitionMatches(competitionEditionId);
   }
 
-  findCalendarEntry(calendar: CalendarEntry[], match: MatchPairing) {
+  // private methods (helpers)
+
+  private findCalendarEntry(calendar: CalendarEntry[], match: MatchPairing) {
     return calendar.find((entry) => {
       if (match.matchday !== undefined) {
         return entry.matchday === match.matchday;
@@ -331,7 +333,7 @@ export class CompetitionsService {
     });
   }
 
-  mergeFixtureWithCalendar(
+  private mergeFixtureWithCalendar(
     fixture: MatchPairing[],
     calendar: CalendarEntry[],
     participantTeams: ParticipatingTeam[],
