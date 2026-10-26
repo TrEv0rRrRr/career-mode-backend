@@ -165,10 +165,21 @@ model Match {
 
   awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
 
-  winnerTeam     Team?            @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
+  winnerTeam Team? @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
+
   matchTeamStats MatchTeamStats[]
 
+  tie Tie? @relation(fields: [tieId], references: [id])
+
+  @@unique([tieId, leg])
   @@map("match")
+}
+
+model Tie {
+  id      Int     @id @default(autoincrement())
+  matches Match[]
+
+  @@map("tie")
 }
 
 model Transfer {
