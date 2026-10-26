@@ -9,11 +9,13 @@ import {
   PrismaClient,
 } from '@prisma/client';
 import { DefaultArgs } from '@prisma/client/runtime/client';
-import { recalculateStandings } from '../common/helpers/recalculateStandings.ts';
-import { resolveKnockoutWinners } from '../common/helpers/resolveKnockoutWinners.ts';
+import { recalculateStandings } from '../common/helpers/gp-leagues/recalculateStandings.ts';
+import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
+import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnockoutWinners.ts';
 import { StandingTeam } from '../common/types/StandingTeam.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
+import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 
@@ -63,7 +65,6 @@ export class MatchesRepository {
   }
 
   create(type: MatchType, data: CreateMatchDto) {
-    const tieId = 0;
     const matchData = {
       ...data,
       type,
@@ -73,7 +74,6 @@ export class MatchesRepository {
       homePenaltyGoals: null,
       awayPenaltyGoals: null,
       finishType: null,
-      tieId,
     };
 
     return this.prisma.match.create({
@@ -81,10 +81,21 @@ export class MatchesRepository {
     });
   }
 
-  createMany(type: MatchType, data: CreateMatchDto[]) {
-    const matchData = data.map((data) => {
-      return {
-        ...data,
+  createMany(type: MatchType, data: CreateMatchWithTieKeyDto[]) {
+    return this.prisma.$transaction(async (tx) => {
+      const tieIds = new Map<string, number>();
+
+      if (isKnockoutMatch(type)) {
+        const tieKeys = new Set(data.map((match) => match.tieKey!.trim()));
+
+        for (const tieKey of tieKeys) {
+          const tie = await tx.tie.create({ data: {} });
+          tieIds.set(tieKey, tie.id);
+        }
+      }
+
+      const matchData = data.map(({ tieKey, ...match }) => ({
+        ...match,
         type,
         status: MatchStatus.SCHEDULED,
         homeGoals: 0,
@@ -92,10 +103,9 @@ export class MatchesRepository {
         homePenaltyGoals: null,
         awayPenaltyGoals: null,
         finishType: null,
-      };
-    });
+        tieId: isKnockoutMatch(type) ? tieIds.get(tieKey!.trim())! : null,
+      }));
 
-    return this.prisma.$transaction(async (tx) => {
       return tx.match.createMany({ data: matchData });
     });
   }
