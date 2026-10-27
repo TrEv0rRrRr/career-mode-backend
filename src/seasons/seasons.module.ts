@@ -8,5 +8,6 @@ import { SeasonsService } from './seasons.service.ts';
   imports: [PrismaModule],
   controllers: [SeasonsController],
   providers: [SeasonsService, SeasonsRepository],
+  exports: [SeasonsService],
 })
 export class SeasonsModule {}

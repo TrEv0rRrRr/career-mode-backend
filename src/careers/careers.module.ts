@@ -8,5 +8,6 @@ import { CareersService } from './careers.service.ts';
   imports: [PrismaModule],
   controllers: [CareersController],
   providers: [CareersService, CareersRepository],
+  exports: [CareersService],
 })
 export class CareerModule {}

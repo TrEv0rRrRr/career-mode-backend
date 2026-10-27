@@ -8,5 +8,6 @@ import { ManagersService } from './managers.service.ts';
   imports: [PrismaModule],
   controllers: [ManagersController],
   providers: [ManagersService, ManagersRepository],
+  exports: [ManagersService],
 })
 export class ManagersModule {}

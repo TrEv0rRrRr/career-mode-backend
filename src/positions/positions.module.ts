@@ -8,5 +8,6 @@ import { PositionsService } from './positions.service.ts';
   imports: [PrismaModule],
   controllers: [PositionsController],
   providers: [PositionsService, PositionsRepository],
+  exports: [PositionsService],
 })
 export class PositionsModule {}

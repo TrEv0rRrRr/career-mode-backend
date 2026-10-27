@@ -1,28 +1,21 @@
 import { Module } from '@nestjs/common';
-import { MatchesRepository } from '../matches/matches.repository.ts';
 import { PrismaModule } from '../prisma/prisma.module.ts';
 import { SeasonsModule } from '../seasons/seasons.module.ts';
-import { SeasonsRepository } from '../seasons/seasons.repository.ts';
-import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsModule } from '../teams/teams.module.ts';
-import { TeamsRepository } from '../teams/teams.repository.ts';
-import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsController } from './competitions.controller.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CompetitionsService } from './competitions.service.ts';
+import { CompetitionFixtureModule } from './modules/competition-fixture.module.ts';
+import { CompetitionEditionQueryService } from './services/competition-edition-query.service.ts';
 
 @Module({
-  imports: [PrismaModule, TeamsModule, SeasonsModule],
+  imports: [PrismaModule, TeamsModule, SeasonsModule, CompetitionFixtureModule],
   controllers: [CompetitionsController],
   providers: [
     CompetitionsService,
     CompetitionsRepository,
-    TeamsService,
-    TeamsRepository,
-    SeasonsService,
-    SeasonsRepository,
-    MatchesRepository,
+    CompetitionEditionQueryService,
   ],
-  exports: [CompetitionsService],
+  exports: [CompetitionsService, CompetitionEditionQueryService],
 })
 export class CompetitionsModule {}

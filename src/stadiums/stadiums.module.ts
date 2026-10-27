@@ -8,5 +8,6 @@ import { StadiumsService } from './stadiums.service.ts';
   imports: [PrismaModule],
   controllers: [StadiumsController],
   providers: [StadiumsService, StadiumsRepository],
+  exports: [StadiumsService],
 })
 export class StadiumsModule {}

@@ -9,5 +9,6 @@ import { KnockoutRoundService } from './knockout-round.service.ts';
   imports: [PrismaModule, CompetitionsModule],
   controllers: [KnockoutRoundController],
   providers: [KnockoutRoundService, KnockoutRoundRepository],
+  exports: [KnockoutRoundService],
 })
 export class KnockoutRoundModule {}
