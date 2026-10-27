@@ -24,10 +24,14 @@ import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionEntity } from './entities/competition.entity.ts';
+import { CompetitionFixtureService } from './services/competition-fixture.service.ts';
 
 @Controller('competitions')
 export class CompetitionsController {
-  constructor(private readonly competitionsService: CompetitionsService) {}
+  constructor(
+    private readonly competitionsService: CompetitionsService,
+    private readonly competitionFixtureService: CompetitionFixtureService,
+  ) {}
   @Get()
   @ApiOkResponse({
     type: CompetitionEntity,
@@ -290,7 +294,7 @@ export class CompetitionsController {
   })
   @ApiBody({
     schema: {
-      example: [{ teamId: 1 }, { teamId: 2 }, { teamId: 3 }],
+      example: [1, 2, 3],
     },
   })
   replaceCompetitionParticipants(
@@ -357,7 +361,7 @@ export class CompetitionsController {
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Param('competitionId', ParseIntPipe) competitionId: number,
   ) {
-    return this.competitionsService.generateCompetitionFixture(
+    return this.competitionFixtureService.generateCompetitionFixture(
       competitionEditionId,
       competitionId,
     );
