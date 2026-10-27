@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import {
   Match,
   MatchFinishType,
@@ -34,6 +39,7 @@ export class MatchesService {
     private teamsService: TeamsService,
     private stadiumsService: StadiumsService,
     private competitionEditionQueryService: CompetitionEditionQueryService,
+    @Inject(forwardRef(() => KnockoutRoundService))
     private knockoutRoundService: KnockoutRoundService,
   ) {}
 

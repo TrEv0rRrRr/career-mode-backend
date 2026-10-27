@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CompetitionsModule } from '../competitions/competitions.module.ts';
 import { KnockoutRoundModule } from '../knockout-round/knockout-round.module.ts';
 import { PlayersModule } from '../players/players.module.ts';
@@ -14,9 +14,9 @@ import { MatchesService } from './matches.service.ts';
     PrismaModule,
     TeamsModule,
     PlayersModule,
-    CompetitionsModule,
+    forwardRef(() => CompetitionsModule),
     StadiumsModule,
-    KnockoutRoundModule,
+    forwardRef(() => KnockoutRoundModule),
   ],
   controllers: [MatchesController],
   providers: [MatchesService, MatchesRepository],

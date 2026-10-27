@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import {
   CompetitionEdition,
   CompetitionFormat,
@@ -22,6 +27,7 @@ import { CompetitionsService } from '../competitions.service.ts';
 export class CompetitionFixtureService {
   constructor(
     private readonly competitionsService: CompetitionsService,
+    @Inject(forwardRef(() => MatchesService))
     private readonly matchesService: MatchesService,
     private readonly seasonService: SeasonsService,
   ) {}
