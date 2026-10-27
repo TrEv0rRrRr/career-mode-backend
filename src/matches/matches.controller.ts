@@ -4,13 +4,14 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
-import { CreateMatchDto } from './dto/create-match.dto.ts';
+import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchesService } from './matches.service.ts';
 
@@ -57,10 +58,11 @@ export class MatchesController {
     return this.matchesService.changeStadium(matchId, data);
   }
 
-  @Post('/competition/editions/:competitionEditionId/create-match')
+  @Post('/competition/editions/:competitionEditionId/many')
   @ApiOperation({
-    summary: 'Creates a match',
+    summary: 'Create as many matches as you want',
   })
+  @ApiBody({ type: [CreateMatchWithTieKeyDto] })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Match created!',
@@ -89,17 +91,19 @@ export class MatchesController {
     status: HttpStatus.BAD_REQUEST,
     description: 'The teams must be different',
   })
-  createMatch(
+  createManyMatches(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Body() data: CreateMatchDto,
+    @Body(new ParseArrayPipe({ items: CreateMatchWithTieKeyDto }))
+    data: CreateMatchWithTieKeyDto[],
   ) {
-    return this.matchesService.createMatch(competitionEditionId, data);
+    return this.matchesService.createManyMatches(competitionEditionId, data);
   }
 
   @Patch(':matchId/play')
   @ApiOperation({
     summary: "Updates the match's result",
   })
+  @ApiBody({ type: PlayMatchDto })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Match updated!',

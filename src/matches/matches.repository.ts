@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CompetitionFormat,
   CompetitionParticipant,
@@ -64,9 +64,10 @@ export class MatchesRepository {
     return this.prisma.match.count({ where: { competitionEditionId } });
   }
 
-  create(type: MatchType, data: CreateMatchDto) {
+  create(competitionEditionId: number, type: MatchType, data: CreateMatchDto) {
     const matchData = {
       ...data,
+      competitionEditionId,
       type,
       status: MatchStatus.SCHEDULED,
       homeGoals: 0,
@@ -81,16 +82,35 @@ export class MatchesRepository {
     });
   }
 
-  createMany(type: MatchType, data: CreateMatchWithTieKeyDto[]) {
+  createMany(
+    competitionEditionId: number,
+    type: MatchType,
+    data: CreateMatchWithTieKeyDto[],
+  ) {
     return this.prisma.$transaction(async (tx) => {
       const tieIds = new Map<string, number>();
 
       if (isKnockoutMatch(type)) {
-        const tieKeys = new Set(data.map((match) => match.tieKey!.trim()));
+        // matches.repository.ts
+        const tieKeys = new Set(
+          data.map((match) => {
+            const key = match.tieKey?.trim();
+
+            if (isKnockoutMatch(type) && !key) {
+              throw new BadRequestException(
+                'Every knockout match must have a tieKey.',
+              );
+            }
+
+            return key;
+          }),
+        );
 
         for (const tieKey of tieKeys) {
           const tie = await tx.tie.create({ data: {} });
-          tieIds.set(tieKey, tie.id);
+          if (tieKey !== undefined) {
+            tieIds.set(tieKey, tie.id);
+          }
         }
       }
 
@@ -104,6 +124,7 @@ export class MatchesRepository {
         awayPenaltyGoals: null,
         finishType: null,
         tieId: isKnockoutMatch(type) ? tieIds.get(tieKey!.trim())! : null,
+        competitionEditionId,
       }));
 
       return tx.match.createMany({ data: matchData });

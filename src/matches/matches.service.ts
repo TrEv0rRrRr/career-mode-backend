@@ -11,10 +11,9 @@ import { inferFirstKnockoutRound } from '../common/helpers/knockouts/inferFirstK
 import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
 import { resolveKnockoutLosers } from '../common/helpers/knockouts/resolveKnockoutLosers.ts';
 import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnockoutWinners.ts';
-import { CompetitionsService } from '../competitions/competitions.service.ts';
+import { CompetitionEditionQueryService } from '../competitions/services/competition-edition-query.service.ts';
 import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersService } from '../players/players.service.ts';
-import { SeasonsService } from '../seasons/seasons.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
@@ -33,9 +32,8 @@ export class MatchesService {
     private repo: MatchesRepository,
     private playersService: PlayersService,
     private teamsService: TeamsService,
-    private seasonsService: SeasonsService,
     private stadiumsService: StadiumsService,
-    private competitionsService: CompetitionsService,
+    private competitionEditionQueryService: CompetitionEditionQueryService,
     private knockoutRoundService: KnockoutRoundService,
   ) {}
 
@@ -49,7 +47,7 @@ export class MatchesService {
   }
 
   async findMatchesByRound(competitionEditionId: number, matchType: MatchType) {
-    await this.competitionsService.findCompetitionEditionById(
+    await this.competitionEditionQueryService.findCompetitionEditionById(
       competitionEditionId,
     );
     return this.repo.findMatchesByRound(competitionEditionId, matchType);
@@ -67,7 +65,7 @@ export class MatchesService {
     data: CreateMatchWithTieKeyDto[],
   ) {
     const edition =
-      await this.competitionsService.findCompetitionEditionById(
+      await this.competitionEditionQueryService.findCompetitionEditionById(
         competitionEditionId,
       );
 
@@ -75,11 +73,11 @@ export class MatchesService {
 
     this.validateTieKeys(type, data, edition.competition.hasTwoLeggedKnockout);
 
-    return this.repo.createMany(type, data);
+    return this.repo.createMany(competitionEditionId, type, data);
   }
 
   async countMatchesByCompetitionEdition(competitionEditionId: number) {
-    await this.competitionsService.findCompetitionEditionById(
+    await this.competitionEditionQueryService.findCompetitionEditionById(
       competitionEditionId,
     );
 
@@ -96,13 +94,13 @@ export class MatchesService {
       "The away team doesn't exist",
     );
 
-    await this.competitionsService.findCompetitionParticipant(
+    await this.competitionEditionQueryService.findCompetitionParticipant(
       competitionEditionId,
       data.homeTeamId,
       "The home team doesn't participate in the given competition",
     );
 
-    await this.competitionsService.findCompetitionParticipant(
+    await this.competitionEditionQueryService.findCompetitionParticipant(
       competitionEditionId,
       data.awayTeamId,
       "The away team doesn't participate in the given competition",
@@ -111,7 +109,7 @@ export class MatchesService {
     await this.stadiumsService.findStadiumById(data.stadiumId);
 
     const edition =
-      await this.competitionsService.findCompetitionEditionById(
+      await this.competitionEditionQueryService.findCompetitionEditionById(
         competitionEditionId,
       );
 
@@ -125,7 +123,7 @@ export class MatchesService {
 
     const type = inferFirstKnockoutRound(edition.competition);
 
-    return this.repo.create(type, data);
+    return this.repo.create(competitionEditionId, type, data);
   }
 
   async validateMatchPlayerStats(
@@ -175,7 +173,7 @@ export class MatchesService {
   async playMatch(matchId: number, data: PlayMatchDto) {
     const match = await this.findMatch(matchId);
     const competitionEdition =
-      await this.competitionsService.findCompetitionEditionById(
+      await this.competitionEditionQueryService.findCompetitionEditionById(
         match.competitionEditionId,
       );
     const playerIds = data.playerStats.map(({ playerId }) => playerId);
@@ -197,7 +195,6 @@ export class MatchesService {
 
     const winnerTeamId = this.getWinnerTeamId(match, data.match);
 
-    // matches.service.ts
     const playedMatch = await this.repo.playMatch(
       matchId,
       competitionEdition.competition.format,
@@ -243,7 +240,7 @@ export class MatchesService {
     }
 
     const edition =
-      await this.competitionsService.findCompetitionEditionById(
+      await this.competitionEditionQueryService.findCompetitionEditionById(
         competitionEditionId,
       );
 

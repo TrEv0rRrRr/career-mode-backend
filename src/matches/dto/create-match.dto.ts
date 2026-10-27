@@ -66,13 +66,4 @@ export class CreateMatchDto {
   @IsInt()
   @Min(1)
   awayTeamId!: number;
-
-  @ApiProperty({
-    example: 1,
-    description: 'The id of the competition edition this match belongs to',
-  })
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  competitionEditionId!: number;
 }
