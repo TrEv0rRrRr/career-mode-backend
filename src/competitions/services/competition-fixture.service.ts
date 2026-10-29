@@ -159,6 +159,7 @@ export class CompetitionFixtureService {
 
     return this.matchesService.createManyMatches(
       competitionEdition.id,
+      inferFirstKnockoutRound(competition),
       scheduledMatches,
     );
   }
