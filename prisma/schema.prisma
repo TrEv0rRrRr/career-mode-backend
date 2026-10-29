@@ -176,8 +176,11 @@ model Match {
 }
 
 model Tie {
-  id      Int     @id @default(autoincrement())
-  matches Match[]
+  id              Int @id @default(autoincrement())
+  knockoutRoundId Int @map("knockout_round_id")
+
+  knockoutRound KnockoutRound @relation(fields: [knockoutRoundId], references: [id])
+  matches       Match[]
 
   @@map("tie")
 }
@@ -295,6 +298,7 @@ model KnockoutRound {
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
 
   qualifiedTeams KnockoutRoundTeam[]
+  ties           Tie[]
 
   @@unique([competitionEditionId, type])
   @@map("knockout_round")
