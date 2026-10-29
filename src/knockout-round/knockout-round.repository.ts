@@ -28,7 +28,7 @@ export class KnockoutRoundRepository {
     });
   }
 
-  findKnockoutRoundByTypeAndCompetitionId(
+  findKnockoutRoundByTypeAndCompetitionEditionId(
     competitionEditionId: number,
     type: MatchType,
   ) {
@@ -41,6 +41,17 @@ export class KnockoutRoundRepository {
       },
       include: {
         qualifiedTeams: true,
+      },
+    });
+  }
+
+  findNonCompletedKnockoutRoundByCompetitionEditionId(
+    competitionEditionId: number,
+  ) {
+    return this.prisma.knockoutRound.findFirst({
+      where: {
+        competitionEditionId,
+        completed: false,
       },
     });
   }
@@ -61,7 +72,7 @@ export class KnockoutRoundRepository {
       data: {
         ...data,
         qualifiedTeams: {
-          create: data.qualifiedTeamIds.map((teamId) => ({
+          create: data.qualifiedTeams.map((teamId) => ({
             teamId,
           })),
         },

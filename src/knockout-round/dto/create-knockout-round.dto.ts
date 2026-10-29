@@ -1,13 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MatchType } from '@prisma/client';
-import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  Min,
-} from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator';
 
 export class CreateKnockoutRoundDto {
   @ApiProperty({
@@ -26,7 +19,6 @@ export class CreateKnockoutRoundDto {
   })
   @IsNotEmpty()
   @IsEnum(MatchType)
-  @IsBoolean()
   type!: MatchType;
 
   @ApiProperty({
@@ -35,5 +27,5 @@ export class CreateKnockoutRoundDto {
   })
   @IsArray()
   @IsNotEmpty()
-  qualifiedTeamIds!: number[];
+  qualifiedTeams!: number[];
 }

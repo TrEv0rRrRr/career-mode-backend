@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { MatchType } from '@prisma/client';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
@@ -22,7 +26,7 @@ export class KnockoutRoundService {
     return knockoutRound;
   }
 
-  async findKnockoutRoundByTypeAndCompetitionId(
+  async findKnockoutRoundByTypeAndCompetitionEditionId(
     competitionEditionId: number,
     type: MatchType,
   ) {
@@ -30,7 +34,7 @@ export class KnockoutRoundService {
       competitionEditionId,
     );
 
-    return this.repo.findKnockoutRoundByTypeAndCompetitionId(
+    return this.repo.findKnockoutRoundByTypeAndCompetitionEditionId(
       competitionEditionId,
       type,
     );
@@ -43,34 +47,44 @@ export class KnockoutRoundService {
   }
 
   async createKnockoutRound(data: CreateKnockoutRoundDto) {
+    const thereIsUncompleted =
+      await this.repo.findNonCompletedKnockoutRoundByCompetitionEditionId(
+        data.competitionEditionId,
+      );
+
+    if (thereIsUncompleted)
+      throw new ConflictException(
+        "You can't register a new knockout round for this edition because there's one being played yet.",
+      );
+
     switch (data.type) {
       case MatchType.ROUND_OF_32:
-        if (data.qualifiedTeamIds.length !== 32)
+        if (data.qualifiedTeams.length !== 32)
           throw new BadRequestException(
             "They can't be more or less than 32 qualified teams for a round of 32.",
           );
         break;
       case MatchType.ROUND_OF_16:
-        if (data.qualifiedTeamIds.length !== 16)
+        if (data.qualifiedTeams.length !== 16)
           throw new BadRequestException(
             "They can't be more or less than 16 qualified teams for a round of 16.",
           );
         break;
       case MatchType.QUARTER_FINAL:
-        if (data.qualifiedTeamIds.length !== 8)
+        if (data.qualifiedTeams.length !== 8)
           throw new BadRequestException(
             "They can't be more or less than 8 qualified teams for the quarterfinals.",
           );
         break;
       case MatchType.SEMI_FINAL:
-        if (data.qualifiedTeamIds.length !== 4)
+        if (data.qualifiedTeams.length !== 4)
           throw new BadRequestException(
             "They can't be more or less than 4 qualified teams for the semifinals.",
           );
         break;
       case MatchType.THIRD_PLACE:
       case MatchType.FINAL:
-        if (data.qualifiedTeamIds.length !== 2)
+        if (data.qualifiedTeams.length !== 2)
           throw new BadRequestException(
             "They can't be more or less than 2 qualified teams for the third place match or the final.",
           );
