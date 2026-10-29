@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import {
+  CompetitionFormat,
   Match,
   MatchFinishType,
   MatchLeg,
@@ -68,14 +69,13 @@ export class MatchesService {
 
   async createManyMatches(
     competitionEditionId: number,
+    type: MatchType,
     data: CreateMatchWithTieKeyDto[],
   ) {
     const edition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
         competitionEditionId,
       );
-
-    const type = inferFirstKnockoutRound(edition.competition);
 
     this.validateTieKeys(type, data, edition.competition.hasTwoLeggedKnockout);
 
@@ -190,7 +190,11 @@ export class MatchesService {
     if (match.status === MatchStatus.PLAYED)
       throw new BadRequestException('This match has already been played');
 
-    this.validateMatchResult(data.match);
+    this.validateMatchResult(
+      data.match,
+      competitionEdition.competition.format,
+      match.type,
+    );
     this.validateMatchTeamStats(data.teamStats, match);
     await this.validateMatchPlayerStats(
       match.homeTeamId,
@@ -262,7 +266,7 @@ export class MatchesService {
     );
 
     const currentRound =
-      await this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionId(
+      await this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionEditionId(
         competitionEditionId,
         matchType,
       );
@@ -295,8 +299,23 @@ export class MatchesService {
 
   // private methods (helpers)
 
-  private validateMatchResult(match: UpdateMatchDto) {
+  private validateMatchResult(
+    match: UpdateMatchDto,
+    format: CompetitionFormat,
+    matchType: MatchType,
+  ) {
     const matchFinishType = match.finishType;
+
+    const isAGroupStageMatch =
+      format === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
+      matchType === MatchType.GROUP_STAGE;
+
+    const theUserEnteredPenalties =
+      match.homePenaltyGoals || match.awayPenaltyGoals;
+
+    const isATiedKnockout =
+      format === CompetitionFormat.KNOCKOUT &&
+      match.homeGoals === match.awayGoals;
 
     switch (matchFinishType) {
       case MatchFinishType.PENALTIES:
@@ -310,13 +329,25 @@ export class MatchesService {
           );
         if (match.homePenaltyGoals === match.awayPenaltyGoals)
           throw new BadRequestException("The penalties can't end in a tie");
+        if (isAGroupStageMatch)
+          throw new BadRequestException(
+            "A group stage match can't end in penalties",
+          );
         break;
       case MatchFinishType.REGULAR_TIME:
       case MatchFinishType.EXTRA_TIME:
-        if (match.homePenaltyGoals || match.awayPenaltyGoals)
+        if (theUserEnteredPenalties)
           throw new BadRequestException(
             "If the match didn't reached the penalties, you shouldn't enter them",
           );
+
+        if (isAGroupStageMatch && theUserEnteredPenalties)
+          throw new BadRequestException(
+            "This is a group stage match, you shouldn't enter a penalty shootout result",
+          );
+
+        if (isATiedKnockout)
+          throw new BadRequestException("A knockout can't end in a tie");
         break;
     }
   }
@@ -367,11 +398,15 @@ export class MatchesService {
   private getWinnerTeamId(match: Match, data: UpdateMatchDto) {
     if (data.homeGoals > data.awayGoals) return match.homeTeamId;
     else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
-    else if (match.finishType === MatchFinishType.PENALTIES)
-      return data.homePenaltyGoals! > data.awayPenaltyGoals!
+    else if (
+      data.finishType === MatchFinishType.PENALTIES &&
+      data.homePenaltyGoals &&
+      data.awayPenaltyGoals
+    ) {
+      return data.homePenaltyGoals > data.awayPenaltyGoals
         ? match.homeTeamId
         : match.awayTeamId;
-    else return null;
+    } else return null;
   }
 
   private validateTieKeys(

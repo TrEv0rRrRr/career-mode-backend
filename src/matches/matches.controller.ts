@@ -8,8 +8,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { MatchType } from '@prisma/client';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
@@ -91,12 +93,22 @@ export class MatchesController {
     status: HttpStatus.BAD_REQUEST,
     description: 'The teams must be different',
   })
+  @ApiQuery({
+    name: 'type',
+    required: true,
+    enum: MatchType,
+  })
   createManyMatches(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+    @Query('type') type: MatchType,
     @Body(new ParseArrayPipe({ items: CreateMatchWithTieKeyDto }))
     data: CreateMatchWithTieKeyDto[],
   ) {
-    return this.matchesService.createManyMatches(competitionEditionId, data);
+    return this.matchesService.createManyMatches(
+      competitionEditionId,
+      type,
+      data,
+    );
   }
 
   @Patch(':matchId/play')
