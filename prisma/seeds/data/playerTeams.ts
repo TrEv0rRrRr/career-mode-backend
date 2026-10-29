@@ -1,0 +1,98 @@
+export const playerTeams = [
+  {
+    playerId: 1,
+    teamId: 1,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 1,
+  },
+  {
+    playerId: 2,
+    teamId: 2,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 2,
+  },
+  {
+    playerId: 3,
+    teamId: 3,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 3,
+  },
+  {
+    playerId: 4,
+    teamId: 4,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 4,
+  },
+  {
+    playerId: 5,
+    teamId: 5,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 5,
+  },
+  {
+    playerId: 6,
+    teamId: 6,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 6,
+  },
+  {
+    playerId: 7,
+    teamId: 7,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 7,
+  },
+  {
+    playerId: 8,
+    teamId: 8,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 8,
+  },
+  {
+    playerId: 9,
+    teamId: 9,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 9,
+  },
+  {
+    playerId: 10,
+    teamId: 10,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 10,
+  },
+  {
+    playerId: 11,
+    teamId: 11,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 11,
+  },
+  {
+    playerId: 12,
+    teamId: 12,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 12,
+  },
+  {
+    playerId: 13,
+    teamId: 13,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 13,
+  },
+  {
+    playerId: 14,
+    teamId: 14,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 14,
+  },
+  {
+    playerId: 15,
+    teamId: 15,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 15,
+  },
+  {
+    playerId: 16,
+    teamId: 16,
+    startDate: new Date('2026-07-21'),
+    jerseyNumber: 16,
+  },
+];
