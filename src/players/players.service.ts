@@ -92,7 +92,13 @@ export class PlayersService {
   async assignPositions(playerId: number, data: AssignPositionsDto) {
     await this.findPlayerById(playerId);
 
-    if (data.isPrimary)
+    const positions = await this.findPlayerPositions(playerId);
+
+    const theresAMainPosition = positions.find(
+      (position) => position.isPrimary,
+    );
+
+    if (theresAMainPosition)
       throw new ConflictException("There's already a main position");
 
     return this.repo.assignPositions(playerId, data);
