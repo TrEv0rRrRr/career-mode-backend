@@ -1,36 +1,35 @@
-import { MatchLeg, MatchType } from '@prisma/client';
+import { MatchLeg } from '@prisma/client';
 import { MatchPairing } from '../../types/MatchPairing.ts';
-import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
 
+/**
+ * Method that creates the brackets for a knockout depending on whether the competition format admits 2Leg Knockouts or not
+ * @author Trevor
+ *
+ * @param {Pick<MatchPairing, 'homeTeamId' | 'awayTeamId' | 'matchType'>} pairing This contains the pairings using only the team ids
+ * @param {boolean} isTwoLegged Parameter that determines whether to create 2Leg knockout matches or a single match per bracket
+ * @returns {MatchPairing[]} An array containing the new pairings
+ */
 export const generateKnockoutBracket = (
-  teams: ParticipatingTeam[],
-  matchType: MatchType,
+  pairing: Pick<MatchPairing, 'homeTeamId' | 'awayTeamId' | 'matchType'>,
   isTwoLegged: boolean,
 ): MatchPairing[] => {
-  if (teams.length !== 2)
-    throw new Error('A bracket must contain exactly 2 teams');
+  if (pairing.homeTeamId === pairing.awayTeamId) {
+    throw new Error('A team cannot play against itself');
+  }
 
   if (!isTwoLegged) {
-    return [
-      {
-        homeTeamId: teams[0].team.id,
-        awayTeamId: teams[1].team.id,
-        matchType,
-      },
-    ];
+    return [{ ...pairing }];
   }
 
   return [
     {
-      homeTeamId: teams[0].team.id,
-      awayTeamId: teams[1].team.id,
-      matchType,
+      ...pairing,
       leg: MatchLeg.FIRST,
     },
     {
-      homeTeamId: teams[1].team.id,
-      awayTeamId: teams[0].team.id,
-      matchType,
+      ...pairing,
+      homeTeamId: pairing.awayTeamId,
+      awayTeamId: pairing.homeTeamId,
       leg: MatchLeg.SECOND,
     },
   ];
