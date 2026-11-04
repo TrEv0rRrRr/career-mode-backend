@@ -131,6 +131,30 @@ export class MatchesRepository {
     });
   }
 
+  async createKnockoutRoundMatches(
+    knockoutRoundId: number,
+    ties: {
+      matches: CreateMatchDto[];
+    }[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      for (const tieData of ties) {
+        const tie = await tx.tie.create({
+          data: {
+            knockoutRoundId,
+          },
+        });
+
+        await tx.match.createMany({
+          data: tieData.matches.map((match) => ({
+            ...match,
+            tieId: tie.id,
+          })),
+        });
+      }
+    });
+  }
+
   async recalculateLeagueStandings(
     matches: Match[],
     competitionParticipants: CompetitionParticipant[],
