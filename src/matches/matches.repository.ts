@@ -112,18 +112,16 @@ export class MatchesRepository {
     knockoutRoundId: number,
     competitionEditionId: number,
     type: MatchType,
-    ties: { matches: CreateMatchDto[] }[],
+    ties: CreateMatchDto[][],
   ) {
     return this.prisma.$transaction(async (tx) => {
-      for (const tieData of ties) {
+      for (const matches of ties) {
         const tie = await tx.tie.create({
-          data: {
-            knockoutRoundId,
-          },
+          data: { knockoutRoundId },
         });
 
         await tx.match.createMany({
-          data: tieData.matches.map((match) => ({
+          data: matches.map((match) => ({
             ...match,
             tieId: tie.id,
             competitionEditionId,

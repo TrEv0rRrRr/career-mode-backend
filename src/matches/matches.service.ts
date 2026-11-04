@@ -8,7 +8,6 @@ import {
   CompetitionFormat,
   Match,
   MatchFinishType,
-  MatchLeg,
   MatchStatus,
   MatchType,
 } from '@prisma/client';
@@ -23,7 +22,6 @@ import { PlayersService } from '../players/players.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
-import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { CreateMatchPlayerStatsDto } from './dto/stats/create-match-player-stats.dto.ts';
@@ -70,14 +68,11 @@ export class MatchesService {
   async createManyMatches(
     competitionEditionId: number,
     type: MatchType,
-    data: CreateMatchWithTieKeyDto[],
+    data: CreateMatchDto[],
   ) {
-    const edition =
-      await this.competitionEditionQueryService.findCompetitionEditionById(
-        competitionEditionId,
-      );
-
-    this.validateTieKeys(type, data, edition.competition.hasTwoLeggedKnockout);
+    await this.competitionEditionQueryService.findCompetitionEditionById(
+      competitionEditionId,
+    );
 
     return this.repo.createMany(competitionEditionId, type, data);
   }
@@ -297,6 +292,20 @@ export class MatchesService {
     );
   }
 
+  async createKnockoutRoundMatches(
+    knockoutRoundId: number,
+    competitionEditionId: number,
+    type: MatchType,
+    ties: CreateMatchDto[][],
+  ) {
+    return this.repo.createKnockoutRoundMatches(
+      knockoutRoundId,
+      competitionEditionId,
+      type,
+      ties,
+    );
+  }
+
   // private methods (helpers)
 
   private validateMatchResult(
@@ -407,67 +416,5 @@ export class MatchesService {
         ? match.homeTeamId
         : match.awayTeamId;
     } else return null;
-  }
-
-  private validateTieKeys(
-    type: MatchType,
-    data: CreateMatchWithTieKeyDto[],
-    hasTwoLeggedKnockout: boolean,
-  ) {
-    if (!isKnockoutMatch(type)) return;
-
-    const isTwoLegged =
-      hasTwoLeggedKnockout &&
-      type !== MatchType.FINAL &&
-      type !== MatchType.THIRD_PLACE;
-
-    const ties = new Map<string, CreateMatchWithTieKeyDto[]>();
-
-    for (const match of data) {
-      const key = match.tieKey?.trim();
-
-      if (!key) {
-        throw new BadRequestException(
-          'Every knockout match must have a tieKey.',
-        );
-      }
-
-      const matches = ties.get(key) ?? [];
-      matches.push(match);
-      ties.set(key, matches);
-    }
-
-    for (const [key, matches] of ties) {
-      if (!isTwoLegged) {
-        if (matches.length !== 1 || matches[0].leg != null) {
-          throw new BadRequestException(
-            `Tie "${key}" must contain exactly one match without a leg.`,
-          );
-        }
-
-        continue;
-      }
-
-      if (
-        matches.length !== 2 ||
-        matches.filter((match) => match.leg === MatchLeg.FIRST).length !== 1 ||
-        matches.filter((match) => match.leg === MatchLeg.SECOND).length !== 1
-      ) {
-        throw new BadRequestException(
-          `Tie "${key}" must contain one FIRST match and one SECOND match.`,
-        );
-      }
-
-      const [first, second] = matches;
-
-      if (
-        first.homeTeamId !== second.awayTeamId ||
-        first.awayTeamId !== second.homeTeamId
-      ) {
-        throw new BadRequestException(
-          `Tie "${key}" must have reversed teams in the second leg.`,
-        );
-      }
-    }
   }
 }
