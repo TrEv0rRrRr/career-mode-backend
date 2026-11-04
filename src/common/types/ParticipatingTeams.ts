@@ -1,16 +1,6 @@
+import { Team } from '@prisma/client';
+
 export type ParticipatingTeam = {
-  team: {
-    name: string;
-    id: number;
-    shortName: string;
-    country: string;
-    logo: string | null;
-    foundationDate: Date;
-    primaryColor: string;
-    secondaryColor: string;
-    stadiumId: number;
-    managerId: number;
-    leagueId: number;
-  };
+  team: Team;
   position: number | null;
 };
