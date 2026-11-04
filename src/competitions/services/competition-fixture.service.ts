@@ -227,6 +227,7 @@ export class CompetitionFixtureService {
 
     return this.matchesService.createKnockoutRoundMatches(
       knockoutRound.id,
+      competitionEdition.id,
       knockoutRound.type,
       matchesByPairing,
     );
