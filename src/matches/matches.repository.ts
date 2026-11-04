@@ -15,7 +15,6 @@ import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnock
 import { StandingTeam } from '../common/types/StandingTeam.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
-import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 
@@ -85,57 +84,35 @@ export class MatchesRepository {
   createMany(
     competitionEditionId: number,
     type: MatchType,
-    data: CreateMatchWithTieKeyDto[],
+    data: CreateMatchDto[],
   ) {
-    return this.prisma.$transaction(async (tx) => {
-      const tieIds = new Map<string, number>();
+    if (isKnockoutMatch(type)) {
+      throw new BadRequestException(
+        'Use createKnockoutRoundMatches to create knockout matches.',
+      );
+    }
 
-      if (isKnockoutMatch(type)) {
-        // matches.repository.ts
-        const tieKeys = new Set(
-          data.map((match) => {
-            const key = match.tieKey?.trim();
+    const matchData = data.map((match) => ({
+      ...match,
+      type,
+      status: MatchStatus.SCHEDULED,
+      homeGoals: 0,
+      awayGoals: 0,
+      homePenaltyGoals: null,
+      awayPenaltyGoals: null,
+      finishType: null,
+      tieId: null,
+      competitionEditionId,
+    }));
 
-            if (isKnockoutMatch(type) && !key) {
-              throw new BadRequestException(
-                'Every knockout match must have a tieKey.',
-              );
-            }
-
-            return key;
-          }),
-        );
-
-        for (const tieKey of tieKeys) {
-          const tie = await tx.tie.create({ data: {} });
-          if (tieKey !== undefined) {
-            tieIds.set(tieKey, tie.id);
-          }
-        }
-      }
-
-      const matchData = data.map(({ tieKey, ...match }) => ({
-        ...match,
-        type,
-        status: MatchStatus.SCHEDULED,
-        homeGoals: 0,
-        awayGoals: 0,
-        homePenaltyGoals: null,
-        awayPenaltyGoals: null,
-        finishType: null,
-        tieId: isKnockoutMatch(type) ? tieIds.get(tieKey!.trim())! : null,
-        competitionEditionId,
-      }));
-
-      return tx.match.createMany({ data: matchData });
-    });
+    return this.prisma.match.createMany({ data: matchData });
   }
 
   async createKnockoutRoundMatches(
     knockoutRoundId: number,
-    ties: {
-      matches: CreateMatchDto[];
-    }[],
+    competitionEditionId: number,
+    type: MatchType,
+    ties: { matches: CreateMatchDto[] }[],
   ) {
     return this.prisma.$transaction(async (tx) => {
       for (const tieData of ties) {
@@ -149,6 +126,9 @@ export class MatchesRepository {
           data: tieData.matches.map((match) => ({
             ...match,
             tieId: tie.id,
+            competitionEditionId,
+            type,
+            status: MatchStatus.SCHEDULED,
           })),
         });
       }
