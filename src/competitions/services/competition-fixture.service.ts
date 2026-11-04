@@ -18,7 +18,9 @@ import { inferFirstKnockoutRound } from '../../common/helpers/knockouts/inferFir
 import { CalendarEntry } from '../../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../../common/types/MatchPairing.ts';
 import { ParticipatingTeam } from '../../common/types/ParticipatingTeams.ts';
-import { CreateMatchWithTieKeyDto } from '../../matches/dto/create-match-with-tieKey.dto.ts';
+import { CreatePairingDto } from '../../knockout-round/dto/create-knockout-pairing.dto.ts';
+import { KnockoutRoundWithRelations } from '../../knockout-round/knockout-round.repository.ts';
+import { CreateMatchDto } from '../../matches/dto/create-match.dto.ts';
 import { MatchesService } from '../../matches/matches.service.ts';
 import { SeasonsService } from '../../seasons/seasons.service.ts';
 import { CompetitionsService } from '../competitions.service.ts';
@@ -51,19 +53,24 @@ export class CompetitionFixtureService {
     participantTeams: ParticipatingTeam[],
     competitionEdition: CompetitionEdition,
   ) {
-    const matches: CreateMatchWithTieKeyDto[] = [];
+    const matches: CreateMatchDto[] = [];
 
     const teamsMap = new Map(participantTeams.map((t) => [t.team.id, t.team]));
 
     for (const match of fixture) {
-      const day = this.findCalendarEntry(calendar, match)!;
-      const homeTeam = teamsMap.get(match.homeTeamId)!;
+      const day = this.findCalendarEntry(calendar, match);
 
-      const [teamA, teamB] = [match.homeTeamId, match.awayTeamId].sort(
-        (a, b) => a - b,
-      );
+      if (!day)
+        throw new BadRequestException(
+          `No calendar entry found for ${match.matchType} ${match.leg ?? ''}`,
+        );
 
-      const tieKey = `${match.matchType}-${teamA}-${teamB}`;
+      const homeTeam = teamsMap.get(match.homeTeamId);
+
+      if (!homeTeam)
+        throw new BadRequestException(
+          `Team ${match.homeTeamId} was not found among competition participants`,
+        );
 
       matches.push({
         homeTeamId: match.homeTeamId,
@@ -76,7 +83,6 @@ export class CompetitionFixtureService {
             : homeTeam.stadiumId,
         matchday: day.matchday,
         leg: match.leg,
-        tieKey,
       });
     }
 
@@ -136,8 +142,11 @@ export class CompetitionFixtureService {
         break;
       case CompetitionFormat.KNOCKOUT:
         fixture = generateKnockoutBracket(
-          participantTeams,
-          matchType,
+          {
+            homeTeamId: participantTeams[0].team.id,
+            awayTeamId: participantTeams[1].team.id,
+            matchType,
+          },
           competition.hasTwoLeggedKnockout,
         );
         break;
@@ -161,6 +170,65 @@ export class CompetitionFixtureService {
       competitionEdition.id,
       inferFirstKnockoutRound(competition),
       scheduledMatches,
+    );
+  }
+
+  async generateKnockoutRoundMatches(
+    knockoutRound: KnockoutRoundWithRelations,
+    pairings: CreatePairingDto[],
+  ) {
+    const competitionEdition =
+      await this.competitionsService.findCompetitionEditionById(
+        knockoutRound.competitionEditionId,
+      );
+
+    const competition = competitionEdition.competition;
+
+    const hasTwoLeggedKnockout = competition.hasTwoLeggedKnockout;
+
+    const season = await this.seasonService.findSeasonById(
+      competitionEdition.seasonId,
+    );
+
+    const [year1, year2] = season.code.split('/');
+
+    const calendarGenerator = calendarTemplates[competition.name];
+
+    if (!calendarGenerator) {
+      throw new BadRequestException(
+        `No calendar template found for ${competition.name}`,
+      );
+    }
+
+    const calendar = calendarGenerator(year1, year2);
+
+    const participantTeams: ParticipatingTeam[] =
+      knockoutRound.qualifiedTeams.map(({ team }) => ({
+        team,
+        position: null,
+      }));
+
+    const matchesByPairing = pairings.map((pairing) => {
+      const fixture = generateKnockoutBracket(
+        {
+          ...pairing,
+          matchType: knockoutRound.type,
+        },
+        hasTwoLeggedKnockout,
+      );
+
+      return this.mergeFixtureWithCalendar(
+        fixture,
+        calendar,
+        participantTeams,
+        competitionEdition,
+      );
+    });
+
+    return this.matchesService.createKnockoutRoundMatches(
+      knockoutRound.id,
+      knockoutRound.type,
+      matchesByPairing,
     );
   }
 }
