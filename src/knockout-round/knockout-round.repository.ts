@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MatchType } from '@prisma/client';
+import { MatchType, Prisma } from '@prisma/client';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
@@ -16,15 +16,35 @@ type CreatedRounds = {
   competitionEditionId: number;
 };
 
+export const knockoutRoundInclude = {
+  qualifiedTeams: {
+    include: {
+      team: true,
+    },
+  },
+  ties: {
+    include: {
+      matches: true,
+    },
+  },
+} satisfies Prisma.KnockoutRoundInclude;
+
+export type KnockoutRoundWithRelations = Prisma.KnockoutRoundGetPayload<{
+  include: typeof knockoutRoundInclude;
+}>;
+
 @Injectable()
 export class KnockoutRoundRepository {
   constructor(private prisma: PrismaService) {}
 
-  findKnockoutRoundById(knockoutRoundId: number) {
+  findKnockoutRoundById(
+    knockoutRoundId: number,
+  ): Promise<KnockoutRoundWithRelations | null> {
     return this.prisma.knockoutRound.findUnique({
       where: {
         id: knockoutRoundId,
       },
+      include: knockoutRoundInclude,
     });
   }
 
@@ -53,6 +73,12 @@ export class KnockoutRoundRepository {
         competitionEditionId,
         completed: false,
       },
+    });
+  }
+
+  countKnockoutRoundTies(knockoutRoundId: number) {
+    return this.prisma.tie.count({
+      where: { knockoutRoundId },
     });
   }
 
