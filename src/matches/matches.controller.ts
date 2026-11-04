@@ -13,7 +13,7 @@ import {
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { MatchType } from '@prisma/client';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
-import { CreateMatchWithTieKeyDto } from './dto/create-match-with-tieKey.dto.ts';
+import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchesService } from './matches.service.ts';
 
@@ -64,7 +64,7 @@ export class MatchesController {
   @ApiOperation({
     summary: 'Create as many matches as you want',
   })
-  @ApiBody({ type: [CreateMatchWithTieKeyDto] })
+  @ApiBody({ type: [CreateMatchDto] })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Match created!',
@@ -101,8 +101,8 @@ export class MatchesController {
   createManyMatches(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Query('type') type: MatchType,
-    @Body(new ParseArrayPipe({ items: CreateMatchWithTieKeyDto }))
-    data: CreateMatchWithTieKeyDto[],
+    @Body(new ParseArrayPipe({ items: CreateMatchDto }))
+    data: CreateMatchDto[],
   ) {
     return this.matchesService.createManyMatches(
       competitionEditionId,
