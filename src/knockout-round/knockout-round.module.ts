@@ -10,7 +10,7 @@ import { KnockoutRoundService } from './knockout-round.service.ts';
   imports: [
     PrismaModule,
     forwardRef(() => CompetitionsModule),
-    CompetitionFixtureModule,
+    forwardRef(() => CompetitionFixtureModule),
   ],
   controllers: [KnockoutRoundController],
   providers: [KnockoutRoundService, KnockoutRoundRepository],

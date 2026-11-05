@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { MatchType } from '@prisma/client';
 import { validateArrayEquality } from '../common/helpers/validateArrayEquality.ts';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
@@ -21,7 +22,7 @@ export class KnockoutRoundService {
   constructor(
     private repo: KnockoutRoundRepository,
     private competitionsService: CompetitionsService,
-    private competitionFixtureService: CompetitionFixtureService,
+    private moduleRef: ModuleRef,
   ) {}
 
   async findKnockoutRoundById(
@@ -159,7 +160,12 @@ export class KnockoutRoundService {
         'The ties have already been generated for this knockout.',
       );
 
-    return this.competitionFixtureService.generateKnockoutRoundMatches(
+    const competitionFixtureService = this.moduleRef.get(
+      CompetitionFixtureService,
+      { strict: false },
+    );
+
+    return competitionFixtureService.generateKnockoutRoundMatches(
       knockoutRound,
       data.pairings,
     );
