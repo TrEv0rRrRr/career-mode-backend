@@ -160,6 +160,8 @@ export class KnockoutRoundService {
         'The ties have already been generated for this knockout.',
       );
 
+    // this avoids the cyclical dependency error
+
     const competitionFixtureService = this.moduleRef.get(
       CompetitionFixtureService,
       { strict: false },
