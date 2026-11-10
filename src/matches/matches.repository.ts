@@ -60,6 +60,17 @@ export class MatchesRepository {
     });
   }
 
+  findMatchesByTieId(tieId: number) {
+    return this.prisma.tie.findUnique({
+      where: {
+        id: tieId,
+      },
+      include: {
+        matches: true,
+      },
+    });
+  }
+
   countByCompetitionEdition(competitionEditionId: number) {
     return this.prisma.match.count({ where: { competitionEditionId } });
   }
