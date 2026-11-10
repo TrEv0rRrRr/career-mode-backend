@@ -1,8 +1,8 @@
-import { MatchType } from '@prisma/client';
 import { IsEnum, IsNotEmpty } from 'class-validator';
+import { KnockoutRoundType } from '../enums/KnockoutRoundType.ts';
 
 export class KnockoutRoundQueryDto {
   @IsNotEmpty()
-  @IsEnum(MatchType)
-  type!: MatchType;
+  @IsEnum(KnockoutRoundType)
+  type!: KnockoutRoundType;
 }

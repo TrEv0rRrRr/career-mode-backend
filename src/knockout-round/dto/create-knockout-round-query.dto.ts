@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MatchType } from '@prisma/client';
 import { IsEnum, IsNotEmpty } from 'class-validator';
+import { KnockoutRoundType } from '../enums/KnockoutRoundType.ts';
 
 export class CreateKnockoutRoundQueryDto {
   @ApiProperty({
-    example: MatchType.FINAL,
-    enum: MatchType,
+    example: KnockoutRoundType.FINAL,
+    enum: KnockoutRoundType,
     description: 'Represents the knockout round.',
   })
   @IsNotEmpty()
-  @IsEnum(MatchType)
-  type!: MatchType;
+  @IsEnum(KnockoutRoundType)
+  type!: KnockoutRoundType;
 }
