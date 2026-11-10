@@ -10,11 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { MatchType } from '@prisma/client';
 import { CreateKnockoutRoundPairingsDto } from './dto/create-knockout-pairing.dto.ts';
 import { CreateKnockoutRoundQueryDto } from './dto/create-knockout-round-query.dto.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundQueryDto } from './dto/knockout-round-query.dto.ts';
+import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 import { KnockoutRoundService } from './knockout-round.service.ts';
 
 @Controller('knockout-round')
@@ -52,7 +52,7 @@ export class KnockoutRoundController {
   @ApiQuery({
     name: 'type',
     required: true,
-    enum: MatchType,
+    enum: KnockoutRoundType,
     description: 'Filter knockouts by round',
   })
   getKnockoutRoundByTypeAndCompetitionEditionId(
@@ -72,6 +72,11 @@ export class KnockoutRoundController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Knockout round created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'You are creating knockout rounds, not league matches nor matches for a group stage',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -106,7 +111,7 @@ export class KnockoutRoundController {
   @ApiQuery({
     name: 'type',
     required: true,
-    enum: MatchType,
+    enum: KnockoutRoundType,
     description:
       'Select the type of matches to be created for this knockout round',
   })

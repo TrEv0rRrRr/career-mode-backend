@@ -4,13 +4,13 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { MatchType } from '@prisma/client';
 import { validateArrayEquality } from '../common/helpers/validateArrayEquality.ts';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { CompetitionFixtureService } from '../competitions/services/competition-fixture.service.ts';
 import { CreateKnockoutRoundPairingsDto } from './dto/create-knockout-pairing.dto.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
+import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 import { KnockoutRoundNotFoundException } from './exceptions/knockout-round-not-found.exception.ts';
 import {
   KnockoutRoundRepository,
@@ -38,7 +38,7 @@ export class KnockoutRoundService {
 
   async findKnockoutRoundByTypeAndCompetitionEditionId(
     competitionEditionId: number,
-    type: MatchType,
+    type: KnockoutRoundType,
   ) {
     await this.competitionsService.findCompetitionEditionById(
       competitionEditionId,
@@ -56,7 +56,10 @@ export class KnockoutRoundService {
     return this.repo.completeKnockoutRound(knockoutRoundId);
   }
 
-  async createKnockoutRound(data: CreateKnockoutRoundDto, type: MatchType) {
+  async createKnockoutRound(
+    data: CreateKnockoutRoundDto,
+    type: KnockoutRoundType,
+  ) {
     const edition = await this.competitionsService.findCompetitionEditionById(
       data.competitionEditionId,
     );
@@ -86,32 +89,32 @@ export class KnockoutRoundService {
       );
 
     switch (type) {
-      case MatchType.ROUND_OF_32:
+      case KnockoutRoundType.ROUND_OF_32:
         if (qualifiedTeamsWithoutDuplicates.length !== 32)
           throw new BadRequestException(
             "They can't be more or less than 32 qualified teams for a round of 32.",
           );
         break;
-      case MatchType.ROUND_OF_16:
+      case KnockoutRoundType.ROUND_OF_16:
         if (qualifiedTeamsWithoutDuplicates.length !== 16)
           throw new BadRequestException(
             "They can't be more or less than 16 qualified teams for a round of 16.",
           );
         break;
-      case MatchType.QUARTER_FINAL:
+      case KnockoutRoundType.QUARTER_FINAL:
         if (qualifiedTeamsWithoutDuplicates.length !== 8)
           throw new BadRequestException(
             "They can't be more or less than 8 qualified teams for the quarterfinals.",
           );
         break;
-      case MatchType.SEMI_FINAL:
+      case KnockoutRoundType.SEMI_FINAL:
         if (qualifiedTeamsWithoutDuplicates.length !== 4)
           throw new BadRequestException(
             "They can't be more or less than 4 qualified teams for the semifinals.",
           );
         break;
-      case MatchType.THIRD_PLACE:
-      case MatchType.FINAL:
+      case KnockoutRoundType.THIRD_PLACE:
+      case KnockoutRoundType.FINAL:
         if (qualifiedTeamsWithoutDuplicates.length !== 2)
           throw new BadRequestException(
             "They can't be more or less than 2 qualified teams for the third place match or the final.",

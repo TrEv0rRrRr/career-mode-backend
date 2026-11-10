@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { MatchType, Prisma } from '@prisma/client';
+import { transformKnockoutRoundTypeToMatchType } from '../common/helpers/transformKnockoutRoundTypeToMatchType.ts';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
+import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 
 type CreatedRounds = {
   qualifiedTeams: {
@@ -50,13 +52,13 @@ export class KnockoutRoundRepository {
 
   findKnockoutRoundByTypeAndCompetitionEditionId(
     competitionEditionId: number,
-    type: MatchType,
+    type: KnockoutRoundType,
   ) {
     return this.prisma.knockoutRound.findUnique({
       where: {
         competitionEditionId_type: {
           competitionEditionId,
-          type,
+          type: transformKnockoutRoundTypeToMatchType(type),
         },
       },
       include: {
@@ -93,11 +95,11 @@ export class KnockoutRoundRepository {
     });
   }
 
-  createKnockoutRound(data: CreateKnockoutRoundDto, type: MatchType) {
+  createKnockoutRound(data: CreateKnockoutRoundDto, type: KnockoutRoundType) {
     return this.prisma.knockoutRound.create({
       data: {
         ...data,
-        type,
+        type: transformKnockoutRoundTypeToMatchType(type),
         qualifiedTeams: {
           create: data.qualifiedTeams.map((teamId) => ({
             teamId,
