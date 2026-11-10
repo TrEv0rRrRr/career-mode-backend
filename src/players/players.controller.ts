@@ -166,7 +166,7 @@ export class PlayersController {
   @Post(':playerId/positions')
   @ApiOperation({ summary: 'Assign positions to a player' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Positions assigned!',
   })
   @ApiResponse({
@@ -265,7 +265,7 @@ export class PlayersController {
   @Post(':playerId/teams')
   @ApiOperation({ summary: 'Sign a player for a team' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Player signed for that team!',
   })
   @ApiResponse({
