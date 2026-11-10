@@ -15,6 +15,7 @@ import { generateGroupFixture } from '../../common/fixtures/groups-knockout/gene
 import { generateLeagueFixture } from '../../common/fixtures/league/league-20.fixture.ts';
 import { generateSuperCupPairing } from '../../common/fixtures/super-cup.fixture.ts';
 import { inferFirstKnockoutRound } from '../../common/helpers/knockouts/inferFirstKnockoutRound.ts';
+import { isTwoLeggedKnockoutRound } from '../../common/helpers/knockouts/isTwoLeggedKnockoutRound.ts';
 import { CalendarEntry } from '../../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../../common/types/MatchPairing.ts';
 import { ParticipatingTeam } from '../../common/types/ParticipatingTeams.ts';
@@ -184,7 +185,10 @@ export class CompetitionFixtureService {
 
     const competition = competitionEdition.competition;
 
-    const hasTwoLeggedKnockout = competition.hasTwoLeggedKnockout;
+    const isTwoLeggedRound = isTwoLeggedKnockoutRound(
+      knockoutRound.type,
+      competition.hasTwoLeggedKnockout,
+    );
 
     const season = await this.seasonService.findSeasonById(
       competitionEdition.seasonId,
@@ -214,7 +218,7 @@ export class CompetitionFixtureService {
           ...pairing,
           matchType: knockoutRound.type,
         },
-        hasTwoLeggedKnockout,
+        isTwoLeggedRound,
       );
 
       return this.mergeFixtureWithCalendar(
