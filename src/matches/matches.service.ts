@@ -16,6 +16,7 @@ import { inferFirstKnockoutRound } from '../common/helpers/knockouts/inferFirstK
 import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
 import { resolveKnockoutLosers } from '../common/helpers/knockouts/resolveKnockoutLosers.ts';
 import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnockoutWinners.ts';
+import { transformMatchTypeToKnockoutRoundType } from '../common/helpers/transformKnockoutRoundTypeToMatchType.ts';
 import { CompetitionEditionQueryService } from '../competitions/services/competition-edition-query.service.ts';
 import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersService } from '../players/players.service.ts';
@@ -264,7 +265,7 @@ export class MatchesService {
     const currentRound =
       await this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionEditionId(
         competitionEditionId,
-        matchType,
+        transformMatchTypeToKnockoutRoundType(matchType),
       );
 
     if (!currentRound) {
