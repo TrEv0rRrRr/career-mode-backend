@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MatchFinishType } from '@prisma/client';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class PlayMatchQueryDto {
   @ApiProperty({
@@ -11,4 +12,14 @@ export class PlayMatchQueryDto {
   @IsNotEmpty()
   @IsEnum(MatchFinishType)
   finishType!: MatchFinishType;
+
+  @ApiPropertyOptional({
+    example: 8,
+    description: 'The tie id associated with this matches',
+  })
+  @Type(() => Number)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  tieId?: number;
 }
