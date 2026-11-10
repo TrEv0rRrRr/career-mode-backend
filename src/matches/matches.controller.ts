@@ -38,6 +38,18 @@ export class MatchesController {
     return this.matchesService.findMatch(matchId);
   }
 
+  @Get('/ties/:tieId')
+  @ApiOperation({
+    summary: 'Find matches by tie id',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Matches retrieved',
+  })
+  getMatchesByTie(@Param('tieId', ParseIntPipe) tieId: number) {
+    return this.matchesService.findMatchesByTieId(tieId);
+  }
+
   @Patch(':matchId/stadium')
   @ApiOperation({
     summary: 'Changes the stadium of the match',
@@ -144,17 +156,44 @@ export class MatchesController {
     description:
       "If the match didn't reached the penalties, you shouldn't enter them",
   })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'A two-legged knockout match must have a leg and a tie',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The tieId does not belong to this match',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'The first leg of a two-legged knockout must end in regular time',
+  })
   @ApiQuery({
     name: 'finishType',
     required: true,
     enum: MatchFinishType,
     description: 'Select the way the match ended',
   })
+  @ApiQuery({
+    name: 'tieId',
+    required: false,
+    type: Number,
+    description: 'The tie id associated with this matches',
+  })
   playMatch(
     @Param('matchId', ParseIntPipe) matchId: number,
     @Body() data: PlayMatchDto,
     @Query() query: PlayMatchQueryDto,
   ) {
+    if (query.tieId) {
+      return this.matchesService.playMatch(
+        matchId,
+        data,
+        query.finishType,
+        query.tieId,
+      );
+    }
     return this.matchesService.playMatch(matchId, data, query.finishType);
   }
 
