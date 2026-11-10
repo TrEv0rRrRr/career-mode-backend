@@ -255,7 +255,7 @@ export class CompetitionsController {
     summary: 'Register a team to a competition',
   })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Team registered!',
   })
   @ApiResponse({
@@ -350,7 +350,7 @@ export class CompetitionsController {
   @Post(':competitionId/edition/:competitionEditionId/generate-fixtures')
   @ApiOperation({ summary: 'Create the fixtures for a competition' })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Fixture created!',
   })
   @ApiResponse({
