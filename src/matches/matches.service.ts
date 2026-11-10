@@ -171,7 +171,11 @@ export class MatchesService {
       );
   }
 
-  async playMatch(matchId: number, data: PlayMatchDto) {
+  async playMatch(
+    matchId: number,
+    data: PlayMatchDto,
+    finishType: MatchFinishType,
+  ) {
     const match = await this.findMatch(matchId);
     const competitionEdition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
@@ -189,6 +193,7 @@ export class MatchesService {
       data.match,
       competitionEdition.competition.format,
       match.type,
+      finishType,
     );
     this.validateMatchTeamStats(data.teamStats, match);
     await this.validateMatchPlayerStats(
@@ -198,7 +203,7 @@ export class MatchesService {
       data.playerStats,
     );
 
-    const winnerTeamId = this.getWinnerTeamId(match, data.match);
+    const winnerTeamId = this.getWinnerTeamId(match, data.match, finishType);
 
     const playedMatch = await this.repo.playMatch(
       matchId,
@@ -207,6 +212,7 @@ export class MatchesService {
       competitionEdition.seasonId,
       winnerTeamId,
       data,
+      finishType,
     );
 
     if (isKnockoutMatch(match.type)) {
@@ -255,11 +261,6 @@ export class MatchesService {
 
     const winners = resolveKnockoutWinners(edition, matches);
 
-    const nextRounds = getNextKnockoutRounds(
-      matchType,
-      edition.competition.hasThirdPlaceMatch,
-    );
-
     const currentRound =
       await this.knockoutRoundService.findKnockoutRoundByTypeAndCompetitionEditionId(
         competitionEditionId,
@@ -271,6 +272,33 @@ export class MatchesService {
     }
 
     await this.knockoutRoundService.completeKnockoutRound(currentRound.id);
+
+    if (matchType === MatchType.FINAL) {
+      const winnerTeamId = winners[0];
+
+      const finalMatch = matches[0];
+
+      const runnerUpTeamId =
+        winnerTeamId === finalMatch.homeTeamId
+          ? finalMatch.awayTeamId
+          : finalMatch.homeTeamId;
+
+      await this.competitionEditionQueryService.assignWinnerAndRunnerUp(
+        edition.competition.id,
+        edition.id,
+        {
+          winnerTeamId,
+          runnerUpTeamId,
+        },
+      );
+
+      return;
+    }
+
+    const nextRounds = getNextKnockoutRounds(
+      matchType,
+      edition.competition.hasThirdPlaceMatch,
+    );
 
     if (!nextRounds.length) {
       return;
@@ -312,9 +340,8 @@ export class MatchesService {
     match: UpdateMatchDto,
     format: CompetitionFormat,
     matchType: MatchType,
+    finishType: MatchFinishType,
   ) {
-    const matchFinishType = match.finishType;
-
     const isAGroupStageMatch =
       format === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
       matchType === MatchType.GROUP_STAGE;
@@ -326,7 +353,7 @@ export class MatchesService {
       format === CompetitionFormat.KNOCKOUT &&
       match.homeGoals === match.awayGoals;
 
-    switch (matchFinishType) {
+    switch (finishType) {
       case MatchFinishType.PENALTIES:
         if (match.homeGoals !== match.awayGoals)
           throw new BadRequestException(
@@ -404,11 +431,15 @@ export class MatchesService {
     }
   }
 
-  private getWinnerTeamId(match: Match, data: UpdateMatchDto) {
+  private getWinnerTeamId(
+    match: Match,
+    data: UpdateMatchDto,
+    finishType: MatchFinishType,
+  ) {
     if (data.homeGoals > data.awayGoals) return match.homeTeamId;
     else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
     else if (
-      data.finishType === MatchFinishType.PENALTIES &&
+      finishType === MatchFinishType.PENALTIES &&
       data.homePenaltyGoals &&
       data.awayPenaltyGoals
     ) {

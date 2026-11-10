@@ -11,9 +11,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { MatchType } from '@prisma/client';
+import { MatchFinishType, MatchType } from '@prisma/client';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
+import { PlayMatchQueryDto } from './dto/play-match-query.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchesService } from './matches.service.ts';
 
@@ -66,7 +67,7 @@ export class MatchesController {
   })
   @ApiBody({ type: [CreateMatchDto] })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Match created!',
   })
   @ApiResponse({
@@ -143,11 +144,18 @@ export class MatchesController {
     description:
       "If the match didn't reached the penalties, you shouldn't enter them",
   })
+  @ApiQuery({
+    name: 'finishType',
+    required: true,
+    enum: MatchFinishType,
+    description: 'Select the way the match ended',
+  })
   playMatch(
     @Param('matchId', ParseIntPipe) matchId: number,
     @Body() data: PlayMatchDto,
+    @Query() query: PlayMatchQueryDto,
   ) {
-    return this.matchesService.playMatch(matchId, data);
+    return this.matchesService.playMatch(matchId, data, query.finishType);
   }
 
   @Get('/competition/editions/:competitionEditionId/matches')

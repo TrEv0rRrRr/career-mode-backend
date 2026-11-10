@@ -3,6 +3,7 @@ import {
   CompetitionFormat,
   CompetitionParticipant,
   Match,
+  MatchFinishType,
   MatchStatus,
   MatchType,
   Prisma,
@@ -253,12 +254,14 @@ export class MatchesRepository {
     seasonId: number,
     winnerTeamId: number | null,
     data: PlayMatchDto,
+    finishType: MatchFinishType,
   ) {
     return this.prisma.$transaction(async (tx) => {
       const updatedMatch = await tx.match.update({
         where: { id: matchId },
         data: {
           ...data.match,
+          finishType,
           status: MatchStatus.PLAYED,
           winnerTeamId,
         },
