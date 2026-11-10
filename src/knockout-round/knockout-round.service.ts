@@ -56,8 +56,24 @@ export class KnockoutRoundService {
     return this.repo.completeKnockoutRound(knockoutRoundId);
   }
 
-  async createKnockoutRound(data: CreateKnockoutRoundDto) {
+  async createKnockoutRound(data: CreateKnockoutRoundDto, type: MatchType) {
+    const edition = await this.competitionsService.findCompetitionEditionById(
+      data.competitionEditionId,
+    );
+
+    const participantTeams = await this.competitionsService
+      .findCompetitionParticipants(edition.id)
+      .then((data) => data.map(({ team }) => team.id));
+
     const qualifiedTeamsWithoutDuplicates = [...new Set(data.qualifiedTeams)];
+
+    const areQualifiedTeamsParticipatingInTheCompetition =
+      validateArrayEquality(participantTeams, qualifiedTeamsWithoutDuplicates);
+
+    if (!areQualifiedTeamsParticipatingInTheCompetition)
+      throw new ConflictException(
+        'There is a team that is not participating in this competition edition',
+      );
 
     const thereIsUncompleted =
       await this.repo.findNonCompletedKnockoutRoundByCompetitionEditionId(
@@ -69,7 +85,7 @@ export class KnockoutRoundService {
         "You can't register a new knockout round for this edition because there's one being played yet.",
       );
 
-    switch (data.type) {
+    switch (type) {
       case MatchType.ROUND_OF_32:
         if (qualifiedTeamsWithoutDuplicates.length !== 32)
           throw new BadRequestException(
@@ -110,7 +126,7 @@ export class KnockoutRoundService {
       qualifiedTeams: qualifiedTeamsWithoutDuplicates,
     };
 
-    return this.repo.createKnockoutRound(finalData);
+    return this.repo.createKnockoutRound(finalData, type);
   }
 
   async generateKnockoutRoundMatches(
