@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MatchFinishType } from '@prisma/client';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class UpdateMatchDto {
   @ApiProperty({
@@ -42,13 +41,4 @@ export class UpdateMatchDto {
   @IsInt()
   @Min(1)
   awayPenaltyGoals?: number;
-
-  @ApiProperty({
-    example: MatchFinishType.PENALTIES,
-    enum: MatchFinishType,
-    description: 'The way the match ended',
-  })
-  @IsNotEmpty()
-  @IsEnum(MatchFinishType)
-  finishType!: MatchFinishType;
 }
