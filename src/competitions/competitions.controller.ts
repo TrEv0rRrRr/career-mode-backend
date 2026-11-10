@@ -18,7 +18,7 @@ import {
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
-import { CompetitionType } from '@prisma/client';
+import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
@@ -38,7 +38,7 @@ export class CompetitionsController {
     isArray: true,
   })
   @ApiOperation({
-    summary: 'Gets all competitions or filters them by type',
+    summary: 'Gets all competitions or filters them by type or format',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -50,9 +50,19 @@ export class CompetitionsController {
     enum: CompetitionType,
     description: 'Filter competitions by type',
   })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: CompetitionFormat,
+    description: 'Filter competitions by format',
+  })
   getCompetitions(@Query() query: CompetitionQueryDto) {
     if (query.type) {
       return this.competitionsService.findCompetitionsByType(query.type);
+    }
+
+    if (query.format) {
+      return this.competitionsService.findCompetitionsByFormat(query.format);
     }
 
     return this.competitionsService.findCompetitions();
