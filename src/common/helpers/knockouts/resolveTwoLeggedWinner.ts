@@ -1,13 +1,20 @@
-import { Match, MatchLeg, MatchStatus } from '@prisma/client';
+import { Match, MatchFinishType, MatchLeg, MatchStatus } from '@prisma/client';
 
 export const resolveTwoLeggedWinner = (matches: Match[]) => {
   if (matches.length != 2)
     throw new Error('A two-legged knockout must have only 2 matches.');
 
-  for (const match of matches)
+  for (const match of matches) {
     if (match.status !== MatchStatus.PLAYED) {
       throw new Error('The match has not been played yet.');
     }
+
+    if (
+      match.leg === MatchLeg.FIRST &&
+      match.finishType !== MatchFinishType.REGULAR_TIME
+    )
+      throw new Error('The first leg must end in regular time');
+  }
 
   const firstMatch = matches.find(({ leg }) => leg === MatchLeg.FIRST)!;
 

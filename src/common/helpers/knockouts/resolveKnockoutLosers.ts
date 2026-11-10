@@ -1,5 +1,6 @@
-import { Match, MatchType } from '@prisma/client';
+import { Match } from '@prisma/client';
 import { EditionType } from '../../types/EditionType.ts';
+import { isTwoLeggedKnockoutRound } from './isTwoLeggedKnockoutRound.ts';
 import { resolveSingleLegWinner } from './resolveSingleLegWinner.ts';
 import { resolveTwoLeggedWinner } from './resolveTwoLeggedWinner.ts';
 
@@ -13,10 +14,13 @@ export const resolveKnockoutLosers = (
 
   const ties = Object.groupBy(matchesByRound, (match) => match.tieId!);
 
-  const isTwoLegged =
+  const isTwoLegged = Boolean(
     edition &&
-    edition.competition.hasTwoLeggedKnockout &&
-    matchesByRound[0].type !== MatchType.FINAL;
+    isTwoLeggedKnockoutRound(
+      matchesByRound[0].type,
+      edition.competition.hasTwoLeggedKnockout,
+    ),
+  );
 
   const losers: number[] = [];
 
