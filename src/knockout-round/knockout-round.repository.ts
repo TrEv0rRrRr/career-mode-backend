@@ -93,10 +93,11 @@ export class KnockoutRoundRepository {
     });
   }
 
-  createKnockoutRound(data: CreateKnockoutRoundDto) {
+  createKnockoutRound(data: CreateKnockoutRoundDto, type: MatchType) {
     return this.prisma.knockoutRound.create({
       data: {
         ...data,
+        type,
         qualifiedTeams: {
           create: data.qualifiedTeams.map((teamId) => ({
             teamId,
