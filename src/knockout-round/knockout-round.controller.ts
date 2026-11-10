@@ -12,6 +12,7 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { MatchType } from '@prisma/client';
 import { CreateKnockoutRoundPairingsDto } from './dto/create-knockout-pairing.dto.ts';
+import { CreateKnockoutRoundQueryDto } from './dto/create-knockout-round-query.dto.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundQueryDto } from './dto/knockout-round-query.dto.ts';
 import { KnockoutRoundService } from './knockout-round.service.ts';
@@ -69,7 +70,7 @@ export class KnockoutRoundController {
     summary: 'Creates a knockout round',
   })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Knockout round created!',
   })
   @ApiResponse({
@@ -97,8 +98,23 @@ export class KnockoutRoundController {
     description:
       "They can't be more or less than 2 qualified teams for the third place match or the final.",
   })
-  createKnockoutRound(@Body() data: CreateKnockoutRoundDto) {
-    return this.knockoutRoundService.createKnockoutRound(data);
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description:
+      'There is a team that is not participating in this competition edition',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: true,
+    enum: MatchType,
+    description:
+      'Select the type of matches to be created for this knockout round',
+  })
+  createKnockoutRound(
+    @Body() data: CreateKnockoutRoundDto,
+    @Query() query: CreateKnockoutRoundQueryDto,
+  ) {
+    return this.knockoutRoundService.createKnockoutRound(data, query.type);
   }
 
   @Post(':knockoutRoundId/pairings')
@@ -106,7 +122,7 @@ export class KnockoutRoundController {
     summary: 'Generate the matches for a knockout round',
   })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.CREATED,
     description: 'Knockout round matches created!',
   })
   @ApiResponse({
