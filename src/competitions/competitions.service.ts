@@ -37,6 +37,10 @@ export class CompetitionsService {
     return this.repo.findByType(type);
   }
 
+  findCompetitionsByFormat(format: CompetitionFormat) {
+    return this.repo.findByFormat(format);
+  }
+
   // ! Competition Edition methods
   async findEditionsByCompetition(competitionId: number) {
     await this.findCompetitionById(competitionId);
