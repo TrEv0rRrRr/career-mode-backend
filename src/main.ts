@@ -16,7 +16,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Career Mode Backend')
-    .setDescription('A backend developed for my career mode frontend')
+    .setDescription(
+      'Backend API for a football career mode simulator, built with NestJS, TypeScript, and Prisma.',
+    )
     .setVersion('1.0')
     .build();
 

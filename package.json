@@ -1,7 +1,7 @@
 {
   "name": "career_mode_backend",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Backend API for a football career mode simulator, built with NestJS, TypeScript, and Prisma.",
   "author": "Trevor",
   "private": true,
   "license": "UNLICENSED",
