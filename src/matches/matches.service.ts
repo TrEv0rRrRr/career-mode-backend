@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   forwardRef,
   Inject,
   Injectable,
@@ -8,12 +9,14 @@ import {
   CompetitionFormat,
   Match,
   MatchFinishType,
+  MatchLeg,
   MatchStatus,
   MatchType,
 } from '@prisma/client';
 import { getNextKnockoutRounds } from '../common/helpers/knockouts/getNextKnockoutRounds.ts';
 import { inferFirstKnockoutRound } from '../common/helpers/knockouts/inferFirstKnockoutRound.ts';
 import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
+import { isTwoLeggedKnockoutRound } from '../common/helpers/knockouts/isTwoLeggedKnockoutRound.ts';
 import { resolveKnockoutLosers } from '../common/helpers/knockouts/resolveKnockoutLosers.ts';
 import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnockoutWinners.ts';
 import { transformMatchTypeToKnockoutRoundType } from '../common/helpers/transformKnockoutRoundTypeToMatchType.ts';
@@ -57,6 +60,14 @@ export class MatchesService {
       competitionEditionId,
     );
     return this.repo.findMatchesByRound(competitionEditionId, matchType);
+  }
+
+  async findMatchesByTieId(tieId: number) {
+    const matches = await this.repo.findMatchesByTieId(tieId);
+
+    if (!matches) throw new MatchNotFoundException();
+
+    return matches;
   }
 
   async changeStadium(matchId: number, data: ChangeMatchStadiumDTO) {
@@ -176,8 +187,10 @@ export class MatchesService {
     matchId: number,
     data: PlayMatchDto,
     finishType: MatchFinishType,
+    tieId?: number,
   ) {
     const match = await this.findMatch(matchId);
+
     const competitionEdition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
         match.competitionEditionId,
@@ -187,14 +200,55 @@ export class MatchesService {
     const playerTeamsIds =
       await this.playersService.findCurrentTeams(playerIds);
 
+    const hasTwoLeggedKnockout =
+      competitionEdition.competition.hasTwoLeggedKnockout;
+    const isTwoLeggedKnockout = isTwoLeggedKnockoutRound(
+      match.type,
+      hasTwoLeggedKnockout,
+    );
+    let secondLegAggregateIsTied = false;
+
     if (match.status === MatchStatus.PLAYED)
       throw new BadRequestException('This match has already been played');
+
+    if (isTwoLeggedKnockout) {
+      if (!match.leg || match.tieId === null)
+        throw new BadRequestException(
+          'A two-legged knockout match must have a leg and a tie',
+        );
+
+      if (tieId !== undefined && tieId !== match.tieId)
+        throw new BadRequestException(
+          'The tieId does not belong to this match',
+        );
+
+      if (
+        match.leg === MatchLeg.FIRST &&
+        finishType !== MatchFinishType.REGULAR_TIME
+      )
+        throw new BadRequestException(
+          'The first leg of a two-legged knockout must end in regular time',
+        );
+
+      if (match.leg === MatchLeg.SECOND) {
+        const { matches } = await this.findMatchesByTieId(match.tieId);
+        const firstLeg = this.validateLegOrder(matches);
+        secondLegAggregateIsTied = this.validateTwoLeggedResult(
+          firstLeg,
+          match,
+          data.match,
+          finishType,
+        );
+      }
+    }
 
     this.validateMatchResult(
       data.match,
       competitionEdition.competition.format,
       match.type,
       finishType,
+      isTwoLeggedKnockout,
+      secondLegAggregateIsTied,
     );
     this.validateMatchTeamStats(data.teamStats, match);
     await this.validateMatchPlayerStats(
@@ -272,9 +326,9 @@ export class MatchesService {
       throw new Error('Knockout round not found.');
     }
 
-    await this.knockoutRoundService.completeKnockoutRound(currentRound.id);
-
     if (matchType === MatchType.FINAL) {
+      await this.knockoutRoundService.completeKnockoutRound(currentRound.id);
+
       const winnerTeamId = winners[0];
 
       const finalMatch = matches[0];
@@ -342,6 +396,8 @@ export class MatchesService {
     format: CompetitionFormat,
     matchType: MatchType,
     finishType: MatchFinishType,
+    isTwoLeggedKnockout: boolean,
+    secondLegAggregateIsTied: boolean,
   ) {
     const isAGroupStageMatch =
       format === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
@@ -351,12 +407,13 @@ export class MatchesService {
       match.homePenaltyGoals || match.awayPenaltyGoals;
 
     const isATiedKnockout =
-      format === CompetitionFormat.KNOCKOUT &&
+      isKnockoutMatch(matchType) &&
+      !isTwoLeggedKnockout &&
       match.homeGoals === match.awayGoals;
 
     switch (finishType) {
       case MatchFinishType.PENALTIES:
-        if (match.homeGoals !== match.awayGoals)
+        if (match.homeGoals !== match.awayGoals && !secondLegAggregateIsTied)
           throw new BadRequestException(
             'If the match reached the penalties, you should enter a tied score',
           );
@@ -387,6 +444,52 @@ export class MatchesService {
           throw new BadRequestException("A knockout can't end in a tie");
         break;
     }
+  }
+
+  private validateTwoLeggedResult(
+    firstLeg: Match,
+    secondLeg: Match,
+    result: UpdateMatchDto,
+    finishType: MatchFinishType,
+  ): boolean {
+    const firstTeamSecondLegGoals =
+      secondLeg.homeTeamId === firstLeg.homeTeamId
+        ? result.homeGoals
+        : result.awayGoals;
+    const secondTeamSecondLegGoals =
+      secondLeg.homeTeamId === firstLeg.awayTeamId
+        ? result.homeGoals
+        : result.awayGoals;
+
+    const firstTeamAggregateGoals =
+      firstLeg.homeGoals + firstTeamSecondLegGoals;
+    const secondTeamAggregateGoals =
+      firstLeg.awayGoals + secondTeamSecondLegGoals;
+    const aggregateIsTied =
+      firstTeamAggregateGoals === secondTeamAggregateGoals;
+
+    if (aggregateIsTied && finishType !== MatchFinishType.PENALTIES)
+      throw new BadRequestException(
+        'The aggregate score is tied. The second leg must be decided by penalties.',
+      );
+
+    if (!aggregateIsTied && finishType === MatchFinishType.PENALTIES)
+      throw new BadRequestException(
+        'Penalties can only be used when the aggregate score is tied.',
+      );
+
+    return aggregateIsTied;
+  }
+
+  private validateLegOrder(matches: Match[]): Match {
+    const firstLeg = matches.find(({ leg }) => leg === MatchLeg.FIRST);
+
+    if (!firstLeg || firstLeg.status !== MatchStatus.PLAYED)
+      throw new ConflictException(
+        'Before playing the second leg, you should finish the first',
+      );
+
+    return firstLeg;
   }
 
   private validateMatchTeamStats(
@@ -437,16 +540,17 @@ export class MatchesService {
     data: UpdateMatchDto,
     finishType: MatchFinishType,
   ) {
-    if (data.homeGoals > data.awayGoals) return match.homeTeamId;
-    else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
-    else if (
+    if (
       finishType === MatchFinishType.PENALTIES &&
       data.homePenaltyGoals &&
       data.awayPenaltyGoals
-    ) {
+    )
       return data.homePenaltyGoals > data.awayPenaltyGoals
         ? match.homeTeamId
         : match.awayTeamId;
-    } else return null;
+
+    if (data.homeGoals > data.awayGoals) return match.homeTeamId;
+    else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
+    else return null;
   }
 }
