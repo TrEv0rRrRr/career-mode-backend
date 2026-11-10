@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { MatchType } from '@prisma/client';
+import { CreateKnockoutRoundPairingsDto } from './dto/create-knockout-pairing.dto.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundQueryDto } from './dto/knockout-round-query.dto.ts';
 import { KnockoutRoundService } from './knockout-round.service.ts';
@@ -98,6 +99,44 @@ export class KnockoutRoundController {
   })
   createKnockoutRound(@Body() data: CreateKnockoutRoundDto) {
     return this.knockoutRoundService.createKnockoutRound(data);
+  }
+
+  @Post(':knockoutRoundId/pairings')
+  @ApiOperation({
+    summary: 'Generate the matches for a knockout round',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Knockout round matches created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This knockout round is completed, try creating a new one',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: "There's a pairing with two equal teams",
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'A team cannot participate in multiple pairings',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: "There are teams that aren't qualified for the next round",
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'The ties have already been generated for this knockout.',
+  })
+  generateKnockoutRoundMatches(
+    @Param('knockoutRoundId', ParseIntPipe) knockoutRoundId: number,
+    @Body() data: CreateKnockoutRoundPairingsDto,
+  ) {
+    return this.knockoutRoundService.generateKnockoutRoundMatches(
+      knockoutRoundId,
+      data,
+    );
   }
 
   @Patch('/complete/:id')
