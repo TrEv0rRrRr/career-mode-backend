@@ -123,6 +123,7 @@ export class CompetitionsRepository {
       data: {
         competitionEditionId,
         teamId,
+        points: 0,
       },
     });
   }
@@ -142,6 +143,7 @@ export class CompetitionsRepository {
     const teamSeasonData = teamIds.map((teamId) => ({
       competitionEditionId,
       teamId,
+      points: 0,
     }));
 
     return this.prisma.$transaction(async (tx) => {
