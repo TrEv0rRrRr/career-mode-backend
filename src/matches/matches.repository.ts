@@ -157,7 +157,18 @@ export class MatchesRepository {
             competitionEditionId,
             teamId: { in: teamIds },
           },
-          data: { group },
+          data: {
+            group,
+            position: null,
+            points: 0,
+            played: 0,
+            wins: 0,
+            draws: 0,
+            losses: 0,
+            gf: 0,
+            ga: 0,
+            gd: 0,
+          },
         });
 
         if (updatedParticipants.count !== teamIds.length) {
@@ -456,18 +467,20 @@ export class MatchesRepository {
       const competitionEditionId = updatedMatch.competitionEditionId;
 
       const usesStandings =
-        competitionFormat === CompetitionFormat.LEAGUE ||
-        competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT;
+        (competitionFormat === CompetitionFormat.LEAGUE &&
+          updatedMatch.type === MatchType.LEAGUE) ||
+        (competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
+          updatedMatch.type === MatchType.GROUP_STAGE);
 
       const homeParticipantUpdate = {
-        played: { increment: 1 },
-        wins: { increment: isHomeWinner ? 1 : 0 },
-        draws: { increment: isDraw ? 1 : 0 },
-        losses: { increment: isAwayWinner ? 1 : 0 },
-        gf: { increment: data.match.homeGoals },
-        ga: { increment: data.match.awayGoals },
-        gd: { increment: data.match.homeGoals - data.match.awayGoals },
         ...(usesStandings && {
+          played: { increment: 1 },
+          wins: { increment: isHomeWinner ? 1 : 0 },
+          draws: { increment: isDraw ? 1 : 0 },
+          losses: { increment: isAwayWinner ? 1 : 0 },
+          gf: { increment: data.match.homeGoals },
+          ga: { increment: data.match.awayGoals },
+          gd: { increment: data.match.homeGoals - data.match.awayGoals },
           points: {
             increment: isHomeWinner ? 3 : isDraw ? 1 : 0,
           },
@@ -475,14 +488,14 @@ export class MatchesRepository {
       };
 
       const awayParticipantUpdate = {
-        played: { increment: 1 },
-        wins: { increment: isAwayWinner ? 1 : 0 },
-        draws: { increment: isDraw ? 1 : 0 },
-        losses: { increment: isHomeWinner ? 1 : 0 },
-        gf: { increment: data.match.awayGoals },
-        ga: { increment: data.match.homeGoals },
-        gd: { increment: data.match.awayGoals - data.match.homeGoals },
         ...(usesStandings && {
+          played: { increment: 1 },
+          wins: { increment: isAwayWinner ? 1 : 0 },
+          draws: { increment: isDraw ? 1 : 0 },
+          losses: { increment: isHomeWinner ? 1 : 0 },
+          gf: { increment: data.match.awayGoals },
+          ga: { increment: data.match.homeGoals },
+          gd: { increment: data.match.awayGoals - data.match.homeGoals },
           points: {
             increment: isAwayWinner ? 3 : isDraw ? 1 : 0,
           },
@@ -513,7 +526,13 @@ export class MatchesRepository {
         where: { competitionEditionId, status: MatchStatus.PLAYED },
       });
 
-      const matchIds = matches.map(({ id }) => id);
+      const standingsMatchType =
+        competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT
+          ? MatchType.GROUP_STAGE
+          : MatchType.LEAGUE;
+      const matchIds = matches
+        .filter((match) => match.type === standingsMatchType)
+        .map(({ id }) => id);
 
       const competitionParticipants = await tx.competitionParticipant.findMany({
         where: { competitionEditionId },
@@ -550,7 +569,10 @@ export class MatchesRepository {
         );
       }
 
-      if (competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT) {
+      if (
+        competitionFormat === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
+        updatedMatch.type === MatchType.GROUP_STAGE
+      ) {
         await this.recalculateGroupStandings(
           matches,
           groups,
@@ -579,7 +601,7 @@ export class MatchesRepository {
         (match) => match.status === MatchStatus.PLAYED,
       );
 
-      if (roundFinished) {
+      if (isKnockoutMatch(updatedMatch.type) && roundFinished) {
         resolveKnockoutWinners(edition, matchesByRound);
       }
 
