@@ -29,7 +29,7 @@ export class CreateManagerDto {
   nationality!: string;
 
   @ApiProperty({
-    example: 'images/managers/hansi-flick.png',
+    example: '/images/managers/hansi-flick.png',
     description: "The manager's face image",
   })
   @IsOptional()
