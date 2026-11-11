@@ -1,5 +1,7 @@
 import { CalendarEntry } from '../types/CalendarEntry.ts';
 import { getClubWorldCupCalendar } from './calendarTemplates/club-world-cup.calendar.ts';
+import { getCopaGruposTestCalendar } from './calendarTemplates/copa-grupos-test-calendar.ts';
+import { getCopaTestCalendar } from './calendarTemplates/copa-test.calendar.ts';
 import { getCupCalendar } from './calendarTemplates/cup.calendar.ts';
 import { getLeagueCalendar } from './calendarTemplates/league.calendar.ts';
 import { getNationalSuperCupsCalendar } from './calendarTemplates/super-cups.calendar.ts';
@@ -34,4 +36,7 @@ export const calendarTemplates: Record<string, CalendarGenerator> = {
   'The FA Community Shield': getNationalSuperCupsCalendar,
   'Supercoppa Italiana': getNationalSuperCupsCalendar,
   'Trophée Des Champions': getNationalSuperCupsCalendar,
+  'Copa Test': getCopaTestCalendar,
+  'Copa Grupos Test': getCopaGruposTestCalendar,
+  'Liga Test': getLeagueCalendar,
 };
