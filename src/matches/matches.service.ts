@@ -417,6 +417,8 @@ export class MatchesService {
       format === CompetitionFormat.GROUPS_AND_KNOCKOUT &&
       matchType === MatchType.GROUP_STAGE;
 
+    const isALeagueMatch = matchType === MatchType.LEAGUE;
+
     const theUserEnteredPenalties =
       match.homePenaltyGoals || match.awayPenaltyGoals;
 
@@ -424,6 +426,9 @@ export class MatchesService {
       isKnockoutMatch(matchType) &&
       !isTwoLeggedKnockout &&
       match.homeGoals === match.awayGoals;
+
+    if (isALeagueMatch && finishType === MatchFinishType.EXTRA_TIME)
+      throw new BadRequestException("A league match can't end in extra time");
 
     switch (finishType) {
       case MatchFinishType.PENALTIES:
@@ -440,6 +445,11 @@ export class MatchesService {
         if (isAGroupStageMatch)
           throw new BadRequestException(
             "A group stage match can't end in penalties",
+          );
+
+        if (isALeagueMatch)
+          throw new BadRequestException(
+            "A league match can't end in penalties",
           );
         break;
       case MatchFinishType.REGULAR_TIME:
