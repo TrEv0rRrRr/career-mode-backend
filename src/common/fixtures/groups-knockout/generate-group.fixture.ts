@@ -1,96 +1,93 @@
+import { BadRequestException } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
-import { MatchPairing } from '../../types/MatchPairing.ts';
-import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
+import type { MatchPairing } from '../../types/MatchPairing.ts';
 
-export const generateGroupFixture = (
-  groupTeams: ParticipatingTeam[],
-): MatchPairing[] => {
-  if (groupTeams.length !== 4) {
-    throw new Error('A group must contain exactly 4 teams');
+const createSingleRoundRobin = (teamIds: number[]) => {
+  const teams: (number | null)[] = [...teamIds];
+
+  if (teams.length % 2 !== 0) teams.push(null);
+
+  const rounds: [number, number][][] = [];
+
+  for (let round = 0; round < teams.length - 1; round++) {
+    const pairings: [number, number][] = [];
+
+    for (let index = 0; index < teams.length / 2; index++) {
+      const first = teams[index];
+      const second = teams[teams.length - 1 - index];
+
+      if (first !== null && second !== null) {
+        pairings.push([first, second]);
+      }
+    }
+
+    rounds.push(pairings);
+    teams.splice(1, 0, teams.pop()!);
   }
 
-  const teamA = 0;
-  const teamB = 1;
-  const teamC = 2;
-  const teamD = 3;
+  return rounds;
+};
 
-  return [
-    {
-      homeTeamId: groupTeams[teamA].team.id,
-      awayTeamId: groupTeams[teamB].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 1,
-    },
-    {
-      homeTeamId: groupTeams[teamC].team.id,
-      awayTeamId: groupTeams[teamD].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 1,
-    },
+export const generateGroupFixture = (
+  groups: Record<string, number[]>,
+  matchdays: number[],
+): MatchPairing[] => {
+  const teamsPerGroup = Object.values(groups)[0]?.length;
 
-    {
-      homeTeamId: groupTeams[teamA].team.id,
-      awayTeamId: groupTeams[teamC].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 2,
-    },
-    {
-      homeTeamId: groupTeams[teamD].team.id,
-      awayTeamId: groupTeams[teamB].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 2,
-    },
+  if (!teamsPerGroup || matchdays.length === 0) {
+    throw new BadRequestException(
+      'Groups and group-stage matchdays are required to generate a fixture.',
+    );
+  }
 
-    {
-      homeTeamId: groupTeams[teamA].team.id,
-      awayTeamId: groupTeams[teamD].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 3,
-    },
-    {
-      homeTeamId: groupTeams[teamB].team.id,
-      awayTeamId: groupTeams[teamC].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 3,
-    },
+  if (
+    Object.values(groups).some((teamIds) => teamIds.length !== teamsPerGroup)
+  ) {
+    throw new BadRequestException(
+      'Every group must contain the same number of teams.',
+    );
+  }
 
-    {
-      homeTeamId: groupTeams[teamB].team.id,
-      awayTeamId: groupTeams[teamA].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 4,
-    },
-    {
-      homeTeamId: groupTeams[teamD].team.id,
-      awayTeamId: groupTeams[teamC].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 4,
-    },
+  if (new Set(matchdays).size !== matchdays.length) {
+    throw new BadRequestException(
+      'Group-stage calendar matchdays must be unique.',
+    );
+  }
 
-    {
-      homeTeamId: groupTeams[teamC].team.id,
-      awayTeamId: groupTeams[teamA].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 5,
-    },
-    {
-      homeTeamId: groupTeams[teamB].team.id,
-      awayTeamId: groupTeams[teamD].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 5,
-    },
+  const singleRoundMatchdays =
+    teamsPerGroup % 2 === 0 ? teamsPerGroup - 1 : teamsPerGroup;
+  const isDoubleRoundRobin = matchdays.length === singleRoundMatchdays * 2;
 
-    {
-      homeTeamId: groupTeams[teamD].team.id,
-      awayTeamId: groupTeams[teamA].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 6,
-    },
-    {
-      homeTeamId: groupTeams[teamC].team.id,
-      awayTeamId: groupTeams[teamB].team.id,
-      matchType: MatchType.GROUP_STAGE,
-      matchday: 6,
-    },
-  ];
+  if (matchdays.length !== singleRoundMatchdays && !isDoubleRoundRobin) {
+    throw new BadRequestException(
+      `The calendar must define ${singleRoundMatchdays} or ${singleRoundMatchdays * 2} group-stage matchdays for groups of ${teamsPerGroup}.`,
+    );
+  }
+
+  return Object.values(groups).flatMap((teamIds) => {
+    const firstLeg = createSingleRoundRobin(teamIds).map((round, roundIndex) =>
+      round.map(([firstTeamId, secondTeamId], pairingIndex) =>
+        (roundIndex + pairingIndex) % 2 === 0
+          ? ([firstTeamId, secondTeamId] as [number, number])
+          : ([secondTeamId, firstTeamId] as [number, number]),
+      ),
+    );
+    const rounds = isDoubleRoundRobin
+      ? [
+          ...firstLeg,
+          ...firstLeg.map((round) =>
+            round.map(([home, away]) => [away, home] as [number, number]),
+          ),
+        ]
+      : firstLeg;
+
+    return rounds.flatMap((round, roundIndex) =>
+      round.map(([homeTeamId, awayTeamId]) => ({
+        homeTeamId,
+        awayTeamId,
+        matchType: MatchType.GROUP_STAGE,
+        matchday: matchdays[roundIndex],
+      })),
+    );
+  });
 };
