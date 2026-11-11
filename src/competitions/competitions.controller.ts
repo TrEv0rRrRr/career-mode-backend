@@ -251,13 +251,13 @@ export class CompetitionsController {
     );
   }
 
-  @Post('/editions/:competitionEditionId/teams/:teamId')
+  @Post('/editions/:competitionEditionId/teams')
   @ApiOperation({
-    summary: 'Register a team to a competition',
+    summary: 'Register a list of teams to a competition',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Team registered!',
+    description: 'Teams registered!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -269,20 +269,25 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'This team has already been registered',
+    description: 'A team has already been registered',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
       "You can't register more teams, the maximum number has been reached",
   })
+  @ApiBody({
+    schema: {
+      example: [1, 2, 3],
+    },
+  })
   registerParticipant(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Body() teamIds: number[],
   ) {
     return this.competitionsService.registerParticipant(
       competitionEditionId,
-      teamId,
+      teamIds,
     );
   }
 

@@ -118,13 +118,15 @@ export class CompetitionsRepository {
     });
   }
 
-  registerParticipant(competitionEditionId: number, teamId: number) {
-    return this.prisma.competitionParticipant.create({
-      data: {
-        competitionEditionId,
-        teamId,
-        points: 0,
-      },
+  registerParticipant(competitionEditionId: number, teamIds: number[]) {
+    const teamSeasonData = teamIds.map((teamId) => ({
+      competitionEditionId,
+      teamId,
+      points: 0,
+    }));
+
+    return this.prisma.competitionParticipant.createMany({
+      data: teamSeasonData,
     });
   }
 

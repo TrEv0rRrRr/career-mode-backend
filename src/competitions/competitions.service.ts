@@ -161,19 +161,23 @@ export class CompetitionsService {
     return this.repo.countCompetitionParticipants(competitionEditionId);
   }
 
-  async registerParticipant(competitionEditionId: number, teamId: number) {
-    await this.teamsService.findTeamById(teamId);
+  async registerParticipant(competitionEditionId: number, teamIds: number[]) {
+    await Promise.all(
+      teamIds.map((teamId) => this.teamsService.findTeamById(teamId)),
+    );
     const edition = await this.findCompetitionEditionById(competitionEditionId);
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    const participant = await this.repo.findCompetitionParticipant(
-      competitionEditionId,
-      teamId,
+    const participants = await Promise.all(
+      teamIds.map((teamId) =>
+        this.repo.findCompetitionParticipant(competitionEditionId, teamId),
+      ),
     );
 
-    if (participant)
+    if (participants.some((participant) => participant)) {
       throw new ConflictException('This team has already been registered');
+    }
 
     const registeredTeams =
       await this.countCompetitionParticipants(competitionEditionId);
@@ -183,7 +187,7 @@ export class CompetitionsService {
         "You can't register more teams, the maximum number has been reached",
       );
 
-    return this.repo.registerParticipant(competitionEditionId, teamId);
+    return this.repo.registerParticipant(competitionEditionId, teamIds);
   }
 
   async replaceCompetitionParticipants(
