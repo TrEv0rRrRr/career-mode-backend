@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { MatchType } from '@prisma/client';
 import type { MatchPairing } from '../../types/MatchPairing.ts';
 import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
@@ -29,36 +28,93 @@ export const fixtureByTeam: Record<number, number[]> = {
 const getRivalPosition = (position: number, matchday: number) =>
   fixtureByTeam[position][matchday - 1];
 
+const addReturnLeg = (
+  firstLegFixture: MatchPairing[],
+  firstLegMatchdayCount: number,
+): MatchPairing[] => [
+  ...firstLegFixture,
+  ...firstLegFixture.map((match) => ({
+    ...match,
+    homeTeamId: match.awayTeamId,
+    awayTeamId: match.homeTeamId,
+    matchday: (match.matchday ?? 0) + firstLegMatchdayCount,
+  })),
+];
+
 export const generateLeagueFixture = (
   participatingTeams: ParticipatingTeam[],
-) => {
-  const fixture: MatchPairing[] | null = [];
+): MatchPairing[] => {
+  const orderedTeams = [...participatingTeams].sort(
+    (first, second) =>
+      (first.position ?? Number.MAX_SAFE_INTEGER) -
+        (second.position ?? Number.MAX_SAFE_INTEGER) ||
+      first.team.id - second.team.id,
+  );
+  const positions = orderedTeams.map(({ position }) => position);
+  const hasCompleteTwentyTeamRanking =
+    orderedTeams.length === 20 &&
+    positions.every(
+      (position): position is number =>
+        position !== null && position >= 1 && position <= 20,
+    ) &&
+    new Set(positions).size === 20;
 
-  if (participatingTeams.some((team) => team.position == null))
-    throw new BadRequestException(
-      'All teams must have a league position before generating the fixture.',
-    );
+  if (hasCompleteTwentyTeamRanking) {
+    const teamIdsByPosition = orderedTeams.map(({ team }) => team.id);
+    const fixture: MatchPairing[] = [];
 
-  const teamIdsByPosition = participatingTeams
-    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-    .map(({ team }) => team.id);
+    for (let matchday = 1; matchday <= 19; matchday++) {
+      for (let position = 1; position <= 20; position++) {
+        const rivalPosition = getRivalPosition(position, matchday);
 
-  for (let matchday = 1; matchday <= 19; matchday++) {
-    for (let position = 1; position <= 20; position++) {
-      const rivalPosition = getRivalPosition(position, matchday);
-      const homeTeam = teamIdsByPosition[position - 1];
-      const awayTeam = teamIdsByPosition[rivalPosition - 1];
-
-      if (position < rivalPosition)
-        fixture.push({
-          matchday,
-          homeTeamId: homeTeam,
-          awayTeamId: awayTeam,
-          matchType: MatchType.LEAGUE,
-        });
+        if (position < rivalPosition) {
+          fixture.push({
+            matchday,
+            homeTeamId: teamIdsByPosition[position - 1],
+            awayTeamId: teamIdsByPosition[rivalPosition - 1],
+            matchType: MatchType.LEAGUE,
+          });
+        }
+      }
     }
-  }
-  return fixture;
-};
 
-// console.log(generateLeagueFixture(teamIdsByPosition));
+    return addReturnLeg(fixture, 19);
+  }
+
+  const rotatingTeams: (number | null)[] = orderedTeams.map(
+    ({ team }) => team.id,
+  );
+
+  if (rotatingTeams.length % 2 !== 0) rotatingTeams.push(null);
+
+  const fixture: MatchPairing[] = [];
+  const rounds = rotatingTeams.length - 1;
+
+  for (let roundIndex = 0; roundIndex < rounds; roundIndex++) {
+    for (
+      let pairingIndex = 0;
+      pairingIndex < rotatingTeams.length / 2;
+      pairingIndex++
+    ) {
+      const firstTeamId = rotatingTeams[pairingIndex];
+      const secondTeamId =
+        rotatingTeams[rotatingTeams.length - 1 - pairingIndex];
+
+      if (firstTeamId === null || secondTeamId === null) continue;
+
+      const swapHomeAndAway = (roundIndex + pairingIndex) % 2 !== 0;
+
+      fixture.push({
+        homeTeamId: swapHomeAndAway ? secondTeamId : firstTeamId,
+        awayTeamId: swapHomeAndAway ? firstTeamId : secondTeamId,
+        matchday: roundIndex + 1,
+        matchType: MatchType.LEAGUE,
+      });
+    }
+
+    const lastTeam = rotatingTeams.pop()!;
+    rotatingTeams.splice(1, 0, lastTeam);
+  }
+
+  return addReturnLeg(fixture, rounds);
+};
