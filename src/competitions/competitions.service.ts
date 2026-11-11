@@ -155,6 +155,18 @@ export class CompetitionsService {
     }));
   }
 
+  async findLeagueStandings(competitionEditionId: number) {
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
+
+    if (edition.competition.format !== CompetitionFormat.LEAGUE) {
+      throw new BadRequestException(
+        'Standings are only available for league competitions.',
+      );
+    }
+
+    return this.repo.findLeagueStandings(competitionEditionId);
+  }
+
   async countCompetitionParticipants(competitionEditionId: number) {
     await this.findCompetitionEditionById(competitionEditionId);
 

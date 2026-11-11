@@ -251,6 +251,28 @@ export class CompetitionsController {
     );
   }
 
+  @Get('/editions/:competitionEditionId/standings')
+  @ApiOperation({
+    summary: 'Get the standings of a league competition edition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'League standings retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Competition Edition not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Standings are only available for league competitions.',
+  })
+  getLeagueStandings(
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+  ) {
+    return this.competitionsService.findLeagueStandings(competitionEditionId);
+  }
+
   @Post('/editions/:competitionEditionId/teams')
   @ApiOperation({
     summary: 'Register a list of teams to a competition',

@@ -105,6 +105,18 @@ export class CompetitionsRepository {
     });
   }
 
+  findLeagueStandings(competitionEditionId: number) {
+    return this.prisma.competitionParticipant.findMany({
+      where: {
+        competitionEditionId,
+      },
+      include: {
+        team: true,
+      },
+      orderBy: [{ position: 'asc' }, { teamId: 'asc' }],
+    });
+  }
+
   findCompetitionGroupParticipants(competitionEditionId: number) {
     return this.prisma.competitionParticipant.findMany({
       where: {
