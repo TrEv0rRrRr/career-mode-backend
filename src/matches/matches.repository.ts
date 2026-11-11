@@ -581,6 +581,11 @@ export class MatchesRepository {
           fairPlayStats,
           tx,
         );
+        await this.finalizeGroupStageIfComplete(
+          tx,
+          competitionEditionId,
+          fairPlayStats,
+        );
       }
 
       const matchesByRound = await tx.match.findMany({
@@ -607,6 +612,131 @@ export class MatchesRepository {
 
       return updatedMatch;
     });
+  }
+
+  private async finalizeGroupStageIfComplete(
+    tx: txType,
+    competitionEditionId: number,
+    fairPlayStats: fairPlayStatsType,
+  ) {
+    const groupStageMatches = await tx.match.findMany({
+      where: {
+        competitionEditionId,
+        type: MatchType.GROUP_STAGE,
+      },
+      select: { status: true },
+    });
+
+    if (
+      groupStageMatches.length === 0 ||
+      !groupStageMatches.every(({ status }) => status === MatchStatus.PLAYED)
+    )
+      return;
+
+    const edition = await tx.competitionEdition.findUniqueOrThrow({
+      where: { id: competitionEditionId },
+      select: {
+        seasonId: true,
+        competition: {
+          select: {
+            name: true,
+            groups: true,
+            teamsPerGroup: true,
+          },
+        },
+      },
+    });
+    const participants = await tx.competitionParticipant.findMany({
+      where: {
+        competitionEditionId,
+        group: { not: null },
+      },
+    });
+    const groupedParticipants = new Map<string, CompetitionParticipant[]>();
+
+    for (const participant of participants) {
+      if (participant.group === null) continue;
+
+      const group = groupedParticipants.get(participant.group) ?? [];
+      group.push(participant);
+      groupedParticipants.set(participant.group, group);
+    }
+
+    const isThreeGroupsOfFour =
+      edition.competition.groups === 3 &&
+      edition.competition.teamsPerGroup === 4 &&
+      groupedParticipants.size === 3 &&
+      [...groupedParticipants.values()].every((group) => group.length === 4);
+    const thirdPlaceParticipants = participants.filter(
+      ({ position }) => position === 3,
+    );
+    const fairPlayScore = (teamId: number) => {
+      const stats = fairPlayStats.find((entry) => entry.teamId === teamId);
+      return (stats?._sum.yellowCards ?? 0) + (stats?._sum.redCards ?? 0) * 3;
+    };
+    const bestThirdPlaceIds = isThreeGroupsOfFour
+      ? [...thirdPlaceParticipants]
+          .sort(
+            (a, b) =>
+              (b.points ?? 0) - (a.points ?? 0) ||
+              b.gd - a.gd ||
+              b.gf - a.gf ||
+              fairPlayScore(a.teamId) - fairPlayScore(b.teamId),
+          )
+          .slice(0, 2)
+          .map(({ teamId }) => teamId)
+      : [];
+    const europaLeagueThirdPlaceIds =
+      edition.competition.name === 'UEFA Champions League'
+        ? thirdPlaceParticipants.map(({ teamId }) => teamId)
+        : [];
+
+    if (europaLeagueThirdPlaceIds.length > 0) {
+      const europaLeagueEdition = await tx.competitionEdition.findFirst({
+        where: {
+          seasonId: edition.seasonId,
+          competition: {
+            is: { name: 'UEFA Europa League' },
+          },
+        },
+        select: { id: true },
+      });
+
+      if (!europaLeagueEdition) {
+        throw new BadRequestException(
+          `No UEFA Europa League edition exists for season ${edition.seasonId}.`,
+        );
+      }
+
+      await tx.competitionParticipant.createMany({
+        data: europaLeagueThirdPlaceIds.map((teamId) => ({
+          competitionEditionId: europaLeagueEdition.id,
+          teamId,
+          points: 0,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    const qualifiedTeamIds = new Set([
+      ...participants
+        .filter(({ position }) => position === 1 || position === 2)
+        .map(({ teamId }) => teamId),
+      ...bestThirdPlaceIds,
+      ...europaLeagueThirdPlaceIds,
+    ]);
+    const eliminatedTeamIds = participants
+      .filter(({ teamId }) => !qualifiedTeamIds.has(teamId))
+      .map(({ teamId }) => teamId);
+
+    if (eliminatedTeamIds.length > 0) {
+      await tx.competitionParticipant.deleteMany({
+        where: {
+          competitionEditionId,
+          teamId: { in: eliminatedTeamIds },
+        },
+      });
+    }
   }
 
   changeStadium(matchId: number, data: ChangeMatchStadiumDTO) {

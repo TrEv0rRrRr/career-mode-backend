@@ -366,19 +366,16 @@ export class MatchesService {
       return;
     }
 
+    const losers = resolveKnockoutLosers(edition, matches);
+
     const nextRounds = getNextKnockoutRounds(
       matchType,
       edition.competition.hasThirdPlaceMatch,
     );
-
-    if (!nextRounds.length) {
-      return;
-    }
-
-    const losers =
-      matchType === MatchType.SEMI_FINAL
-        ? resolveKnockoutLosers(edition, matches)
-        : [];
+    const keepSemiFinalLosers =
+      matchType === MatchType.SEMI_FINAL &&
+      edition.competition.hasThirdPlaceMatch;
+    const eliminatedTeamIds = keepSemiFinalLosers ? [] : losers;
 
     const roundsToCreate = nextRounds.map((nextRound) => ({
       type: nextRound,
@@ -388,6 +385,7 @@ export class MatchesService {
     await this.knockoutRoundService.resolveRoundAndCreateNextRounds(
       currentRound.id,
       roundsToCreate,
+      eliminatedTeamIds,
     );
   }
 
