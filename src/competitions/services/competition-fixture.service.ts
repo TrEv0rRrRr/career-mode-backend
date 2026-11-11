@@ -14,7 +14,6 @@ import { generateKnockoutBracket } from '../../common/fixtures/groups-knockout/g
 import { generateGroupFixture } from '../../common/fixtures/groups-knockout/generate-group.fixture.ts';
 import { generateLeagueFixture } from '../../common/fixtures/league/league-20.fixture.ts';
 import { generateSuperCupPairing } from '../../common/fixtures/super-cup.fixture.ts';
-import { inferFirstKnockoutRound } from '../../common/helpers/knockouts/inferFirstKnockoutRound.ts';
 import { isTwoLeggedKnockoutRound } from '../../common/helpers/knockouts/isTwoLeggedKnockoutRound.ts';
 import { CalendarEntry } from '../../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../../common/types/MatchPairing.ts';
@@ -129,28 +128,25 @@ export class CompetitionFixtureService {
       );
 
     let fixture: MatchPairing[];
-    const matchType = inferFirstKnockoutRound(competition);
+    let matchType: MatchType;
 
     switch (competition.format) {
       case CompetitionFormat.SUPER_CUP:
         fixture = generateSuperCupPairing(participantTeams);
+        matchType = MatchType.FINAL;
         break;
       case CompetitionFormat.GROUPS_AND_KNOCKOUT:
-        fixture = generateGroupFixture(participantTeams);
-        break;
+        throw new BadRequestException(
+          'Create group-stage matches through the groups endpoint and knockout matches through knockout-round pairings.',
+        );
       case CompetitionFormat.LEAGUE:
         fixture = generateLeagueFixture(participantTeams);
+        matchType = MatchType.LEAGUE;
         break;
       case CompetitionFormat.KNOCKOUT:
-        fixture = generateKnockoutBracket(
-          {
-            homeTeamId: participantTeams[0].team.id,
-            awayTeamId: participantTeams[1].team.id,
-            matchType,
-          },
-          competition.hasTwoLeggedKnockout,
+        throw new BadRequestException(
+          'Create knockout matches through knockout-round pairings.',
         );
-        break;
       default:
         throw new BadRequestException('Unsupported competition format');
     }
@@ -167,9 +163,151 @@ export class CompetitionFixtureService {
       competitionEdition,
     );
 
+    if (competition.format === CompetitionFormat.SUPER_CUP) {
+      return this.matchesService.createMatch(
+        competitionEdition.id,
+        scheduledMatches[0],
+      );
+    }
+
     return this.matchesService.createManyMatches(
       competitionEdition.id,
-      inferFirstKnockoutRound(competition),
+      matchType,
+      scheduledMatches,
+    );
+  }
+
+  async createCompetitionGroups(
+    competitionEditionId: number,
+    competitionId: number,
+    groups: Record<string, number[]>,
+  ) {
+    const competition =
+      await this.competitionsService.findCompetitionById(competitionId);
+    const competitionEdition =
+      await this.competitionsService.findCompetitionEditionById(
+        competitionEditionId,
+      );
+
+    if (competitionEdition.competitionId !== competitionId) {
+      throw new BadRequestException(
+        'The competition edition does not belong to this competition.',
+      );
+    }
+
+    if (competition.format !== CompetitionFormat.GROUPS_AND_KNOCKOUT) {
+      throw new BadRequestException(
+        'Groups can only be created for GROUPS_AND_KNOCKOUT competitions.',
+      );
+    }
+
+    if (
+      !groups ||
+      typeof groups !== 'object' ||
+      Array.isArray(groups) ||
+      Object.keys(groups).length === 0
+    ) {
+      throw new BadRequestException('At least one group must be provided.');
+    }
+
+    const groupEntries = Object.entries(groups);
+    const participantTeams =
+      await this.competitionsService.findCompetitionParticipants(
+        competitionEditionId,
+      );
+    const participantIds = participantTeams.map(({ team }) => team.id);
+    const assignedIds: number[] = [];
+    const expectedTeamsPerGroup =
+      competition.teamsPerGroup ?? groupEntries[0][1]?.length;
+
+    for (const [groupName, teamIds] of groupEntries) {
+      if (
+        !groupName.trim() ||
+        !Array.isArray(teamIds) ||
+        teamIds.length === 0
+      ) {
+        throw new BadRequestException(
+          'Every group must have a name and at least one team.',
+        );
+      }
+
+      if (teamIds.length !== expectedTeamsPerGroup) {
+        throw new BadRequestException(
+          `Every group must contain exactly ${expectedTeamsPerGroup} teams.`,
+        );
+      }
+
+      if (teamIds.some((teamId) => !Number.isInteger(teamId) || teamId <= 0)) {
+        throw new BadRequestException(
+          `Group ${groupName} contains an invalid team id.`,
+        );
+      }
+
+      assignedIds.push(...teamIds);
+    }
+
+    if (
+      competition.groups !== null &&
+      groupEntries.length !== competition.groups
+    ) {
+      throw new BadRequestException(
+        `This competition requires exactly ${competition.groups} groups.`,
+      );
+    }
+
+    if (
+      new Set(assignedIds).size !== assignedIds.length ||
+      participantIds.length !== assignedIds.length ||
+      participantIds.some((teamId) => !assignedIds.includes(teamId))
+    ) {
+      throw new BadRequestException(
+        'Every participating team must be assigned to exactly one group.',
+      );
+    }
+
+    const existingMatches =
+      await this.matchesService.countMatchesByCompetitionEdition(
+        competitionEditionId,
+      );
+
+    if (existingMatches > 0) {
+      throw new BadRequestException(
+        'Matches already exist for this competition edition.',
+      );
+    }
+
+    const season = await this.seasonService.findSeasonById(
+      competitionEdition.seasonId,
+    );
+    const [year1, year2] = season.code.split('/');
+    const calendarGenerator = calendarTemplates[competition.name];
+
+    if (!calendarGenerator) {
+      throw new BadRequestException(
+        `No calendar template found for ${competition.name}`,
+      );
+    }
+
+    const calendar = calendarGenerator(year1, year2);
+    const groupMatchdays = calendar
+      .filter(
+        (entry) =>
+          entry.matchType === MatchType.GROUP_STAGE &&
+          entry.matchday !== undefined,
+      )
+      .map(({ matchday }) => matchday!);
+
+    const fixture = generateGroupFixture(groups, groupMatchdays);
+    const scheduledMatches = this.mergeFixtureWithCalendar(
+      fixture,
+      calendar,
+      participantTeams,
+      competitionEdition,
+    );
+
+    return this.matchesService.createGroupStageMatches(
+      competitionEditionId,
+      groups,
       scheduledMatches,
     );
   }
