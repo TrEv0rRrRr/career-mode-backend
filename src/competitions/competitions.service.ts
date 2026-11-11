@@ -233,4 +233,35 @@ export class CompetitionsService {
 
     return this.repo.findCompetitionMatches(competitionEditionId);
   }
+
+  async findCompetitionGroups(
+    competitionId: number,
+    competitionEditionId: number,
+  ) {
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
+
+    if (edition.competitionId !== competitionId) {
+      throw new BadRequestException(
+        'The competition edition does not belong to this competition.',
+      );
+    }
+
+    if (edition.competition.format !== CompetitionFormat.GROUPS_AND_KNOCKOUT) {
+      throw new BadRequestException(
+        'Groups are only available for GROUPS_AND_KNOCKOUT competitions.',
+      );
+    }
+
+    const participants =
+      await this.repo.findCompetitionGroupParticipants(competitionEditionId);
+    const groups: Record<string, typeof participants> = {};
+
+    for (const participant of participants) {
+      if (participant.group === null) continue;
+
+      (groups[participant.group] ??= []).push(participant);
+    }
+
+    return groups;
+  }
 }

@@ -105,6 +105,19 @@ export class CompetitionsRepository {
     });
   }
 
+  findCompetitionGroupParticipants(competitionEditionId: number) {
+    return this.prisma.competitionParticipant.findMany({
+      where: {
+        competitionEditionId,
+        group: { not: null },
+      },
+      include: {
+        team: true,
+      },
+      orderBy: [{ group: 'asc' }, { position: 'asc' }, { teamId: 'asc' }],
+    });
+  }
+
   registerParticipant(competitionEditionId: number, teamId: number) {
     return this.prisma.competitionParticipant.create({
       data: {

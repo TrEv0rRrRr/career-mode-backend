@@ -21,8 +21,8 @@ import {
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
-import { CreateCompetitionGroupsDto } from './dto/create-competition-groups.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
+import { CreateCompetitionGroupsDto } from './dto/create-competition-groups.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionEntity } from './entities/competition.entity.ts';
 import { CompetitionFixtureService } from './services/competition-fixture.service.ts';
@@ -398,6 +398,29 @@ export class CompetitionsController {
       competitionEditionId,
       competitionId,
       data.groups,
+    );
+  }
+
+  @Get(':competitionId/edition/:competitionEditionId/groups')
+  @ApiOperation({
+    summary: 'Get groups and standings for a competition edition',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Competition groups and standings retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'Groups are only available for GROUPS_AND_KNOCKOUT competitions.',
+  })
+  getCompetitionGroups(
+    @Param('competitionId', ParseIntPipe) competitionId: number,
+    @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
+  ) {
+    return this.competitionsService.findCompetitionGroups(
+      competitionId,
+      competitionEditionId,
     );
   }
 
