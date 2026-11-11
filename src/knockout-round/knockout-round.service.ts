@@ -195,12 +195,14 @@ export class KnockoutRoundService {
   async resolveRoundAndCreateNextRounds(
     knockoutRoundId: number,
     nextRounds: NextKnockoutRoundData[],
+    eliminatedTeamIds: number[] = [],
   ) {
     await this.findKnockoutRoundById(knockoutRoundId);
 
     return this.repo.resolveRoundAndCreateNextRounds(
       knockoutRoundId,
       nextRounds,
+      eliminatedTeamIds,
     );
   }
 }

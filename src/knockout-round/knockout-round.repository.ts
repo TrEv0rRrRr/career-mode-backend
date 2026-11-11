@@ -116,6 +116,7 @@ export class KnockoutRoundRepository {
   async resolveRoundAndCreateNextRounds(
     knockoutRoundId: number,
     nextRounds: NextKnockoutRoundData[],
+    eliminatedTeamIds: number[] = [],
   ) {
     return this.prisma.$transaction(async (tx) => {
       // Solo una ejecución puede completar esta ronda.
@@ -161,6 +162,15 @@ export class KnockoutRoundRepository {
         });
 
         createdRounds.push(createdRound);
+      }
+
+      if (eliminatedTeamIds.length > 0) {
+        await tx.competitionParticipant.deleteMany({
+          where: {
+            competitionEditionId,
+            teamId: { in: eliminatedTeamIds },
+          },
+        });
       }
 
       return createdRounds;
