@@ -89,6 +89,22 @@ export class MatchesService {
     return this.repo.createMany(competitionEditionId, type, data);
   }
 
+  async createGroupStageMatches(
+    competitionEditionId: number,
+    groups: Record<string, number[]>,
+    matches: CreateMatchDto[],
+  ) {
+    await this.competitionEditionQueryService.findCompetitionEditionById(
+      competitionEditionId,
+    );
+
+    return this.repo.createGroupStageMatches(
+      competitionEditionId,
+      groups,
+      matches,
+    );
+  }
+
   async countMatchesByCompetitionEdition(competitionEditionId: number) {
     await this.competitionEditionQueryService.findCompetitionEditionById(
       competitionEditionId,

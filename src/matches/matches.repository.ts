@@ -145,6 +145,45 @@ export class MatchesRepository {
     });
   }
 
+  async createGroupStageMatches(
+    competitionEditionId: number,
+    groups: Record<string, number[]>,
+    matches: CreateMatchDto[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      for (const [group, teamIds] of Object.entries(groups)) {
+        const updatedParticipants = await tx.competitionParticipant.updateMany({
+          where: {
+            competitionEditionId,
+            teamId: { in: teamIds },
+          },
+          data: { group },
+        });
+
+        if (updatedParticipants.count !== teamIds.length) {
+          throw new BadRequestException(
+            'A group contains teams that do not participate in this competition edition.',
+          );
+        }
+      }
+
+      return tx.match.createMany({
+        data: matches.map((match) => ({
+          ...match,
+          type: MatchType.GROUP_STAGE,
+          status: MatchStatus.SCHEDULED,
+          homeGoals: 0,
+          awayGoals: 0,
+          homePenaltyGoals: null,
+          awayPenaltyGoals: null,
+          finishType: null,
+          tieId: null,
+          competitionEditionId,
+        })),
+      });
+    });
+  }
+
   async recalculateLeagueStandings(
     matches: Match[],
     competitionParticipants: CompetitionParticipant[],
