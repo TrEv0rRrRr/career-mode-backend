@@ -567,6 +567,36 @@ export class MatchesRepository {
           competitionEditionId,
           tx,
         );
+
+        const leagueMatches = await tx.match.findMany({
+          where: {
+            competitionEditionId,
+            type: MatchType.LEAGUE,
+          },
+          select: { status: true },
+        });
+
+        if (
+          leagueMatches.length > 0 &&
+          leagueMatches.every(({ status }) => status === MatchStatus.PLAYED)
+        ) {
+          const topTeams = await tx.competitionParticipant.findMany({
+            where: { competitionEditionId },
+            orderBy: [{ position: 'asc' }, { teamId: 'asc' }],
+            take: 2,
+            select: { teamId: true },
+          });
+
+          if (topTeams.length === 2) {
+            await tx.competitionEdition.update({
+              where: { id: competitionEditionId },
+              data: {
+                winnerTeamId: topTeams[0].teamId,
+                runnerUpTeamId: topTeams[1].teamId,
+              },
+            });
+          }
+        }
       }
 
       if (
