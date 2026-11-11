@@ -111,4 +111,32 @@ export const stadiums = [
     capacity: 50186,
     openingDate: new Date('2012-08-17'),
   },
+  {
+    name: 'Riyadh Air Metropolitano',
+    country: 'Spain',
+    image: '/images/stadiums/riyadh-air-metropolitano.png',
+    capacity: 70692,
+    openingDate: new Date('2017-09-16'),
+  },
+  {
+    name: 'Emirates Stadium',
+    country: 'England',
+    image: '/images/stadiums/emirates-stadium.png',
+    capacity: 60704,
+    openingDate: new Date('2006-07-22'),
+  },
+  {
+    name: 'Red Bull Arena',
+    country: 'Germany',
+    image: '/images/stadiums/red-bull-arena.png',
+    capacity: 47069,
+    openingDate: new Date('2004-03-17'),
+  },
+  {
+    name: 'Groupama Stadium',
+    country: 'France',
+    image: '/images/stadiums/groupama-stadium.png',
+    capacity: 59186,
+    openingDate: new Date('2016-01-09'),
+  },
 ];

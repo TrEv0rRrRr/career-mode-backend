@@ -95,4 +95,28 @@ export const managers = [
     nationality: 'France',
     face: '/images/managers/bruno-genesio.png',
   },
+  {
+    name: 'Diego Simeone',
+    birthDate: new Date('1970-04-28'),
+    nationality: 'Argentina',
+    face: '/images/managers/diego-simeone.png',
+  },
+  {
+    name: 'Mikel Arteta',
+    birthDate: new Date('1982-03-26'),
+    nationality: 'Spain',
+    face: '/images/managers/mikel-arteta.png',
+  },
+  {
+    name: 'Marco Rose',
+    birthDate: new Date('1976-09-11'),
+    nationality: 'Germany',
+    face: '/images/managers/marco-rose.png',
+  },
+  {
+    name: 'Pierre Sage',
+    birthDate: new Date('1979-05-05'),
+    nationality: 'France',
+    face: '/images/managers/pierre-sage.png',
+  },
 ];
