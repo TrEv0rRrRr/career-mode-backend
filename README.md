@@ -166,7 +166,6 @@ Once the application is running, access the Swagger UI at:
 
 The main backend functionality is implemented. Remaining work includes:
 
-- End-to-end testing of the complete competition workflow.
 - National team management.
 - National team competitions.
 - Adapting existing helpers to support national team formats.
