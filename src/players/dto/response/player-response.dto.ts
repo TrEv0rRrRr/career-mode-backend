@@ -1,4 +1,5 @@
 import { PreferredFoot } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/client';
 import { TeamResponse } from '../../../common/types/TeamResponse.ts';
 
 export type PlayerPositions = {
@@ -36,6 +37,61 @@ export type PlayerTeams = {
   endDate: Date | null;
 };
 
+export type PlayerSeasonStats = {
+  season: {
+    id: number;
+    startDate: Date;
+    endDate: Date;
+    code: string;
+    notes: string | null;
+    careerId: number;
+  };
+} & {
+  playerId: number;
+  teamId: number;
+  seasonId: number;
+  matches: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  rating: Decimal;
+};
+
+export type PlayerTeamSeasonStats = {
+  team: {
+    id: number;
+    name: string;
+    shortName: string;
+    country: string;
+    logo: string | null;
+    foundationDate: Date;
+    primaryColor: string;
+    secondaryColor: string;
+    stadiumId: number;
+    managerId: number;
+    leagueId: number;
+  };
+  season: {
+    id: number;
+    startDate: Date;
+    endDate: Date;
+    code: string;
+    notes: string | null;
+    careerId: number;
+  };
+} & {
+  playerId: number;
+  teamId: number;
+  matches: number;
+  seasonId: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  rating: Decimal;
+};
+
 export class PlayerResponseDto {
   id!: number;
   name!: string;
@@ -59,5 +115,19 @@ export class PlayerTeamsResponseDto {
   jerseyNumber!: number;
   startDate!: Date;
   endDate!: Date | null;
+  team!: TeamResponse;
+}
+
+export class PlayerSeasonStatsResponseDto {
+  matches!: number;
+  goals!: number;
+  assists!: number;
+  yellowCards!: number;
+  redCards!: number;
+  rating!: number;
+  season!: string;
+}
+
+export class PlayerTeamSeasonStatsResponseDto extends PlayerSeasonStatsResponseDto {
   team!: TeamResponse;
 }

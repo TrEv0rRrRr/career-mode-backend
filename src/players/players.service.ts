@@ -251,7 +251,11 @@ export class PlayersService {
   async findPlayerSeasonStats(playerId: number) {
     await this.findPlayerById(playerId);
 
-    return this.repo.findPlayerSeasonStats(playerId);
+    const playerSeasonStats = await this.repo.findPlayerSeasonStats(playerId);
+
+    return playerSeasonStats.map((pss) =>
+      PlayerMapper.seasonStatsToResponse(pss),
+    );
   }
 
   async findPlayerTeamSeasonStats(
@@ -263,6 +267,18 @@ export class PlayersService {
     await this.teamsService.findTeamById(teamId);
     await this.seasonsService.findSeasonById(seasonId);
 
-    return this.repo.findPlayerStatsBySeasonAndTeam(playerId, teamId, seasonId);
+    const playerTeamSeasonStats =
+      await this.repo.findPlayerStatsBySeasonAndTeam(
+        playerId,
+        teamId,
+        seasonId,
+      );
+
+    if (!playerTeamSeasonStats)
+      throw new BadRequestException(
+        'This player has no stats because he has not played any match this season',
+      );
+
+    return PlayerMapper.teamSeasonStatsToResponse(playerTeamSeasonStats);
   }
 }

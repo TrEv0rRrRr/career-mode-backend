@@ -261,7 +261,10 @@ export class PlayersRepository {
   // ! Player season stats Queries
 
   findPlayerSeasonStats(playerId: number) {
-    return this.prisma.playerSeasonStats.findMany({ where: { playerId } });
+    return this.prisma.playerSeasonStats.findMany({
+      where: { playerId },
+      include: { season: true },
+    });
   }
 
   findPlayerStatsBySeasonAndTeam(
@@ -272,6 +275,10 @@ export class PlayersRepository {
     return this.prisma.playerSeasonStats.findUnique({
       where: {
         playerId_teamId_seasonId: { playerId, teamId, seasonId },
+      },
+      include: {
+        team: true,
+        season: true,
       },
     });
   }
