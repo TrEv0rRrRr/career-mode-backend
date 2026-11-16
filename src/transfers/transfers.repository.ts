@@ -22,7 +22,11 @@ export class TransfersRepository {
     });
   }
 
-  completeTransfer(currentTeam: PlayerTeam | null, data: CreateTransferDto) {
+  completeTransfer(
+    currentTeam: PlayerTeam | null,
+    data: CreateTransferDto,
+    type: TransferType,
+  ) {
     return this.prisma.$transaction(async (tx) => {
       if (currentTeam)
         await tx.playerTeam.update({
@@ -47,7 +51,7 @@ export class TransfersRepository {
         data: {
           date: data.date,
           fee: data.fee,
-          type: data.type,
+          type,
           fromTeamId: data.fromTeamId,
           toTeamId: data.toTeamId,
           playerId: data.playerId,

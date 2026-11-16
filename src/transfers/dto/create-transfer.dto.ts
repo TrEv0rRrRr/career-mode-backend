@@ -1,9 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -30,15 +28,6 @@ export class CreateTransferDto {
   @Type(() => Date)
   @IsDate()
   date!: Date;
-
-  @ApiProperty({
-    example: TransferType.FREE_AGENT,
-    enum: TransferType,
-    description: 'The type of the transfer',
-  })
-  @IsNotEmpty()
-  @IsEnum(TransferType)
-  type!: TransferType;
 
   @ApiProperty({
     example: 1,

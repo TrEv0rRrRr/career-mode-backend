@@ -34,7 +34,7 @@ export class TransfersService {
     return this.repo.findByType(type);
   }
 
-  async completeTransfer(data: CreateTransferDto) {
+  async completeTransfer(data: CreateTransferDto, type: TransferType) {
     await this.playerService.findPlayerById(data.playerId);
 
     if (data.fromTeamId) await this.teamsService.findTeamById(data.fromTeamId);
@@ -57,7 +57,7 @@ export class TransfersService {
 
     if (
       data.fromTeamId === data.toTeamId &&
-      data.type !== TransferType.YOUTH_PROMOTION
+      type !== TransferType.YOUTH_PROMOTION
     )
       throw new BadRequestException(
         'The selling team cannot be the same as the buying team',
@@ -66,15 +66,15 @@ export class TransfersService {
     if (
       currentTeam &&
       currentTeam.teamId !== data.fromTeamId &&
-      data.type !== TransferType.FREE_AGENT &&
-      data.type !== TransferType.YOUTH_PROMOTION
+      type !== TransferType.FREE_AGENT &&
+      type !== TransferType.YOUTH_PROMOTION
     ) {
       throw new BadRequestException(
         'The player is not currently playing for the specified selling team.',
       );
     }
 
-    switch (data.type) {
+    switch (type) {
       case TransferType.TRANSFER:
       case TransferType.LOAN:
         if (!data.fromTeamId)
@@ -92,7 +92,7 @@ export class TransfersService {
         break;
     }
 
-    return this.repo.completeTransfer(currentTeam, data);
+    return this.repo.completeTransfer(currentTeam, data, type);
   }
 
   async deleteTransfer(transferId: number) {
