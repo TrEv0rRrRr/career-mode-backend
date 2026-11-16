@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `match` MODIFY `finish_type` ENUM('REGULAR_TIME', 'EXTRA_TIME', 'PENALTIES') NULL;
