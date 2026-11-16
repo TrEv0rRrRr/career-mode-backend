@@ -34,20 +34,36 @@ type txType = Omit<
   '$connect' | '$disconnect' | '$on' | '$use' | '$extends'
 >;
 
+export const matchInclude = {
+  homeTeam: true,
+  awayTeam: true,
+  matchTeamStats: true,
+  matchPlayerStats: true,
+  stadium: true,
+} satisfies Prisma.MatchInclude;
+
+export type MatchWithRelations = Prisma.MatchGetPayload<{
+  include: typeof matchInclude;
+}>;
+
+export const tieWithMatchesInclude = {
+  matches: {
+    include: matchInclude,
+  },
+} satisfies Prisma.TieInclude;
+
+export type TieWithMatches = Prisma.TieGetPayload<{
+  include: typeof tieWithMatchesInclude;
+}>;
+
 @Injectable()
 export class MatchesRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(matchId: number) {
+  findOne(matchId: number): Promise<MatchWithRelations | null> {
     return this.prisma.match.findUnique({
       where: { id: matchId },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        matchTeamStats: true,
-        matchPlayerStats: true,
-        stadium: true,
-      },
+      include: matchInclude,
     });
   }
 
@@ -60,14 +76,12 @@ export class MatchesRepository {
     });
   }
 
-  findMatchesByTieId(tieId: number) {
+  findMatchesByTieId(tieId: number): Promise<TieWithMatches | null> {
     return this.prisma.tie.findUnique({
       where: {
         id: tieId,
       },
-      include: {
-        matches: true,
-      },
+      include: tieWithMatchesInclude,
     });
   }
 

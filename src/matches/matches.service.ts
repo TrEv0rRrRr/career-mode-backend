@@ -27,7 +27,9 @@ import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
+import { MatchMapper } from './dto/mapper/match.mapper.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
+import { MatchResponseDto } from './dto/response/match-response.dto.ts';
 import { CreateMatchPlayerStatsDto } from './dto/stats/create-match-player-stats.dto.ts';
 import { CreateMatchTeamStatsDto } from './dto/stats/create-match-team-stats.dto.ts';
 import { UpdateMatchDto } from './dto/update-match.dto.ts';
@@ -52,7 +54,7 @@ export class MatchesService {
 
     if (!match) throw new MatchNotFoundException();
 
-    return match;
+    return MatchMapper.toResponse(match);
   }
 
   async findMatchesByRound(competitionEditionId: number, matchType: MatchType) {
@@ -67,7 +69,7 @@ export class MatchesService {
 
     if (!matches) throw new MatchNotFoundException();
 
-    return matches;
+    return MatchMapper.toResponseWithTie(matches);
   }
 
   async changeStadium(matchId: number, data: ChangeMatchStadiumDTO) {
@@ -268,8 +270,8 @@ export class MatchesService {
     );
     this.validateMatchTeamStats(data.teamStats, match);
     await this.validateMatchPlayerStats(
-      match.homeTeamId,
-      match.awayTeamId,
+      match.homeTeam.teamId,
+      match.awayTeam.teamId,
       data.match,
       data.playerStats,
     );
@@ -472,16 +474,16 @@ export class MatchesService {
 
   private validateTwoLeggedResult(
     firstLeg: Match,
-    secondLeg: Match,
+    secondLeg: MatchResponseDto,
     result: UpdateMatchDto,
     finishType: MatchFinishType,
   ): boolean {
     const firstTeamSecondLegGoals =
-      secondLeg.homeTeamId === firstLeg.homeTeamId
+      secondLeg.homeTeam.teamId === firstLeg.homeTeamId
         ? result.homeGoals
         : result.awayGoals;
     const secondTeamSecondLegGoals =
-      secondLeg.homeTeamId === firstLeg.awayTeamId
+      secondLeg.homeTeam.teamId === firstLeg.awayTeamId
         ? result.homeGoals
         : result.awayGoals;
 
@@ -505,7 +507,7 @@ export class MatchesService {
     return aggregateIsTied;
   }
 
-  private validateLegOrder(matches: Match[]): Match {
+  private validateLegOrder(matches: MatchResponseDto[]): Match {
     const firstLeg = matches.find(({ leg }) => leg === MatchLeg.FIRST);
 
     if (!firstLeg || firstLeg.status !== MatchStatus.PLAYED)
@@ -513,12 +515,12 @@ export class MatchesService {
         'Before playing the second leg, you should finish the first',
       );
 
-    return firstLeg;
+    return MatchMapper.toModelFromResponse(firstLeg);
   }
 
   private validateMatchTeamStats(
     teamStats: CreateMatchTeamStatsDto[],
-    match: Match,
+    match: MatchResponseDto,
   ) {
     if (teamStats.length !== 2)
       throw new BadRequestException(
@@ -534,11 +536,11 @@ export class MatchesService {
     }
 
     const homeTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.homeTeamId,
+      ({ teamId }) => teamId === match.homeTeam.teamId,
     );
 
     const awayTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.awayTeamId,
+      ({ teamId }) => teamId === match.awayTeam.teamId,
     );
 
     if (!homeTeamStats || !awayTeamStats)
@@ -560,7 +562,7 @@ export class MatchesService {
   }
 
   private getWinnerTeamId(
-    match: Match,
+    match: MatchResponseDto,
     data: UpdateMatchDto,
     finishType: MatchFinishType,
   ) {
@@ -570,11 +572,11 @@ export class MatchesService {
       data.awayPenaltyGoals
     )
       return data.homePenaltyGoals > data.awayPenaltyGoals
-        ? match.homeTeamId
-        : match.awayTeamId;
+        ? match.homeTeam.teamId
+        : match.awayTeam.teamId;
 
-    if (data.homeGoals > data.awayGoals) return match.homeTeamId;
-    else if (data.awayGoals > data.homeGoals) return match.awayTeamId;
+    if (data.homeGoals > data.awayGoals) return match.homeTeam.teamId;
+    else if (data.awayGoals > data.homeGoals) return match.awayTeam.teamId;
     else return null;
   }
 }

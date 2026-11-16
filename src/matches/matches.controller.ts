@@ -10,12 +10,22 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { MatchFinishType, MatchType } from '@prisma/client';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { PlayMatchQueryDto } from './dto/play-match-query.dto.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
+import {
+  MatchesWithTieResponseDto,
+  MatchResponseDto,
+} from './dto/response/match-response.dto.ts';
 import { MatchesService } from './matches.service.ts';
 
 @Controller('matches')
@@ -26,15 +36,19 @@ export class MatchesController {
   @ApiOperation({
     summary: 'Gets a match',
   })
+  @ApiOkResponse({
+    type: MatchResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Match retrieved',
+    type: MatchResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Match not found',
   })
-  getMatch(@Param('matchId', ParseIntPipe) matchId: number) {
+  async getMatch(@Param('matchId', ParseIntPipe) matchId: number) {
     return this.matchesService.findMatch(matchId);
   }
 
@@ -42,11 +56,15 @@ export class MatchesController {
   @ApiOperation({
     summary: 'Find matches by tie id',
   })
+  @ApiOkResponse({
+    type: MatchesWithTieResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Matches retrieved',
+    type: MatchesWithTieResponseDto,
   })
-  getMatchesByTie(@Param('tieId', ParseIntPipe) tieId: number) {
+  async getMatchesByTie(@Param('tieId', ParseIntPipe) tieId: number) {
     return this.matchesService.findMatchesByTieId(tieId);
   }
 
