@@ -10,15 +10,9 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateManagerDto } from './dto/create-manager.dto.ts';
 import { UpdateManagerDto } from './dto/update-manager.dto.ts';
-import { ManagerEntity } from './entities/manager.entity.ts';
 import { ManagersService } from './managers.service.ts';
 
 @Controller('managers')
@@ -26,10 +20,6 @@ export class ManagersController {
   constructor(private readonly managersService: ManagersService) {}
 
   @Get()
-  @ApiOkResponse({
-    type: ManagerEntity,
-    isArray: true,
-  })
   @ApiOperation({ summary: 'Get all managers' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -40,9 +30,6 @@ export class ManagersController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: ManagerEntity,
-  })
   @ApiOperation({ summary: 'Get a manager by its id' })
   @ApiResponse({
     status: HttpStatus.OK,

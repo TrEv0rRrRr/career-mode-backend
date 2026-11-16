@@ -11,16 +11,10 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
 import { TeamQueryDto } from './dto/team-query.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
-import { TeamEntity } from './entities/team.entity.ts';
 import { TeamsService } from './teams.service.ts';
 
 @Controller('teams')
@@ -28,10 +22,6 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Get()
-  @ApiOkResponse({
-    type: TeamEntity,
-    isArray: true,
-  })
   @ApiOperation({
     summary:
       'Get all teams or filters them by country or the league where they play at',
@@ -53,9 +43,6 @@ export class TeamsController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: TeamEntity,
-  })
   @ApiOperation({ summary: 'Get a team by its id' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -70,9 +57,6 @@ export class TeamsController {
   }
 
   @Get('name/:name')
-  @ApiOkResponse({
-    type: TeamEntity,
-  })
   @ApiOperation({ summary: 'Get a team by its name' })
   @ApiResponse({
     status: HttpStatus.OK,

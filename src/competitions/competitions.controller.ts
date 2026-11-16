@@ -11,20 +11,13 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOkResponse,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { CreateCompetitionGroupsDto } from './dto/create-competition-groups.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
-import { CompetitionEntity } from './entities/competition.entity.ts';
 import { CompetitionFixtureService } from './services/competition-fixture.service.ts';
 
 @Controller('competitions')
@@ -34,10 +27,6 @@ export class CompetitionsController {
     private readonly competitionFixtureService: CompetitionFixtureService,
   ) {}
   @Get()
-  @ApiOkResponse({
-    type: CompetitionEntity,
-    isArray: true,
-  })
   @ApiOperation({
     summary: 'Gets all competitions or filters them by type or format',
   })
@@ -70,9 +59,6 @@ export class CompetitionsController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: CompetitionEntity,
-  })
   @ApiOperation({ summary: "Gets a competition by it's id" })
   @ApiResponse({
     status: HttpStatus.OK,

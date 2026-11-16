@@ -8,20 +8,15 @@ import {
   ParseIntPipe,
   Post,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CareersService } from './careers.service.ts';
 import { CreateCareerDto } from './dto/create-career.dto.ts';
-import { CareerEntity } from './entities/career.entity.ts';
 
 @Controller('career')
 export class CareersController {
   constructor(private readonly careersService: CareersService) {}
 
   @Get()
-  @ApiOkResponse({
-    type: CareerEntity,
-    isArray: true,
-  })
   @ApiOperation({
     summary: 'Get all careers',
   })
@@ -34,9 +29,6 @@ export class CareersController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: CareerEntity,
-  })
   @ApiOperation({ summary: 'Get a career by its id' })
   @ApiResponse({
     status: HttpStatus.OK,

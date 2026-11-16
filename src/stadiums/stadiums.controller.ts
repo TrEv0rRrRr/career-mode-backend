@@ -10,13 +10,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
-import { StadiumEntity } from '../stadiums/entities/stadium.entity.ts';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateStadiumDto } from './dto/create-stadium.dto.ts';
 import { UpdateStadiumDto } from './dto/update-stadium.dto.ts';
 import { StadiumsService } from './stadiums.service.ts';
@@ -26,10 +20,6 @@ export class StadiumsController {
   constructor(private readonly stadiumsService: StadiumsService) {}
 
   @Get()
-  @ApiOkResponse({
-    type: StadiumEntity,
-    isArray: true,
-  })
   @ApiOperation({ summary: 'Get all stadiums' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -40,9 +30,6 @@ export class StadiumsController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: StadiumEntity,
-  })
   @ApiOperation({ summary: 'Get a stadium by its id' })
   @ApiResponse({
     status: HttpStatus.OK,

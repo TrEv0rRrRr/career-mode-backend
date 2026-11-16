@@ -11,20 +11,13 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOkResponse,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
 import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
 import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
-import { PlayerPositionsEntity } from './entities/player-positions.entity.ts';
-import { PlayerEntity } from './entities/player.entity.ts';
 import { PlayersService } from './players.service.ts';
 
 @Controller('players')
@@ -33,10 +26,6 @@ export class PlayersController {
   // ! Player Endpoints
 
   @Get()
-  @ApiOkResponse({
-    type: PlayerEntity,
-    isArray: true,
-  })
   @ApiOperation({ summary: 'Get all players' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -47,9 +36,6 @@ export class PlayersController {
   }
 
   @Get(':id')
-  @ApiOkResponse({
-    type: PlayerEntity,
-  })
   @ApiOperation({ summary: 'Get a player by its id' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -64,9 +50,6 @@ export class PlayersController {
   }
 
   @Get('name/:name')
-  @ApiOkResponse({
-    type: PlayerEntity,
-  })
   @ApiOperation({ summary: 'Get a player by its name' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -146,10 +129,6 @@ export class PlayersController {
   // ! Player Position Endpoints
 
   @Get(':playerId/positions')
-  @ApiOkResponse({
-    type: PlayerPositionsEntity,
-    isArray: true,
-  })
   @ApiOperation({ summary: "Get all player's position" })
   @ApiResponse({
     status: HttpStatus.OK,

@@ -9,16 +9,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { TransferType } from '@prisma/client';
 import { CreateTransferDto } from './dto/create-transfer.dto.ts';
-import { TransferTypeQueryDto } from './dto/transfer-query.dto.ts';
-import { TransferEntity } from './entities/transfer.entity.ts';
+import {
+  TransferTypeOptionalQueryDto,
+  TransferTypeRequiredQueryDto,
+} from './dto/transfer-query.dto.ts';
 import { TransfersService } from './transfers.service.ts';
 
 @Controller('transfers')
@@ -26,10 +23,6 @@ export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
   @Get()
-  @ApiOkResponse({
-    type: TransferEntity,
-    isArray: true,
-  })
   @ApiOperation({
     summary: 'Gets all transfers or filters them by type',
   })
@@ -43,7 +36,7 @@ export class TransfersController {
     enum: TransferType,
     description: 'Filter transfers by type',
   })
-  getTransfers(@Query() query: TransferTypeQueryDto) {
+  getTransfers(@Query() query: TransferTypeOptionalQueryDto) {
     if (query.type)
       return this.transfersService.findTransfersByType(query.type);
 
@@ -93,8 +86,17 @@ export class TransfersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'The transfer date must be within the selected season.',
   })
-  completeTransfer(@Body() data: CreateTransferDto) {
-    return this.transfersService.completeTransfer(data);
+  @ApiQuery({
+    name: 'type',
+    required: true,
+    enum: TransferType,
+    description: 'Select the transfer type',
+  })
+  completeTransfer(
+    @Body() data: CreateTransferDto,
+    @Query() query: TransferTypeRequiredQueryDto,
+  ) {
+    return this.transfersService.completeTransfer(data, query.type);
   }
 
   @Delete(':transferId')
