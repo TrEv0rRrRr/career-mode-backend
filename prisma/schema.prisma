@@ -155,7 +155,7 @@ model Match {
   winnerTeamId         Int?               @map("winner_team_id")
   competitionEditionId Int                @map("competition_edition_id")
   type                 MatchType
-  finishType           MatchFinishType?   @map("finish_type")
+  finishType           MatchFinishType    @map("finish_type")
   matchPlayerStats     MatchPlayerStats[]
 
   stadium            Stadium            @relation(fields: [stadiumId], references: [id])
