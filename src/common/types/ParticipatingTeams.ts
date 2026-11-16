@@ -1,6 +1,6 @@
 import { Team } from '@prisma/client';
 
 export type ParticipatingTeam = {
-  team: Team;
+  team: Pick<Team, 'id' | 'stadiumId'>;
   position: number | null;
 };

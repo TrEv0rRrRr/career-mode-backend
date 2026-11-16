@@ -4,7 +4,7 @@ import { generateLeagueFixture } from './league-20.fixture.ts';
 
 const createParticipants = (teamIds: number[]): ParticipatingTeam[] =>
   teamIds.map((id) => ({
-    team: { id } as ParticipatingTeam['team'],
+    team: { id, stadiumId: 1 },
     position: null,
   }));
 
@@ -31,7 +31,7 @@ describe('generateLeagueFixture', () => {
 
   it('uses the 20-team schedule for both legs when all positions are set', () => {
     const participants = Array.from({ length: 20 }, (_, index) => ({
-      team: { id: index + 1 } as ParticipatingTeam['team'],
+      team: { id: index + 1, stadiumId: 1 },
       position: index + 1,
     }));
     const fixture = generateLeagueFixture(participants);
