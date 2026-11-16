@@ -61,9 +61,7 @@ export class KnockoutRoundRepository {
           type: transformKnockoutRoundTypeToMatchType(type),
         },
       },
-      include: {
-        qualifiedTeams: true,
-      },
+      include: knockoutRoundInclude,
     });
   }
 

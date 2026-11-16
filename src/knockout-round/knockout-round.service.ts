@@ -10,12 +10,11 @@ import { CompetitionsService } from '../competitions/competitions.service.ts';
 import { CompetitionFixtureService } from '../competitions/services/competition-fixture.service.ts';
 import { CreateKnockoutRoundPairingsDto } from './dto/create-knockout-pairing.dto.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
+import { KnockoutRoundMapper } from './dto/mapper/knockout-round.mapper.ts';
+import { KnockoutRoundResponseDto } from './dto/response/knockout-round-response.dto.ts';
 import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 import { KnockoutRoundNotFoundException } from './exceptions/knockout-round-not-found.exception.ts';
-import {
-  KnockoutRoundRepository,
-  KnockoutRoundWithRelations,
-} from './knockout-round.repository.ts';
+import { KnockoutRoundRepository } from './knockout-round.repository.ts';
 
 @Injectable()
 export class KnockoutRoundService {
@@ -27,13 +26,13 @@ export class KnockoutRoundService {
 
   async findKnockoutRoundById(
     knockoutRoundId: number,
-  ): Promise<KnockoutRoundWithRelations> {
+  ): Promise<KnockoutRoundResponseDto> {
     const knockoutRound =
       await this.repo.findKnockoutRoundById(knockoutRoundId);
 
     if (!knockoutRound) throw new KnockoutRoundNotFoundException();
 
-    return knockoutRound;
+    return KnockoutRoundMapper.toResponse(knockoutRound);
   }
 
   async findKnockoutRoundByTypeAndCompetitionEditionId(
@@ -44,10 +43,14 @@ export class KnockoutRoundService {
       competitionEditionId,
     );
 
-    return this.repo.findKnockoutRoundByTypeAndCompetitionEditionId(
+    const kR = await this.repo.findKnockoutRoundByTypeAndCompetitionEditionId(
       competitionEditionId,
       type,
     );
+
+    if (!kR) throw new KnockoutRoundNotFoundException();
+
+    return KnockoutRoundMapper.toResponse(kR);
   }
 
   async completeKnockoutRound(knockoutRoundId: number) {
