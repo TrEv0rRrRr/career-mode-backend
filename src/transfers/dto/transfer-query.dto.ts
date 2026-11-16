@@ -1,8 +1,14 @@
 import { TransferType } from '@prisma/client';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
-export class TransferTypeQueryDto {
+export class TransferTypeOptionalQueryDto {
   @IsOptional()
   @IsEnum(TransferType)
   type?: TransferType;
+}
+
+export class TransferTypeRequiredQueryDto {
+  @IsNotEmpty()
+  @IsEnum(TransferType)
+  type!: TransferType;
 }
