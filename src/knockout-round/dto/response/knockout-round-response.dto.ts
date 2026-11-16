@@ -1,12 +1,9 @@
+import { TeamResponse } from '../../../common/types/TeamResponse.ts';
 import { KnockoutRoundType } from '../../enums/KnockoutRoundType.ts';
 
 export class KnockoutQualifiedTeam {
   teamId!: number;
-  team!: {
-    name: string;
-    logo: string | null;
-    country: string;
-  };
+  team!: TeamResponse;
 }
 
 export class KnockoutRoundResponseDto {
