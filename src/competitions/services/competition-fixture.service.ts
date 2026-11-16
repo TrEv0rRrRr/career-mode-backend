@@ -19,7 +19,7 @@ import { CalendarEntry } from '../../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../../common/types/MatchPairing.ts';
 import { ParticipatingTeam } from '../../common/types/ParticipatingTeams.ts';
 import { CreatePairingDto } from '../../knockout-round/dto/create-knockout-pairing.dto.ts';
-import { KnockoutRoundWithRelations } from '../../knockout-round/knockout-round.repository.ts';
+import { KnockoutRoundResponseDto } from '../../knockout-round/dto/response/knockout-round-response.dto.ts';
 import { CreateMatchDto } from '../../matches/dto/create-match.dto.ts';
 import { MatchesService } from '../../matches/matches.service.ts';
 import { SeasonsService } from '../../seasons/seasons.service.ts';
@@ -313,7 +313,7 @@ export class CompetitionFixtureService {
   }
 
   async generateKnockoutRoundMatches(
-    knockoutRound: KnockoutRoundWithRelations,
+    knockoutRound: KnockoutRoundResponseDto,
     pairings: CreatePairingDto[],
   ) {
     const competitionEdition =
@@ -344,11 +344,29 @@ export class CompetitionFixtureService {
 
     const calendar = calendarGenerator(year1, year2);
 
-    const participantTeams: ParticipatingTeam[] =
-      knockoutRound.qualifiedTeams.map(({ team }) => ({
+    const qualifiedTeamIds = new Set(
+      knockoutRound.qualifiedTeams.map(({ teamId }) => teamId),
+    );
+    const participantTeams =
+      await this.competitionsService.findCompetitionParticipants(
+        competitionEdition.id,
+      );
+    const qualifiedTeams = participantTeams.filter(({ team }) =>
+      qualifiedTeamIds.has(team.id),
+    );
+
+    if (qualifiedTeams.length !== qualifiedTeamIds.size) {
+      throw new BadRequestException(
+        'Every qualified team must participate in this competition edition.',
+      );
+    }
+
+    const participatingTeams: ParticipatingTeam[] = qualifiedTeams.map(
+      ({ team }) => ({
         team,
         position: null,
-      }));
+      }),
+    );
 
     const matchesByPairing = pairings.map((pairing) => {
       const fixture = generateKnockoutBracket(
@@ -362,7 +380,7 @@ export class CompetitionFixtureService {
       return this.mergeFixtureWithCalendar(
         fixture,
         calendar,
-        participantTeams,
+        participatingTeams,
         competitionEdition,
       );
     });
