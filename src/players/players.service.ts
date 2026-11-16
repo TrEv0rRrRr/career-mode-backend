@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
+import { PlayerMapper } from './dto/mapper/player.mapper.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
@@ -25,8 +26,10 @@ export class PlayersService {
 
   // ! Player Methods
 
-  findPlayers() {
-    return this.repo.findAll();
+  async findPlayers() {
+    const players = await this.repo.findAll();
+
+    return players.map((player) => PlayerMapper.toResponse(player));
   }
 
   async findPlayerById(id: number) {
@@ -34,7 +37,7 @@ export class PlayersService {
 
     if (!player) throw new PlayerNotFoundException();
 
-    return player;
+    return PlayerMapper.toResponse(player);
   }
 
   async findPlayerByName(name: string) {
@@ -42,7 +45,7 @@ export class PlayersService {
 
     if (!player) throw new PlayerNotFoundException();
 
-    return player;
+    return PlayerMapper.toResponse(player);
   }
 
   async createPlayer(data: CreatePlayerDto) {
@@ -86,7 +89,9 @@ export class PlayersService {
   async findPlayerPositions(playerId: number) {
     await this.findPlayerById(playerId);
 
-    return this.repo.findPlayerPositions(playerId);
+    const playerPositions = await this.repo.findPlayerPositions(playerId);
+
+    return playerPositions.map((pp) => PlayerMapper.positionsToResponse(pp));
   }
 
   async assignPositions(playerId: number, data: AssignPositionsDto) {
@@ -153,7 +158,8 @@ export class PlayersService {
 
   async findPlayerTeams(playerId: number) {
     await this.findPlayerById(playerId);
-    return this.repo.findPlayerTeams(playerId);
+    const playerTeams = await this.repo.findPlayerTeams(playerId);
+    return playerTeams.map((pt) => PlayerMapper.teamsToResponse(pt));
   }
 
   async findCurrentTeam(playerId: number) {

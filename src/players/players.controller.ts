@@ -11,11 +11,21 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
+import {
+  PlayerPositionsResponseDto,
+  PlayerResponseDto,
+  PlayerTeamsResponseDto,
+} from './dto/response/player-response.dto.ts';
 import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
 import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 import { PlayersService } from './players.service.ts';
@@ -27,6 +37,9 @@ export class PlayersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all players' })
+  @ApiOkResponse({
+    type: [PlayerResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the players',
@@ -37,6 +50,9 @@ export class PlayersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a player by its id' })
+  @ApiOkResponse({
+    type: PlayerResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the player',
@@ -51,6 +67,9 @@ export class PlayersController {
 
   @Get('name/:name')
   @ApiOperation({ summary: 'Get a player by its name' })
+  @ApiOkResponse({
+    type: PlayerResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the player',
@@ -130,6 +149,9 @@ export class PlayersController {
 
   @Get(':playerId/positions')
   @ApiOperation({ summary: "Get all player's position" })
+  @ApiOkResponse({
+    type: [PlayerPositionsResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Player positions found!',
@@ -229,6 +251,9 @@ export class PlayersController {
 
   @Get(':playerId/teams')
   @ApiOperation({ summary: "Get a player's teams record" })
+  @ApiOkResponse({
+    type: [PlayerTeamsResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Player teams found!',
