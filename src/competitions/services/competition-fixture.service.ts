@@ -345,7 +345,7 @@ export class CompetitionFixtureService {
     const calendar = calendarGenerator(year1, year2);
 
     const qualifiedTeamIds = new Set(
-      knockoutRound.qualifiedTeams.map(({ teamId }) => teamId),
+      knockoutRound.qualifiedTeams.map((team) => team.id),
     );
     const participantTeams =
       await this.competitionsService.findCompetitionParticipants(

@@ -270,8 +270,8 @@ export class MatchesService {
     );
     this.validateMatchTeamStats(data.teamStats, match);
     await this.validateMatchPlayerStats(
-      match.homeTeam.teamId,
-      match.awayTeam.teamId,
+      match.homeTeam.id,
+      match.awayTeam.id,
       data.match,
       data.playerStats,
     );
@@ -479,11 +479,11 @@ export class MatchesService {
     finishType: MatchFinishType,
   ): boolean {
     const firstTeamSecondLegGoals =
-      secondLeg.homeTeam.teamId === firstLeg.homeTeamId
+      secondLeg.homeTeam.id === firstLeg.homeTeamId
         ? result.homeGoals
         : result.awayGoals;
     const secondTeamSecondLegGoals =
-      secondLeg.homeTeam.teamId === firstLeg.awayTeamId
+      secondLeg.homeTeam.id === firstLeg.awayTeamId
         ? result.homeGoals
         : result.awayGoals;
 
@@ -536,11 +536,11 @@ export class MatchesService {
     }
 
     const homeTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.homeTeam.teamId,
+      ({ teamId }) => teamId === match.homeTeam.id,
     );
 
     const awayTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.awayTeam.teamId,
+      ({ teamId }) => teamId === match.awayTeam.id,
     );
 
     if (!homeTeamStats || !awayTeamStats)
@@ -572,11 +572,11 @@ export class MatchesService {
       data.awayPenaltyGoals
     )
       return data.homePenaltyGoals > data.awayPenaltyGoals
-        ? match.homeTeam.teamId
-        : match.awayTeam.teamId;
+        ? match.homeTeam.id
+        : match.awayTeam.id;
 
-    if (data.homeGoals > data.awayGoals) return match.homeTeam.teamId;
-    else if (data.awayGoals > data.homeGoals) return match.awayTeam.teamId;
+    if (data.homeGoals > data.awayGoals) return match.homeTeam.id;
+    else if (data.awayGoals > data.homeGoals) return match.awayTeam.id;
     else return null;
   }
 }

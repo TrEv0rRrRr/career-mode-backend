@@ -36,11 +36,11 @@ export class PlayerMapper {
 
   static teamsToResponse(pt: PlayerTeams): PlayerTeamsResponseDto {
     return {
-      teamId: pt.teamId,
       jerseyNumber: pt.jerseyNumber,
       startDate: pt.startDate,
       endDate: pt.endDate,
       team: {
+        id: pt.teamId,
         name: pt.team.name,
         logo: pt.team.logo,
         country: pt.team.country,
@@ -74,6 +74,7 @@ export class PlayerMapper {
       rating: Number(ptss.rating),
       season: ptss.season.code,
       team: {
+        id: ptss.teamId,
         name: ptss.team.name,
         logo: ptss.team.logo,
         country: ptss.team.country,

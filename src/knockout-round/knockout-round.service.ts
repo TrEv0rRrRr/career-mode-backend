@@ -163,9 +163,7 @@ export class KnockoutRoundService {
       );
     }
 
-    const qualifiedTeams = knockoutRound.qualifiedTeams.map(
-      ({ teamId }) => teamId,
-    );
+    const qualifiedTeams = knockoutRound.qualifiedTeams.map((team) => team.id);
 
     const areArraysEqual = validateArrayEquality([...teamIds], qualifiedTeams);
 

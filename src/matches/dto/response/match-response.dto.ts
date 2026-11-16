@@ -11,11 +11,6 @@ interface Stadium {
   name: string;
   capacity: number;
 }
-
-interface MatchTeam extends TeamResponse {
-  teamId: number;
-}
-
 export class MatchResponseDto {
   id!: number;
   date!: Date;
@@ -30,8 +25,8 @@ export class MatchResponseDto {
   tieId!: number | null;
   winnerTeamId!: number | null;
   competitionEditionId!: number;
-  homeTeam!: MatchTeam;
-  awayTeam!: MatchTeam;
+  homeTeam!: TeamResponse;
+  awayTeam!: TeamResponse;
   type!: MatchType;
   finishType!: MatchFinishType | null;
 }

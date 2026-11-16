@@ -111,7 +111,6 @@ export class PlayerPositionsResponseDto {
 }
 
 export class PlayerTeamsResponseDto {
-  teamId!: number;
   jerseyNumber!: number;
   startDate!: Date;
   endDate!: Date | null;
