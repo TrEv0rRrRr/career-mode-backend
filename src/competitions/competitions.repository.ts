@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CompetitionFormat, CompetitionType, Prisma } from '@prisma/client';
+import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
@@ -214,11 +215,11 @@ export class CompetitionsRepository {
 
   // ! Competition Matches
   findCompetitionMatches(competitionEditionId: number) {
-    return this.prisma.competitionEdition.findMany({
+    return this.prisma.match.findMany({
       where: {
-        id: competitionEditionId,
+        competitionEditionId,
       },
-      select: { matches: true },
+      include: matchInclude,
     });
   }
 }

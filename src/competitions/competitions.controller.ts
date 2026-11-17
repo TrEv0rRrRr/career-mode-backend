@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
 import { CompetitionsService } from './competitions.service.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
@@ -442,6 +443,7 @@ export class CompetitionsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Fixture retrieved!',
+    type: [MatchResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,

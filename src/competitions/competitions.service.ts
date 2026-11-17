@@ -6,6 +6,7 @@ import {
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
+import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { CompetitionMapper } from './dto/mapper/competition.mapper.ts';
@@ -261,7 +262,9 @@ export class CompetitionsService {
   async findCompetitionEditionMatches(competitionEditionId: number) {
     await this.findCompetitionEditionById(competitionEditionId);
 
-    return this.repo.findCompetitionMatches(competitionEditionId);
+    const cEM = await this.repo.findCompetitionMatches(competitionEditionId);
+
+    return cEM.map((match) => MatchMapper.toResponse(match));
   }
 
   async findCompetitionGroups(
