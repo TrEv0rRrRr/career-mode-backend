@@ -1,5 +1,5 @@
 import { transformMatchTypeToKnockoutRoundType } from '../../../common/helpers/transformKnockoutRoundTypeToMatchType.ts';
-import { TeamResponse } from '../../../common/types/TeamResponse.ts';
+import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 import { KnockoutRoundWithRelations } from '../../knockout-round.repository.ts';
 import { KnockoutRoundResponseDto } from '../response/knockout-round-response.dto.ts';
 

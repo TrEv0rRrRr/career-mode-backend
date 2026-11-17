@@ -1,7 +1,6 @@
 import { PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
-import { TeamResponse } from '../../../common/types/TeamResponse.ts';
-
+import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 export type PlayerPositions = {
   position: {
     id: number;

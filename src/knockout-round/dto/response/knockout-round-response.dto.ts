@@ -1,4 +1,4 @@
-import { TeamResponse } from '../../../common/types/TeamResponse.ts';
+import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 import { KnockoutRoundType } from '../../enums/KnockoutRoundType.ts';
 
 export class KnockoutRoundResponseDto {

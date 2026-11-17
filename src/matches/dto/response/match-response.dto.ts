@@ -4,13 +4,13 @@ import {
   MatchStatus,
   MatchType,
 } from '@prisma/client';
-import { TeamResponse } from '../../../common/types/TeamResponse.ts';
-
+import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 interface Stadium {
   id: number;
   name: string;
   capacity: number;
 }
+
 export class MatchResponseDto {
   id!: number;
   date!: Date;

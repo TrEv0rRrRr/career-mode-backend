@@ -1,7 +1,6 @@
 import { TransferType } from '@prisma/client';
-import { CompetitionResponse } from '../../../common/types/CompetitionResponse.ts';
-import { TeamResponse } from '../../../common/types/TeamResponse.ts';
-
+import { CompetitionResponse } from '../../../competitions/dto/response/competition-response.dto.ts';
+import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 /**
  * Make all properties in T optional, but now seriously. Similar to Partial<>
  */
