@@ -8,6 +8,7 @@ import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
+import { CompetitionMapper } from './dto/mapper/competition.mapper.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionNotFoundException } from './exceptions/competition-not-found.exception.ts';
 import { CompetitionEditionNotFoundException } from './exceptions/edition-not-found.exception.ts';
@@ -29,23 +30,31 @@ export class CompetitionsService {
     return competition;
   }
 
-  findCompetitions() {
-    return this.repo.findAll();
+  async findCompetitions() {
+    const competition = await this.repo.findAll();
+
+    return competition.map((c) => CompetitionMapper.toResponse(c));
   }
 
-  findCompetitionsByType(type: CompetitionType) {
-    return this.repo.findByType(type);
+  async findCompetitionsByType(type: CompetitionType) {
+    const competition = await this.repo.findByType(type);
+
+    return competition.map((c) => CompetitionMapper.toResponse(c));
   }
 
-  findCompetitionsByFormat(format: CompetitionFormat) {
-    return this.repo.findByFormat(format);
+  async findCompetitionsByFormat(format: CompetitionFormat) {
+    const competition = await this.repo.findByFormat(format);
+
+    return competition.map((c) => CompetitionMapper.toResponse(c));
   }
 
   // ! Competition Edition methods
   async findEditionsByCompetition(competitionId: number) {
     await this.findCompetitionById(competitionId);
 
-    return this.repo.findEditionsByCompetition(competitionId);
+    const cES = await this.repo.findEditionsByCompetition(competitionId);
+
+    return cES.map((cEs) => CompetitionMapper.editionsToResponse(cEs));
   }
 
   async findCompetitionEditionById(editionId: number) {
@@ -164,7 +173,12 @@ export class CompetitionsService {
       );
     }
 
-    return this.repo.findLeagueStandings(competitionEditionId);
+    const leagueStandings =
+      await this.repo.findLeagueStandings(competitionEditionId);
+
+    return leagueStandings.map((lS) =>
+      CompetitionMapper.mapLeagueStandings(lS),
+    );
   }
 
   async countCompetitionParticipants(competitionEditionId: number) {
@@ -270,9 +284,14 @@ export class CompetitionsService {
 
     const participants =
       await this.repo.findCompetitionGroupParticipants(competitionEditionId);
-    const groups: Record<string, typeof participants> = {};
 
-    for (const participant of participants) {
+    const pt = participants.map((pt) =>
+      CompetitionMapper.mapParticipantTeams(pt),
+    );
+
+    const groups: Record<string, typeof pt> = {};
+
+    for (const participant of pt) {
       if (participant.group === null) continue;
 
       (groups[participant.group] ??= []).push(participant);

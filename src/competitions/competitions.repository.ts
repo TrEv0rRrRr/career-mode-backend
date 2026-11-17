@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import { CompetitionFormat, CompetitionType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
@@ -9,8 +9,25 @@ const competitionEditionInclude = {
   season: true,
   winnerTeam: true,
   runnerUpTeam: true,
+  competitionParticipants: {
+    include: {
+      team: true,
+    },
+  },
+} as const;
+
+const competitionEditionByIdInclude = {
+  competition: true,
+  season: true,
+  winnerTeam: true,
+  runnerUpTeam: true,
   competitionParticipants: true,
 } as const;
+
+export type CompetitionEditionWithRelations =
+  Prisma.CompetitionEditionGetPayload<{
+    include: typeof competitionEditionInclude;
+  }>;
 
 @Injectable()
 export class CompetitionsRepository {
@@ -56,7 +73,7 @@ export class CompetitionsRepository {
       where: {
         id: editionId,
       },
-      include: competitionEditionInclude,
+      include: competitionEditionByIdInclude,
     });
   }
 
