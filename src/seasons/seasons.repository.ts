@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateSeasonDto } from './dto/create-season.dto.ts';
 
@@ -23,6 +24,9 @@ const seasonInclude = {
   },
 } as const;
 
+export type SeasonWithRelations = Prisma.SeasonGetPayload<{
+  include: typeof seasonInclude;
+}>;
 @Injectable()
 export class SeasonsRepository {
   constructor(private prisma: PrismaService) {}
@@ -62,6 +66,9 @@ export class SeasonsRepository {
   }
 
   findAllTeamStats(seasonId: number) {
-    return this.prisma.teamSeasonStats.findMany({ where: { seasonId } });
+    return this.prisma.teamSeasonStats.findMany({
+      where: { seasonId },
+      include: { team: true },
+    });
   }
 }

@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateSeasonDto } from './dto/create-season.dto.ts';
+import { SeasonMapper } from './dto/mapper/season.mapper.ts';
 import { SeasonNotFoundException } from './exceptions/season-not-found.exception.ts';
 import { SeasonsRepository } from './seasons.repository.ts';
 
@@ -7,8 +8,9 @@ import { SeasonsRepository } from './seasons.repository.ts';
 export class SeasonsService {
   constructor(private repo: SeasonsRepository) {}
 
-  findSeasons() {
-    return this.repo.findAll();
+  async findSeasons() {
+    const seasons = await this.repo.findAll();
+    return seasons.map((s) => SeasonMapper.toResponse(s));
   }
 
   async findSeasonById(id: number) {
@@ -16,7 +18,7 @@ export class SeasonsService {
 
     if (!season) throw new SeasonNotFoundException();
 
-    return season;
+    return SeasonMapper.toResponse(season);
   }
 
   async findSeasonByCode(code: string) {
@@ -24,7 +26,7 @@ export class SeasonsService {
 
     if (!season) throw new SeasonNotFoundException();
 
-    return season;
+    return SeasonMapper.toResponse(season);
   }
 
   async createSeason(data: CreateSeasonDto) {
@@ -45,6 +47,8 @@ export class SeasonsService {
   async findAllTeamStats(seasonId: number) {
     await this.findSeasonById(seasonId);
 
-    return this.repo.findAllTeamStats(seasonId);
+    const tss = await this.repo.findAllTeamStats(seasonId);
+
+    return tss.map((t) => SeasonMapper.teamSeasonStatsToResponse(t));
   }
 }

@@ -8,8 +8,9 @@ import {
   ParseIntPipe,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateSeasonDto } from './dto/create-season.dto.ts';
+import { SeasonResponseDto } from './dto/response/season-response.dto.ts';
 import { SeasonsService } from './seasons.service.ts';
 
 @Controller('seasons')
@@ -18,6 +19,9 @@ export class SeasonsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all seasons' })
+  @ApiOkResponse({
+    type: [SeasonResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the seasons',
@@ -28,6 +32,9 @@ export class SeasonsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a season by its id' })
+  @ApiOkResponse({
+    type: SeasonResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the season',
@@ -42,6 +49,9 @@ export class SeasonsController {
 
   @Get('code/:code')
   @ApiOperation({ summary: 'Get a season by its code' })
+  @ApiOkResponse({
+    type: SeasonResponseDto,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the season',
