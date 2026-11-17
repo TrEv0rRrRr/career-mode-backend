@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
@@ -8,6 +10,10 @@ const teamInclude = {
   stadium: true,
   competition: true,
 } as const;
+
+export type TeamWithRelations = Prisma.TeamGetPayload<{
+  include: typeof teamInclude;
+}>;
 
 @Injectable()
 export class TeamsRepository {
@@ -103,12 +109,20 @@ export class TeamsRepository {
   // ! Team Season Queries
 
   findTeamStats(teamId: number) {
-    return this.prisma.teamSeasonStats.findMany({ where: { teamId } });
+    return this.prisma.teamSeasonStats.findMany({
+      where: { teamId },
+      include: {
+        season: true,
+      },
+    });
   }
 
   findTeamStatsBySeason(teamId: number, seasonId: number) {
     return this.prisma.teamSeasonStats.findUnique({
       where: { teamId_seasonId: { teamId, seasonId } },
+      include: {
+        season: true,
+      },
     });
   }
 
@@ -119,6 +133,7 @@ export class TeamsRepository {
       where: {
         OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }],
       },
+      include: matchInclude,
     });
   }
 }

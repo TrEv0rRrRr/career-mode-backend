@@ -11,8 +11,20 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
+import {
+  TeamPlayersResponseDto,
+  TeamResponseDto,
+  TeamSeasonStatsResponseDto,
+  TeamSquadStatsResponseDto,
+} from './dto/response/team-response.dto.ts';
 import { TeamQueryDto } from './dto/team-query.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
 import { TeamsService } from './teams.service.ts';
@@ -25,6 +37,9 @@ export class TeamsController {
   @ApiOperation({
     summary:
       'Get all teams or filters them by country or the league where they play at',
+  })
+  @ApiOkResponse({
+    type: [TeamResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -138,6 +153,9 @@ export class TeamsController {
   @ApiOperation({
     summary: 'Gets the players that are currently playing for the given team',
   })
+  @ApiOkResponse({
+    type: [TeamPlayersResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the players',
@@ -156,6 +174,9 @@ export class TeamsController {
   @ApiOperation({
     summary: 'Gets the squad stats',
   })
+  @ApiOkResponse({
+    type: [TeamSquadStatsResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the stats',
@@ -171,6 +192,9 @@ export class TeamsController {
   @Get(':teamId/player-stats/:seasonId')
   @ApiOperation({
     summary: 'Gets the squad stats by season',
+  })
+  @ApiOkResponse({
+    type: [TeamSquadStatsResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -197,6 +221,9 @@ export class TeamsController {
   @ApiOperation({
     summary: 'Gets the team stats',
   })
+  @ApiOkResponse({
+    type: [TeamSeasonStatsResponseDto],
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Gets the stats',
@@ -212,6 +239,9 @@ export class TeamsController {
   @Get(':teamId/team-stats/:seasonId')
   @ApiOperation({
     summary: 'Gets the team stats by season',
+  })
+  @ApiOkResponse({
+    type: TeamSeasonStatsResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -237,6 +267,9 @@ export class TeamsController {
   @Get(':teamId/matches')
   @ApiOperation({
     summary: 'Gets the team matches or filter them by home or away',
+  })
+  @ApiOkResponse({
+    type: [MatchResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,

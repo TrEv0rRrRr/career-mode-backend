@@ -1,6 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
+import { TeamMapper } from './dto/mapper/team.mapper.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
 import { TeamNotFoundException } from './exceptions/team-not-found.exception.ts';
 import { TeamsRepository } from './teams.repository.ts';
@@ -12,8 +18,9 @@ export class TeamsService {
     private seasonsService: SeasonsService,
   ) {}
 
-  findTeams() {
-    return this.repo.findAll();
+  async findTeams() {
+    const teams = await this.repo.findAll();
+    return teams.map((t) => TeamMapper.toResponse(t));
   }
 
   async findTeamById(id: number, errorMsg?: string) {
@@ -24,12 +31,14 @@ export class TeamsService {
     return team;
   }
 
-  findTeamsByLeague(leagueId: number) {
-    return this.repo.findByLeague(leagueId);
+  async findTeamsByLeague(leagueId: number) {
+    const teams = await this.repo.findByLeague(leagueId);
+    return teams.map((t) => TeamMapper.toResponse(t));
   }
 
-  findTeamsByCountry(country: string) {
-    return this.repo.findByCountry(country);
+  async findTeamsByCountry(country: string) {
+    const teams = await this.repo.findByCountry(country);
+    return teams.map((t) => TeamMapper.toResponse(t));
   }
 
   async findTeamByName(name: string) {
@@ -82,7 +91,9 @@ export class TeamsService {
   async findPlayers(teamId: number) {
     await this.findTeamById(teamId);
 
-    return this.repo.findPlayers(teamId);
+    const pt = await this.repo.findPlayers(teamId);
+
+    return pt.map((pt) => TeamMapper.teamPlayerToResponse(pt));
   }
 
   // ! Player Season Stats Methods
@@ -90,14 +101,18 @@ export class TeamsService {
   async findTeamPlayerStats(teamId: number) {
     await this.findTeamById(teamId);
 
-    return this.repo.findTeamPlayerStats(teamId);
+    const ts = await this.repo.findTeamPlayerStats(teamId);
+
+    return ts.map((ts) => TeamMapper.teamSquadStatsToResponse(ts));
   }
 
   async findTeamPlayerStatsBySeason(teamId: number, seasonId: number) {
     await this.findTeamById(teamId);
     await this.seasonsService.findSeasonById(seasonId);
 
-    return this.repo.findTeamPlayerStatsBySeason(teamId, seasonId);
+    const ts = await this.repo.findTeamPlayerStatsBySeason(teamId, seasonId);
+
+    return ts.map((ts) => TeamMapper.teamSquadStatsToResponse(ts));
   }
 
   // ! Team Season Methods
@@ -105,20 +120,28 @@ export class TeamsService {
   async findTeamStats(teamId: number) {
     await this.findTeamById(teamId);
 
-    return this.repo.findTeamStats(teamId);
+    const tss = await this.repo.findTeamStats(teamId);
+
+    return tss.map((tss) => TeamMapper.teamSeasonStatsToResponse(tss));
   }
 
   async findTeamStatsBySeason(teamId: number, seasonId: number) {
     await this.findTeamById(teamId);
     await this.seasonsService.findSeasonById(seasonId);
 
-    return this.repo.findTeamStatsBySeason(teamId, seasonId);
+    const tss = await this.repo.findTeamStatsBySeason(teamId, seasonId);
+
+    if (!tss)
+      throw new BadRequestException("There's no stats for the given season");
+
+    return TeamMapper.teamSeasonStatsToResponse(tss);
   }
 
   // ! Team Maches Methods
 
   async findTeamMatches(teamId: number) {
     await this.findTeamById(teamId);
-    return this.repo.findTeamMatches(teamId);
+    const tm = await this.repo.findTeamMatches(teamId);
+    return tm.map((tm) => MatchMapper.toResponse(tm));
   }
 }
