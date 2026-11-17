@@ -4,7 +4,7 @@ import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 /**
  * Make all properties in T optional, but now seriously. Similar to Partial<>
  */
-type Optional<T> = {
+export type Optional<T> = {
   [P in keyof T]: T[P] | null | undefined;
 };
 
