@@ -66,72 +66,89 @@ enum MatchLeg {
   SECOND
 }
 
+enum Confederation {
+  UEFA
+  CONMEBOL
+  CONCACAF
+  AFC
+  CAF
+  OFC
+}
+
 // TABLAS SIN FK
 model Player {
-  id                Int                 @id @default(autoincrement())
-  name              String              @unique
-  birthDate         DateTime            @map("birth_date") @db.Date
-  nationality       String
-  preferredFoot     PreferredFoot       @map("preferred_foot")
-  overall           Int
-  height            Decimal             @db.Decimal(3, 2)
-  weight            Int
-  face              String?
-  matchPlayerStats  MatchPlayerStats[]
-  transfers         Transfer[]
-  playerSeasonStats PlayerSeasonStats[]
-  playerTeams       PlayerTeam[]
-  playerPositions   PlayerPosition[]
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  birthDate     DateTime      @map("birth_date") @db.Date
+  nationality   String
+  preferredFoot PreferredFoot @map("preferred_foot")
+  overall       Int
+  height        Decimal       @db.Decimal(3, 2)
+  weight        Int
+  face          String?
+
+  matchPlayerStats    MatchPlayerStats[]
+  transfers           Transfer[]
+  playerSeasonStats   PlayerSeasonStats[]
+  playerTeams         PlayerTeam[]
+  playerPositions     PlayerPosition[]
+  playerNationalTeams PlayerNationalTeam[]
 
   @@map("player")
 }
 
 model Manager {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  birthDate   DateTime @map("birth_date") @db.Date
-  nationality String
-  face        String?
-  teams       Team[]
+  id                   Int                   @id @default(autoincrement())
+  name                 String                @unique
+  birthDate            DateTime              @map("birth_date") @db.Date
+  nationality          String
+  face                 String?
+  managerTeams         ManagerTeam[]
+  managerNationalTeams ManagerNationalTeam[]
 
   @@map("manager")
 }
 
 model Competition {
-  id                   Int                  @id @default(autoincrement())
-  name                 String               @unique
+  id                   Int               @id @default(autoincrement())
+  name                 String            @unique
+  confederation        Confederation
   type                 CompetitionType
   format               CompetitionFormat
   logo                 String?
-  hasThirdPlaceMatch   Boolean              @default(false)
+  hasThirdPlaceMatch   Boolean           @default(false)
   maxTeamsNumber       Int
-  hasTwoLeggedKnockout Boolean              @default(false)
+  hasTwoLeggedKnockout Boolean           @default(false)
   groups               Int?
   teamsPerGroup        Int?
-  teams                Team[]
-  competitionEditions  CompetitionEdition[]
+
+  teams               Team[]
+  competitionEditions CompetitionEdition[]
 
   @@map("competition")
 }
 
 model Stadium {
-  id                  Int                  @id @default(autoincrement())
-  name                String               @unique
-  country             String
-  image               String?
-  capacity            Int
-  openingDate         DateTime             @map("opening_date") @db.Date
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  country     String
+  image       String?
+  capacity    Int
+  openingDate DateTime @map("opening_date") @db.Date
+
   matches             Match[]
   teams               Team[]
   competitionEditions CompetitionEdition[]
+  nationalTeams       NationalTeam[]
 
   @@map("stadium")
 }
 
 model Position {
-  id              Int              @id @default(autoincrement())
-  code            String           @unique
-  name            String
+  id   Int    @id @default(autoincrement())
+  code String @unique
+  name String
+
   playerPositions PlayerPosition[]
 
   @@map("position")
@@ -139,37 +156,47 @@ model Position {
 
 // TABLAS CON FK
 model Match {
-  id                   Int                @id @default(autoincrement())
-  date                 DateTime           @db.Date
-  homeGoals            Int                @default(0) @map("home_goals")
-  awayGoals            Int                @default(0) @map("away_goals")
+  id                   Int              @id @default(autoincrement())
+  date                 DateTime         @db.Date
+  homeGoals            Int              @default(0) @map("home_goals")
+  awayGoals            Int              @default(0) @map("away_goals")
   status               MatchStatus
-  stadiumId            Int                @map("stadium_id")
+  stadiumId            Int              @map("stadium_id")
   matchday             Int?
-  homeTeamId           Int                @map("home_team_id")
-  awayTeamId           Int                @map("away_team_id")
-  homePenaltyGoals     Int?               @map("home_penalty_goals")
-  awayPenaltyGoals     Int?               @map("away_penalty_goals")
+  homeTeamId           Int?             @map("home_team_id")
+  awayTeamId           Int?             @map("away_team_id")
+  winnerTeamId         Int?             @map("winner_team_id")
   leg                  MatchLeg?
-  tieId                Int?               @map("tie_id")
-  winnerTeamId         Int?               @map("winner_team_id")
-  competitionEditionId Int                @map("competition_edition_id")
+  homePenaltyGoals     Int?             @map("home_penalty_goals")
+  awayPenaltyGoals     Int?             @map("away_penalty_goals")
+  tieId                Int?             @map("tie_id")
+  competitionEditionId Int              @map("competition_edition_id")
   type                 MatchType
-  finishType           MatchFinishType?   @map("finish_type")
-  matchPlayerStats     MatchPlayerStats[]
+  finishType           MatchFinishType? @map("finish_type")
+  homeNationalTeamId   Int?             @map("home_national_team_id")
+  awayNationalTeamId   Int?             @map("away_national_team_id")
+  winnerNationalTeamId Int?             @map("winner_national_team_id")
+
+  matchPlayerStats MatchPlayerStats[]
 
   stadium            Stadium            @relation(fields: [stadiumId], references: [id])
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
 
-  homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeam Team? @relation("HomeTeam", fields: [homeTeamId], references: [id])
 
-  awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeam Team? @relation("AwayTeam", fields: [awayTeamId], references: [id])
 
   winnerTeam Team? @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
 
   matchTeamStats MatchTeamStats[]
 
   tie Tie? @relation(fields: [tieId], references: [id])
+
+  homeNationalTeam NationalTeam? @relation("HomeNationalTeam", fields: [homeNationalTeamId], references: [id])
+
+  awayNationalTeam NationalTeam? @relation("AwayNationalTeam", fields: [awayNationalTeamId], references: [id])
+
+  winnerNationalTeam NationalTeam? @relation("WinnerNationalTeam", fields: [winnerNationalTeamId], references: [id])
 
   @@unique([tieId, leg])
   @@map("match")
@@ -235,20 +262,19 @@ model Career {
 }
 
 model Team {
-  id             Int      @id @default(autoincrement())
-  name           String   @unique
-  shortName      String   @map("short_name")
+  id             Int           @id @default(autoincrement())
+  name           String        @unique
+  shortName      String        @map("short_name")
   country        String
+  confederation  Confederation
   logo           String?
-  foundationDate DateTime @map("foundation_date") @db.Date
-  primaryColor   String   @map("primary_color")
-  secondaryColor String   @map("secondary_color")
-  stadiumId      Int      @map("stadium_id")
-  managerId      Int      @map("manager_id")
-  leagueId       Int      @map("league_id")
+  foundationDate DateTime      @map("foundation_date") @db.Date
+  primaryColor   String        @map("primary_color")
+  secondaryColor String        @map("secondary_color")
+  stadiumId      Int           @map("stadium_id")
+  leagueId       Int           @map("league_id")
 
   stadium     Stadium     @relation(fields: [stadiumId], references: [id])
-  manager     Manager     @relation(fields: [managerId], references: [id])
   competition Competition @relation(fields: [leagueId], references: [id])
 
   homeMatches Match[] @relation("HomeTeam")
@@ -273,8 +299,34 @@ model Team {
   playerTeams        PlayerTeam[]
   matchPlayerStats   MatchPlayerStats[]
   knockoutRoundTeams KnockoutRoundTeam[]
+  managerTeams       ManagerTeam[]
+  managerId          Int?
 
   @@map("team")
+}
+
+model NationalTeam {
+  id             Int           @id @default(autoincrement())
+  name           String        @unique
+  shortName      String        @map("short_name")
+  logo           String?
+  foundationDate DateTime      @map("foundation_date") @db.Date
+  primaryColor   String        @map("primary_color")
+  secondaryColor String        @map("secondary_color")
+  stadiumId      Int           @map("stadium_id")
+  managerId      Int           @map("manager_id")
+  confederation  Confederation
+
+  stadium Stadium @relation(fields: [stadiumId], references: [id])
+
+  homeMatches   Match[] @relation("HomeNationalTeam")
+  awayMatches   Match[] @relation("AwayNationalTeam")
+  winnerMatches Match[] @relation("WinnerNationalTeam")
+
+  playerNationalTeams  PlayerNationalTeam[]
+  managerNationalTeams ManagerNationalTeam[]
+
+  @@map("national_team")
 }
 
 model KnockoutRoundTeam {
@@ -434,6 +486,21 @@ model PlayerTeam {
   @@map("player_team")
 }
 
+model PlayerNationalTeam {
+  id             Int       @id @default(autoincrement())
+  playerId       Int       @map("player_id")
+  nationalTeamId Int       @map("national_team_id")
+  jerseyNumber   Int       @map("jersey_number")
+  startDate      DateTime  @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+
+  player       Player       @relation(fields: [playerId], references: [id])
+  nationalTeam NationalTeam @relation(fields: [nationalTeamId], references: [id])
+
+  @@unique([playerId, nationalTeamId, startDate])
+  @@map("player_national_team")
+}
+
 model PlayerPosition {
   playerId   Int     @map("player_id")
   positionId Int     @map("position_id")
@@ -444,4 +511,32 @@ model PlayerPosition {
 
   @@id([playerId, positionId])
   @@map("player_position")
+}
+
+model ManagerTeam {
+  id        Int       @id @default(autoincrement())
+  managerId Int       @map("manager_id")
+  teamId    Int       @map("team_id")
+  startDate DateTime  @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+
+  manager Manager @relation(fields: [managerId], references: [id])
+  team    Team    @relation(fields: [teamId], references: [id])
+
+  @@unique([managerId, teamId, startDate])
+  @@map("manager_team")
+}
+
+model ManagerNationalTeam {
+  id             Int       @id @default(autoincrement())
+  managerId      Int       @map("manager_id")
+  nationalTeamId Int       @map("national_team_id")
+  startDate      DateTime  @map("start_date") @db.Date
+  endDate        DateTime? @map("end_date") @db.Date
+
+  manager      Manager      @relation(fields: [managerId], references: [id])
+  nationalTeam NationalTeam @relation(fields: [nationalTeamId], references: [id])
+
+  @@unique([managerId, nationalTeamId, startDate])
+  @@map("manager_national_team")
 }
