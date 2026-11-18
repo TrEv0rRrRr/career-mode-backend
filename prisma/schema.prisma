@@ -112,7 +112,7 @@ model Manager {
 model Competition {
   id                   Int               @id @default(autoincrement())
   name                 String            @unique
-  confederation        Confederation
+  confederation        Confederation?
   type                 CompetitionType
   format               CompetitionFormat
   logo                 String?
