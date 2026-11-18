@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { competitions } from './data/competitions.ts';
+import { managerNationalTeams } from './data/managerNationalTeams.ts';
 import { managers } from './data/managers.ts';
+import { managerTeams } from './data/managerTeams.ts';
+import { nationalTeams } from './data/nationalTeams.ts';
 import { playerPositions } from './data/playerPositions.ts';
 import { barcelona } from './data/players/barcelona.ts';
 import { playerTeams } from './data/playerTeams.ts';
@@ -27,8 +30,23 @@ export const seedDatabase = async (prisma: PrismaClient) => {
       skipDuplicates: true,
     });
 
+    await tx.nationalTeam.createMany({
+      data: nationalTeams,
+      skipDuplicates: true,
+    });
+
     await tx.playerTeam.createMany({
       data: playerTeams,
+      skipDuplicates: true,
+    });
+
+    await tx.managerTeam.createMany({
+      data: managerTeams,
+      skipDuplicates: true,
+    });
+
+    await tx.managerNationalTeam.createMany({
+      data: managerNationalTeams,
       skipDuplicates: true,
     });
   });
