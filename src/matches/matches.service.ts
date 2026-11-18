@@ -25,6 +25,7 @@ import { KnockoutRoundService } from '../knockout-round/knockout-round.service.t
 import { PlayersService } from '../players/players.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
+import type { TeamResponse } from '../teams/dto/response/team-response.dto.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { MatchMapper } from './dto/mapper/match.mapper.ts';
@@ -35,6 +36,11 @@ import { CreateMatchTeamStatsDto } from './dto/stats/create-match-team-stats.dto
 import { UpdateMatchDto } from './dto/update-match.dto.ts';
 import { MatchNotFoundException } from './exceptions/match-not-found.exception.ts';
 import { MatchesRepository } from './matches.repository.ts';
+
+type ClubMatchResponse = MatchResponseDto & {
+  homeTeam: TeamResponse;
+  awayTeam: TeamResponse;
+};
 
 @Injectable()
 export class MatchesService {
@@ -207,7 +213,16 @@ export class MatchesService {
     finishType: MatchFinishType,
     tieId?: number,
   ) {
-    const match = await this.findMatch(matchId);
+    const foundMatch = await this.findMatch(matchId);
+    const { homeTeam, awayTeam } = foundMatch;
+
+    if (!homeTeam || !awayTeam) {
+      throw new BadRequestException(
+        'Player and team stats can only be recorded for club matches.',
+      );
+    }
+
+    const match: ClubMatchResponse = { ...foundMatch, homeTeam, awayTeam };
 
     const competitionEdition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
@@ -323,6 +338,15 @@ export class MatchesService {
       return;
     }
 
+    if (
+      matches.some(
+        ({ homeTeamId, awayTeamId }) =>
+          homeTeamId === null || awayTeamId === null,
+      )
+    ) {
+      throw new Error('Knockout matches must have two club teams.');
+    }
+
     const edition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
         competitionEditionId,
@@ -350,6 +374,10 @@ export class MatchesService {
       const winnerTeamId = winners[0];
 
       const finalMatch = matches[0];
+
+      if (finalMatch.homeTeamId === null || finalMatch.awayTeamId === null) {
+        throw new Error('The final must have two club teams.');
+      }
 
       const runnerUpTeamId =
         winnerTeamId === finalMatch.homeTeamId
@@ -478,12 +506,27 @@ export class MatchesService {
     result: UpdateMatchDto,
     finishType: MatchFinishType,
   ): boolean {
+    if (
+      firstLeg.homeTeamId === null ||
+      firstLeg.awayTeamId === null ||
+      secondLeg.homeTeamId === null ||
+      secondLeg.awayTeamId === null ||
+      ![firstLeg.homeTeamId, firstLeg.awayTeamId].includes(
+        secondLeg.homeTeamId,
+      ) ||
+      ![firstLeg.homeTeamId, firstLeg.awayTeamId].includes(secondLeg.awayTeamId)
+    ) {
+      throw new BadRequestException(
+        'Both legs must feature the same two club teams.',
+      );
+    }
+
     const firstTeamSecondLegGoals =
-      secondLeg.homeTeam.id === firstLeg.homeTeamId
+      secondLeg.homeTeamId === firstLeg.homeTeamId
         ? result.homeGoals
         : result.awayGoals;
     const secondTeamSecondLegGoals =
-      secondLeg.homeTeam.id === firstLeg.awayTeamId
+      secondLeg.homeTeamId === firstLeg.awayTeamId
         ? result.homeGoals
         : result.awayGoals;
 
@@ -520,7 +563,7 @@ export class MatchesService {
 
   private validateMatchTeamStats(
     teamStats: CreateMatchTeamStatsDto[],
-    match: MatchResponseDto,
+    match: ClubMatchResponse,
   ) {
     if (teamStats.length !== 2)
       throw new BadRequestException(
@@ -562,7 +605,7 @@ export class MatchesService {
   }
 
   private getWinnerTeamId(
-    match: MatchResponseDto,
+    match: ClubMatchResponse,
     data: UpdateMatchDto,
     finishType: MatchFinishType,
   ) {

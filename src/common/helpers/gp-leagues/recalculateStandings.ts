@@ -34,6 +34,8 @@ export const recalculateStandings = (
 
       const headToHeadMatches = matches.filter(
         (match) =>
+          match.homeTeamId !== null &&
+          match.awayTeamId !== null &&
           tiedTeamIds.has(match.homeTeamId) &&
           tiedTeamIds.has(match.awayTeamId),
       );

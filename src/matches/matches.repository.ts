@@ -37,6 +37,8 @@ type txType = Omit<
 export const matchInclude = {
   homeTeam: true,
   awayTeam: true,
+  homeNationalTeam: true,
+  awayNationalTeam: true,
   matchTeamStats: true,
   matchPlayerStats: true,
   stadium: true,
@@ -277,6 +279,8 @@ export class MatchesRepository {
 
       const groupMatches = matches.filter(
         (match) =>
+          match.homeTeamId !== null &&
+          match.awayTeamId !== null &&
           groupTeamIds.has(match.homeTeamId) &&
           groupTeamIds.has(match.awayTeamId) &&
           match.type === MatchType.GROUP_STAGE,
@@ -341,6 +345,15 @@ export class MatchesRepository {
           winnerTeamId,
         },
       });
+
+      const homeTeamId = updatedMatch.homeTeamId;
+      const awayTeamId = updatedMatch.awayTeamId;
+
+      if (homeTeamId === null || awayTeamId === null) {
+        throw new BadRequestException(
+          'Player and team stats can only be recorded for club matches.',
+        );
+      }
 
       await tx.matchPlayerStats.createMany({
         data: data.playerStats.map((stats) => ({
@@ -432,9 +445,6 @@ export class MatchesRepository {
         ga: { increment: data.match.homeGoals },
         gd: { increment: data.match.awayGoals - data.match.homeGoals },
       };
-
-      const homeTeamId = updatedMatch.homeTeamId;
-      const awayTeamId = updatedMatch.awayTeamId;
 
       await tx.teamSeasonStats.upsert({
         where: {

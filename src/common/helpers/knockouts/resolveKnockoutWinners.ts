@@ -31,6 +31,10 @@ export const resolveKnockoutWinners = (
       ? resolveTwoLeggedWinner(tieMatches)
       : resolveSingleLegWinner(tieMatches[0]);
 
+    if (winner === null) {
+      throw new Error('Knockout matches must have a club-team winner.');
+    }
+
     winners.push(winner);
   }
 

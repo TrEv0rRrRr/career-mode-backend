@@ -24,7 +24,6 @@ export type PlayerTeams = {
     primaryColor: string;
     secondaryColor: string;
     stadiumId: number;
-    managerId: number;
     leagueId: number;
   };
 } & {
@@ -68,7 +67,6 @@ export type PlayerTeamSeasonStats = {
     primaryColor: string;
     secondaryColor: string;
     stadiumId: number;
-    managerId: number;
     leagueId: number;
   };
   season: {

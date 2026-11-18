@@ -83,7 +83,7 @@ export type PlayerTeamType = {
 };
 
 export class TeamResponseDto extends TeamResponse {
-  manager!: string;
+  manager!: string | null;
   stadium!: string;
   league!: string;
 }

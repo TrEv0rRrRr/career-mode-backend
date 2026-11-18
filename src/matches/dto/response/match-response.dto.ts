@@ -5,6 +5,13 @@ import {
   MatchType,
 } from '@prisma/client';
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
+
+class NationalTeamResponse {
+  id!: number;
+  name!: string;
+  logo!: string | null;
+}
+
 interface Stadium {
   id: number;
   name: string;
@@ -23,10 +30,17 @@ export class MatchResponseDto {
   awayPenaltyGoals!: number | null;
   leg!: MatchLeg | null;
   tieId!: number | null;
+  homeTeamId!: number | null;
+  awayTeamId!: number | null;
   winnerTeamId!: number | null;
+  homeNationalTeamId!: number | null;
+  awayNationalTeamId!: number | null;
+  winnerNationalTeamId!: number | null;
   competitionEditionId!: number;
-  homeTeam!: TeamResponse;
-  awayTeam!: TeamResponse;
+  homeTeam!: TeamResponse | null;
+  awayTeam!: TeamResponse | null;
+  homeNationalTeam!: NationalTeamResponse | null;
+  awayNationalTeam!: NationalTeamResponse | null;
   type!: MatchType;
   finishType!: MatchFinishType | null;
 }

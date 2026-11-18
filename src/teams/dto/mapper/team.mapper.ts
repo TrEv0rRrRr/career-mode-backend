@@ -16,7 +16,7 @@ export class TeamMapper {
       name: team.name,
       logo: team.logo,
       country: team.country,
-      manager: team.manager.name,
+      manager: team.managerTeams[0]?.manager.name ?? null,
       stadium: team.stadium.name,
       league: team.competition.name,
     };

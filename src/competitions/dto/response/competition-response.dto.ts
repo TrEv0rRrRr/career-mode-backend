@@ -13,7 +13,6 @@ export type LeagueStandings = {
     primaryColor: string;
     secondaryColor: string;
     stadiumId: number;
-    managerId: number;
     leagueId: number;
   };
 } & {
@@ -55,7 +54,6 @@ export type ParticipantTeamType = {
     primaryColor: string;
     secondaryColor: string;
     stadiumId: number;
-    managerId: number;
     leagueId: number;
   };
 } & {

@@ -34,6 +34,10 @@ export const resolveKnockoutLosers = (
     const teams = new Set<number>();
 
     for (const match of tieMatches) {
+      if (match.homeTeamId === null || match.awayTeamId === null) {
+        throw new Error('Knockout matches must have two club teams.');
+      }
+
       teams.add(match.homeTeamId);
       teams.add(match.awayTeamId);
     }

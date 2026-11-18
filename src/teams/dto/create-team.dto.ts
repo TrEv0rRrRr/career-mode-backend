@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Confederation } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsDate,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -33,6 +35,15 @@ export class CreateTeamDto {
   @IsNotEmpty()
   @IsString()
   country!: string;
+
+  @ApiProperty({
+    enum: Confederation,
+    example: Confederation.UEFA,
+    description: 'The confederation the team belongs to',
+  })
+  @IsNotEmpty()
+  @IsEnum(Confederation)
+  confederation!: Confederation;
 
   @ApiProperty({
     example: '/images/teams/fc-barcelona.png',
@@ -75,15 +86,6 @@ export class CreateTeamDto {
   @IsInt()
   @Min(1)
   stadiumId!: number;
-
-  @ApiProperty({
-    example: 1,
-    description: 'The foreign key that connects the team to its manager',
-  })
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  managerId!: number;
 
   @ApiProperty({
     example: 2,

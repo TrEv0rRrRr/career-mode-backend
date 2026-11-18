@@ -7,9 +7,12 @@ export const buildHeadToHeadTable = (
   const stats = new Map<number, HeadToHeadStanding>();
 
   for (const match of matches) {
-    if (!stats.has(match.homeTeamId)) {
-      stats.set(match.homeTeamId, {
-        teamId: match.homeTeamId,
+    const { homeTeamId, awayTeamId } = match;
+    if (homeTeamId === null || awayTeamId === null) continue;
+
+    if (!stats.has(homeTeamId)) {
+      stats.set(homeTeamId, {
+        teamId: homeTeamId,
         gf: 0,
         ga: 0,
         gd: 0,
@@ -17,9 +20,9 @@ export const buildHeadToHeadTable = (
       });
     }
 
-    if (!stats.has(match.awayTeamId)) {
-      stats.set(match.awayTeamId, {
-        teamId: match.awayTeamId,
+    if (!stats.has(awayTeamId)) {
+      stats.set(awayTeamId, {
+        teamId: awayTeamId,
         gf: 0,
         ga: 0,
         gd: 0,
@@ -27,8 +30,8 @@ export const buildHeadToHeadTable = (
       });
     }
 
-    const homeStats = stats.get(match.homeTeamId)!;
-    const awayStats = stats.get(match.awayTeamId)!;
+    const homeStats = stats.get(homeTeamId)!;
+    const awayStats = stats.get(awayTeamId)!;
 
     if (match.homeGoals > match.awayGoals) homeStats.points += 3;
 

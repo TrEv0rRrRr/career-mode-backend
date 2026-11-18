@@ -24,6 +24,15 @@ export const resolveTwoLeggedWinner = (matches: Match[]) => {
 
   const teamBId = firstMatch.awayTeamId;
 
+  if (
+    teamAId === null ||
+    teamBId === null ||
+    secondMatch.homeTeamId === null ||
+    secondMatch.awayTeamId === null
+  ) {
+    throw new Error('Two-legged knockout matches must have club teams.');
+  }
+
   const teamAGoals = firstMatch.homeGoals + secondMatch.awayGoals;
 
   const teamBGoals = firstMatch.awayGoals + secondMatch.homeGoals;
@@ -33,7 +42,7 @@ export const resolveTwoLeggedWinner = (matches: Match[]) => {
   if (teamBGoals > teamAGoals) return teamBId;
 
   // Global draw → penalties in the second leg
-  if (!secondMatch.winnerTeamId) {
+  if (secondMatch.winnerTeamId === null) {
     throw new Error(
       'A tied two-legged knockout must have a winner in the second leg.',
     );

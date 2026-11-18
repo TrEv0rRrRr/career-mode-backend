@@ -6,7 +6,10 @@ import { CreateTeamDto } from './dto/create-team.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
 
 const teamInclude = {
-  manager: true,
+  managerTeams: {
+    where: { endDate: null },
+    include: { manager: true },
+  },
   stadium: true,
   competition: true,
 } as const;

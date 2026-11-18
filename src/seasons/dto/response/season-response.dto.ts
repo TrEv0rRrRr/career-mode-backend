@@ -36,7 +36,6 @@ export type TSS = {
     primaryColor: string;
     secondaryColor: string;
     stadiumId: number;
-    managerId: number;
     leagueId: number;
   };
 } & {
