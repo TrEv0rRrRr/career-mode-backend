@@ -38,4 +38,8 @@ export class ManagersRepository {
   delete(id: number) {
     return this.prisma.manager.delete({ where: { id } });
   }
+
+  // ! Manager Team
+
+  // ! Manager National Team
 }
