@@ -25,5 +25,6 @@ async function main() {
 main().catch(async (e) => {
   console.error(e);
   await prisma.$disconnect();
+  console.log('BD poblada con éxito');
   process.exit(1);
 });
