@@ -300,7 +300,6 @@ model Team {
   matchPlayerStats   MatchPlayerStats[]
   knockoutRoundTeams KnockoutRoundTeam[]
   managerTeams       ManagerTeam[]
-  managerId          Int?
 
   @@map("team")
 }
@@ -314,7 +313,6 @@ model NationalTeam {
   primaryColor   String        @map("primary_color")
   secondaryColor String        @map("secondary_color")
   stadiumId      Int           @map("stadium_id")
-  managerId      Int           @map("manager_id")
   confederation  Confederation
 
   stadium Stadium @relation(fields: [stadiumId], references: [id])
