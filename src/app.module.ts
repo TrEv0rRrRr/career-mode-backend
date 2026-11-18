@@ -4,6 +4,7 @@ import { CompetitionsModule } from './competitions/competitions.module.ts';
 import { KnockoutRoundModule } from './knockout-round/knockout-round.module.ts';
 import { ManagersModule } from './managers/managers.module.ts';
 import { MatchesModule } from './matches/matches.module.ts';
+import { NationalTeamsModule } from './national-teams/national-teams.module.ts';
 import { PlayersModule } from './players/players.module.ts';
 import { PositionsModule } from './positions/positions.module.ts';
 import { PrismaModule } from './prisma/prisma.module.ts';
@@ -26,6 +27,7 @@ import { TransfersModule } from './transfers/transfers.module.ts';
     TransfersModule,
     MatchesModule,
     KnockoutRoundModule,
+    NationalTeamsModule,
   ],
 })
 export class AppModule {}
