@@ -11,8 +11,15 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Confederation } from '@prisma/client';
+import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
 import { UpdateTeamDto } from '../teams/dto/update-team.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { NationalTeamQueryDto } from './dto/national-team-query.dto.ts';
@@ -136,5 +143,44 @@ export class NationalTeamsController {
   })
   deleteTeam(@Param('id', ParseIntPipe) id: number) {
     return this.nationalTeamsService.deleteNationalTeam(id);
+  }
+
+  // ! National Team Players Endpoint
+
+  @Get(':ntId/players')
+  @ApiOperation({
+    summary: 'Gets the players that are currently playing for the given nt',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the players',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  getCalledUpPlayers(@Param('ntId', ParseIntPipe) ntId: number) {
+    return this.nationalTeamsService.findCalledUpPlayers(ntId);
+  }
+
+  // ! National Team Matches Endpoint
+
+  @Get(':ntId/matches')
+  @ApiOperation({
+    summary: 'Gets the nt matches or filter them by home or away',
+  })
+  @ApiOkResponse({
+    type: [MatchResponseDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Matches retrieved',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  getNationalTeamMatches(@Param('ntId', ParseIntPipe) ntId: number) {
+    return this.nationalTeamsService.findNationalTeamMatches(ntId);
   }
 }

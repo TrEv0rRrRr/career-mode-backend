@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Confederation } from '@prisma/client';
+import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { NationalTeamMapper } from './dto/mapper/national-team.mapper.ts';
 import { UpdateNationalTeamDto } from './dto/update-national-team.dto.ts';
@@ -70,5 +71,23 @@ export class NationalTeamsService {
     await this.findNationalTeamById(id);
 
     return this.repo.delete(id);
+  }
+
+  // ! National Team Players Methods
+
+  async findCalledUpPlayers(ntId: number) {
+    await this.findNationalTeamById(ntId);
+
+    const cUP = await this.repo.findCalledUpPlayers(ntId);
+
+    return cUP;
+  }
+
+  // ! National Team Matches Methods
+
+  async findNationalTeamMatches(ntId: number) {
+    await this.findNationalTeamById(ntId);
+    const ntm = await this.repo.findNationalTeamMatches(ntId);
+    return ntm.map((ntm) => MatchMapper.toResponse(ntm));
   }
 }
