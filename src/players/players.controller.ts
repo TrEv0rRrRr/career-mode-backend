@@ -452,13 +452,13 @@ export class PlayersController {
     return this.playersService.findPlayerCallUpHistory(playerId);
   }
 
-  @Get(':playerId/national-team/current')
+  @Get(':playerId/national-team/call-up/current')
   @ApiOperation({
     summary: "Get the player's current call up",
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'National Team retrieved!',
+    description: 'Call Up retrieved!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
