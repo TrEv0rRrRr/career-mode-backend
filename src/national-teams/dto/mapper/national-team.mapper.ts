@@ -1,5 +1,9 @@
 import { NationalTeamWithRelations } from '../../national-teams.repository.ts';
-import { NationalTeamResponseDto } from '../response/national-team-response.dto.ts';
+import {
+  CurrentCallUpPlayersResponseDto,
+  NationalTeamResponseDto,
+  PlayerNationalTeam,
+} from '../response/national-team-response.dto.ts';
 
 export class NationalTeamMapper {
   static toResponse(nt: NationalTeamWithRelations): NationalTeamResponseDto {
@@ -16,6 +20,16 @@ export class NationalTeamMapper {
       manager,
       stadium: nt.stadium.name,
       confederation: nt.confederation,
+    };
+  }
+
+  static calledUpPlayersToResponse(
+    pnt: PlayerNationalTeam,
+  ): CurrentCallUpPlayersResponseDto {
+    return {
+      jerseyNumber: pnt.jerseyNumber,
+      startDate: pnt.startDate,
+      player: pnt.player,
     };
   }
 }

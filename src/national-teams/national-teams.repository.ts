@@ -72,7 +72,8 @@ export class NationalTeamsRepository {
   findCalledUpPlayers(ntId: number) {
     return this.prisma.playerNationalTeam.findMany({
       where: {
-        id: ntId,
+        nationalTeamId: ntId,
+        endDate: null,
       },
       include: {
         player: true,

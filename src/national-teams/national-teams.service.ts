@@ -80,7 +80,7 @@ export class NationalTeamsService {
 
     const cUP = await this.repo.findCalledUpPlayers(ntId);
 
-    return cUP;
+    return cUP.map((cup) => NationalTeamMapper.calledUpPlayersToResponse(cup));
   }
 
   // ! National Team Matches Methods
