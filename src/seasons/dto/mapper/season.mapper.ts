@@ -25,12 +25,14 @@ export class SeasonMapper {
         name: transfer.fromTeam?.name,
         logo: transfer.fromTeam?.logo,
         country: transfer.fromTeam?.country,
+        confederation: transfer.fromTeam?.confederation,
       },
       toTeam: {
         id: transfer.toTeamId,
         name: transfer.toTeam?.name,
         logo: transfer.toTeam?.logo,
         country: transfer.toTeam?.country,
+        confederation: transfer.toTeam?.confederation,
       },
     }));
     const teamSeasonStats: TeamSeasonStatsResponse[] =
@@ -47,6 +49,7 @@ export class SeasonMapper {
           name: tss.team.name,
           logo: tss.team.logo,
           country: tss.team.country,
+          confederation: tss.team.confederation,
         },
       }));
     const competitionEditions: CompetitionEditionsResponse[] =
@@ -62,6 +65,7 @@ export class SeasonMapper {
           name: cE.winnerTeam?.name,
           logo: cE.winnerTeam?.logo,
           country: cE.winnerTeam?.country,
+          confederation: cE.winnerTeam?.confederation,
         },
       }));
 
@@ -92,6 +96,7 @@ export class SeasonMapper {
         name: t.team.name,
         logo: t.team.logo,
         country: t.team.country,
+        confederation: t.team.confederation,
       },
     };
   }

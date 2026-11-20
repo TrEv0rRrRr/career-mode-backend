@@ -1,4 +1,4 @@
-import { TransferType } from '@prisma/client';
+import { Confederation, TransferType } from '@prisma/client';
 import { CompetitionResponse } from '../../../competitions/dto/response/competition-response.dto.ts';
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 /**
@@ -37,6 +37,7 @@ export type TSS = {
     secondaryColor: string;
     stadiumId: number;
     leagueId: number;
+    confederation: Confederation;
   };
 } & {
   seasonId: number;

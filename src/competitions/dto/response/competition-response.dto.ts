@@ -1,4 +1,8 @@
-import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import {
+  CompetitionFormat,
+  CompetitionType,
+  Confederation,
+} from '@prisma/client';
 import { Optional } from '../../../seasons/dto/response/season-response.dto.ts';
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 
@@ -14,6 +18,7 @@ export type LeagueStandings = {
     secondaryColor: string;
     stadiumId: number;
     leagueId: number;
+    confederation: Confederation;
   };
 } & {
   teamId: number;
@@ -55,6 +60,7 @@ export type ParticipantTeamType = {
     secondaryColor: string;
     stadiumId: number;
     leagueId: number;
+    confederation: Confederation;
   };
 } & {
   teamId: number;

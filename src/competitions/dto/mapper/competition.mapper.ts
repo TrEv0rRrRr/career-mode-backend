@@ -40,6 +40,7 @@ export class CompetitionMapper {
           name: pt.team.name,
           logo: pt.team.logo,
           country: pt.team.country,
+          confederation: pt.team.confederation,
         },
       }),
     );
@@ -57,12 +58,14 @@ export class CompetitionMapper {
         name: cE.winnerTeam?.name,
         logo: cE.winnerTeam?.logo,
         country: cE.winnerTeam?.country,
+        confederation: cE.winnerTeam?.confederation,
       },
       runnerUpTeam: {
         id: cE.runnerUpTeamId,
         name: cE.runnerUpTeam?.name,
         logo: cE.runnerUpTeam?.logo,
         country: cE.runnerUpTeam?.country,
+        confederation: cE.runnerUpTeam?.confederation,
       },
       participantTeams,
     };
@@ -85,6 +88,7 @@ export class CompetitionMapper {
         name: pt.team.name,
         logo: pt.team.logo,
         country: pt.team.country,
+        confederation: pt.team.confederation,
       },
     };
   }
@@ -107,6 +111,7 @@ export class CompetitionMapper {
         name: leagueStandings.team.name,
         logo: leagueStandings.team.logo,
         country: leagueStandings.team.country,
+        confederation: leagueStandings.team.confederation,
       },
     };
   }

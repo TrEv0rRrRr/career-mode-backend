@@ -1,4 +1,4 @@
-import { Player, PreferredFoot } from '@prisma/client';
+import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
 
 export class TeamResponse {
@@ -6,6 +6,7 @@ export class TeamResponse {
   name!: string;
   logo!: string | null;
   country!: string;
+  confederation!: Confederation;
 }
 
 export type PlayerType = {

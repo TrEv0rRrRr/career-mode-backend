@@ -13,6 +13,7 @@ export class KnockoutRoundMapper {
         name: team.name,
         logo: team.logo,
         country: team.country,
+        confederation: team.confederation,
       }),
     );
 

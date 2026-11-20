@@ -1,4 +1,5 @@
 import {
+  Confederation,
   MatchFinishType,
   MatchLeg,
   MatchStatus,
@@ -6,10 +7,11 @@ import {
 } from '@prisma/client';
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 
-class NationalTeamResponse {
+export class NationalTeamResponse {
   id!: number;
   name!: string;
   logo!: string | null;
+  confederation!: Confederation;
 }
 
 interface Stadium {
