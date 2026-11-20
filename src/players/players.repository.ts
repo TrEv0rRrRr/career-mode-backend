@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.ts';
+import { CallUpPlayerDto } from './dto/nts/callup-player.dto.ts';
+import { DismissPlayerDto } from './dto/nts/dismiss-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
@@ -280,6 +282,54 @@ export class PlayersRepository {
         team: true,
         season: true,
       },
+    });
+  }
+
+  // ! Player National Team Queries
+
+  findPlayerCurrentCallUp(playerId: number) {
+    return this.prisma.playerNationalTeam.findFirst({
+      where: {
+        playerId,
+        endDate: null,
+      },
+      include: {
+        nationalTeam: true,
+      },
+    });
+  }
+
+  findPlayerCallUpHistory(playerId: number) {
+    return this.prisma.playerNationalTeam.findMany({
+      where: {
+        playerId,
+      },
+      include: {
+        nationalTeam: true,
+      },
+    });
+  }
+
+  callUpPlayer(
+    playerId: number,
+    nationalTeamId: number,
+    data: CallUpPlayerDto,
+  ) {
+    return this.prisma.playerNationalTeam.create({
+      data: {
+        ...data,
+        nationalTeamId,
+        playerId,
+      },
+    });
+  }
+
+  dismissPlayer(playerNtId: number, data: DismissPlayerDto) {
+    return this.prisma.playerNationalTeam.update({
+      where: {
+        id: playerNtId,
+      },
+      data,
     });
   }
 }

@@ -1,5 +1,7 @@
 import { Player } from '@prisma/client';
 import {
+  PlayerNationalTeam,
+  PlayerNationalTeamResponseDto,
   PlayerPositions,
   PlayerPositionsResponseDto,
   PlayerResponseDto,
@@ -44,6 +46,7 @@ export class PlayerMapper {
         name: pt.team.name,
         logo: pt.team.logo,
         country: pt.team.country,
+        confederation: pt.team.confederation,
       },
     };
   }
@@ -78,6 +81,24 @@ export class PlayerMapper {
         name: ptss.team.name,
         logo: ptss.team.logo,
         country: ptss.team.country,
+        confederation: ptss.team.confederation,
+      },
+    };
+  }
+
+  static nationalTeamsToResponse(
+    pnt: PlayerNationalTeam,
+  ): PlayerNationalTeamResponseDto {
+    return {
+      id: pnt.id,
+      jerseyNumber: pnt.jerseyNumber,
+      startDate: pnt.startDate,
+      endDate: pnt.endDate,
+      nationalTeam: {
+        id: pnt.nationalTeamId,
+        name: pnt.nationalTeam.name,
+        logo: pnt.nationalTeam.logo,
+        confederation: pnt.nationalTeam.confederation,
       },
     };
   }

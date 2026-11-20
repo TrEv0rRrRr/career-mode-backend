@@ -3,9 +3,12 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
+import { NationalTeamsService } from '../national-teams/national-teams.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { PlayerMapper } from './dto/mapper/player.mapper.ts';
+import { CallUpPlayerDto } from './dto/nts/callup-player.dto.ts';
+import { DismissPlayerDto } from './dto/nts/dismiss-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
@@ -22,6 +25,7 @@ export class PlayersService {
     private repo: PlayersRepository,
     private teamsService: TeamsService,
     private seasonsService: SeasonsService,
+    private nationalTeamsService: NationalTeamsService,
   ) {}
 
   // ! Player Methods
@@ -280,5 +284,65 @@ export class PlayersService {
       );
 
     return PlayerMapper.teamSeasonStatsToResponse(playerTeamSeasonStats);
+  }
+
+  // ! Player NT Methods
+
+  async findPlayerCallUpHistory(playerId: number) {
+    const callUpHistory = await this.repo.findPlayerCallUpHistory(playerId);
+    return callUpHistory.map((cuh) =>
+      PlayerMapper.nationalTeamsToResponse(cuh),
+    );
+  }
+
+  async findPlayerCurrentCallUp(playerId: number) {
+    await this.findPlayerById(playerId);
+    const currentCallUp = await this.repo.findPlayerCurrentCallUp(playerId);
+    return PlayerMapper.nationalTeamsToResponse(currentCallUp!);
+  }
+
+  async callUpPlayer(
+    playerId: number,
+    nationalTeamId: number,
+    data: CallUpPlayerDto,
+  ) {
+    const player = await this.findPlayerById(playerId);
+    const nt =
+      await this.nationalTeamsService.findNationalTeamById(nationalTeamId);
+
+    const currentCallUp = await this.findPlayerCurrentCallUp(playerId);
+
+    if (currentCallUp)
+      throw new BadRequestException(
+        'The player is already called up for a national team',
+      );
+
+    if (player.nationality !== nt.name)
+      throw new BadRequestException(
+        'The player cannot be called up for this national team',
+      );
+
+    if (data.endDate && data.endDate < data.startDate)
+      throw new BadRequestException(
+        'The end date cannot be before the start date',
+      );
+
+    return this.repo.callUpPlayer(playerId, nationalTeamId, data);
+  }
+
+  async dismissPlayer(playerId: number, data: DismissPlayerDto) {
+    const currentCallUp = await this.findPlayerCurrentCallUp(playerId);
+
+    if (!currentCallUp)
+      throw new BadRequestException(
+        'The player is not currently called up for a national team',
+      );
+
+    if (currentCallUp.startDate > data.endDate)
+      throw new BadRequestException(
+        'The end date cannot be before the start date',
+      );
+
+    return this.repo.dismissPlayer(currentCallUp.id, data);
   }
 }

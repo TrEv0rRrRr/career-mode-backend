@@ -17,6 +17,8 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { CallUpPlayerDto } from './dto/nts/callup-player.dto.ts';
+import { DismissPlayerDto } from './dto/nts/dismiss-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
@@ -435,5 +437,97 @@ export class PlayersController {
       teamId,
       seasonId,
     );
+  }
+
+  // ! Player NT Endpoints
+  @Get(':playerId/national-team/call-up/history')
+  @ApiOperation({
+    summary: "Get the player's call-up history",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'History retrieved!',
+  })
+  getPlayerCallUpHistory(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerCallUpHistory(playerId);
+  }
+
+  @Get(':playerId/national-team/current')
+  @ApiOperation({
+    summary: "Get the player's current call up",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'National Team retrieved!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  getPlayerCurrentCallUp(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerCurrentCallUp(playerId);
+  }
+
+  @Post(':playerId/national-team/:nationalTeamId/call-up')
+  @ApiOperation({
+    summary: 'Call Up a player to its national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player called up successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'National Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player is already called up for a national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player cannot be called up for this national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  callUpPlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+    @Body() data: CallUpPlayerDto,
+  ) {
+    return this.playersService.callUpPlayer(playerId, nationalTeamId, data);
+  }
+
+  @Patch(':playerId/national-team/dismiss')
+  @ApiOperation({
+    summary: 'Dismiss a player from its national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player dismissed!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player is not currently called up for a national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  dismissPlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: DismissPlayerDto,
+  ) {
+    return this.playersService.dismissPlayer(playerId, data);
   }
 }

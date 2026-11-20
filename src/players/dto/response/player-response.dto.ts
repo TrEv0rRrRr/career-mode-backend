@@ -1,5 +1,6 @@
-import { PreferredFoot } from '@prisma/client';
+import { Confederation, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
+import { NationalTeamResponse } from '../../../matches/dto/response/match-response.dto.ts';
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 export type PlayerPositions = {
   position: {
@@ -25,6 +26,7 @@ export type PlayerTeams = {
     secondaryColor: string;
     stadiumId: number;
     leagueId: number;
+    confederation: Confederation;
   };
 } & {
   id: number;
@@ -68,6 +70,7 @@ export type PlayerTeamSeasonStats = {
     secondaryColor: string;
     stadiumId: number;
     leagueId: number;
+    confederation: Confederation;
   };
   season: {
     id: number;
@@ -87,6 +90,27 @@ export type PlayerTeamSeasonStats = {
   yellowCards: number;
   redCards: number;
   rating: Decimal;
+};
+
+export type PlayerNationalTeam = {
+  nationalTeam: {
+    name: string;
+    id: number;
+    shortName: string;
+    confederation: Confederation;
+    logo: string | null;
+    foundationDate: Date;
+    primaryColor: string;
+    secondaryColor: string;
+    stadiumId: number;
+  };
+} & {
+  id: number;
+  playerId: number;
+  jerseyNumber: number;
+  startDate: Date;
+  endDate: Date | null;
+  nationalTeamId: number;
 };
 
 export class PlayerResponseDto {
@@ -126,4 +150,12 @@ export class PlayerSeasonStatsResponseDto {
 
 export class PlayerTeamSeasonStatsResponseDto extends PlayerSeasonStatsResponseDto {
   team!: TeamResponse;
+}
+
+export class PlayerNationalTeamResponseDto {
+  id!: number;
+  jerseyNumber!: number;
+  startDate!: Date;
+  endDate!: Date | null;
+  nationalTeam!: NationalTeamResponse;
 }
