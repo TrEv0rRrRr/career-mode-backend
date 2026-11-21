@@ -141,6 +141,9 @@ export class NationalTeamsRepository {
       include: {
         manager: true,
       },
+      orderBy: {
+        startDate: 'desc',
+      },
     });
   }
 
