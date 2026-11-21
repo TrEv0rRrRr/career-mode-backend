@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -20,9 +21,13 @@ import {
 } from '@nestjs/swagger';
 import { Confederation } from '@prisma/client';
 import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
+import { FireManagerDto } from '../teams/dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from '../teams/dto/managers/hire-manager.dto.ts';
 import { UpdateTeamDto } from '../teams/dto/update-team.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { NationalTeamQueryDto } from './dto/national-team-query.dto.ts';
+import { CallUpPlayerDto } from './dto/players/callup-player.dto.ts';
+import { DismissPlayerDto } from './dto/players/dismiss-player.dto.ts';
 import { NationalTeamsService } from './national-teams.service.ts';
 
 @Controller('national-teams')
@@ -145,27 +150,9 @@ export class NationalTeamsController {
     return this.nationalTeamsService.deleteNationalTeam(id);
   }
 
-  // ! National Team Players Endpoint
+  // ! National NT Matches Endpoint
 
-  @Get(':ntId/players')
-  @ApiOperation({
-    summary: 'Gets the players that are currently playing for the given nt',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Gets the players',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'NT not found',
-  })
-  getCalledUpPlayers(@Param('ntId', ParseIntPipe) ntId: number) {
-    return this.nationalTeamsService.findCalledUpPlayers(ntId);
-  }
-
-  // ! National Team Matches Endpoint
-
-  @Get(':ntId/matches')
+  @Get(':nationalTeamId/matches')
   @ApiOperation({
     summary: 'Gets the nt matches or filter them by home or away',
   })
@@ -180,7 +167,234 @@ export class NationalTeamsController {
     status: HttpStatus.NOT_FOUND,
     description: 'NT not found',
   })
-  getNationalTeamMatches(@Param('ntId', ParseIntPipe) ntId: number) {
-    return this.nationalTeamsService.findNationalTeamMatches(ntId);
+  getNationalTeamMatches(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+  ) {
+    return this.nationalTeamsService.findNationalTeamMatches(nationalTeamId);
+  }
+
+  // ! National NT Players Endpoint
+
+  @Get(':nationalTeamId/players')
+  @ApiOperation({
+    summary: 'Gets the players that are currently playing for the given nt',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the players',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  getCalledUpPlayers(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+  ) {
+    return this.nationalTeamsService.findCalledUpPlayers(nationalTeamId);
+  }
+
+  @Post(':nationalTeamId/call-up/:playerId')
+  @ApiOperation({
+    summary: 'Call Up a player to its national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player called up successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'National Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player is already called up for a national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player cannot be called up for this national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  callUpPlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+    @Body() data: CallUpPlayerDto,
+  ) {
+    return this.nationalTeamsService.callUpPlayer(
+      playerId,
+      nationalTeamId,
+      data,
+    );
+  }
+
+  @Patch('dismiss/:playerId')
+  @ApiOperation({
+    summary: 'Dismiss a player from its national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player dismissed!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The player is not currently called up for a national team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  dismissPlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: DismissPlayerDto,
+  ) {
+    return this.nationalTeamsService.dismissPlayer(playerId, data);
+  }
+
+  // ! Manager National NT Endpoints
+
+  @Get(':nationalTeamId/managers/current')
+  @ApiOperation({
+    summary: "Get the nt's current manager",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  getCurrentManager(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+  ) {
+    return this.nationalTeamsService.findCurrentManager(nationalTeamId);
+  }
+
+  @Get(':nationalTeamId/managers/history')
+  @ApiOperation({
+    summary: "Get the nt's manager history",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  getManagerHistory(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+  ) {
+    return this.nationalTeamsService.findManagerHistory(nationalTeamId);
+  }
+
+  @Post(':nationalTeamId/managers/:managerId/hire')
+  @ApiOperation({
+    summary: 'Hire a new manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Manager hired successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The manager is already managing another nt',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  hireManager(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+    @Param('managerId', ParseIntPipe) managerId: number,
+    @Body() data: HireManagerDto,
+  ) {
+    return this.nationalTeamsService.hireManager(
+      nationalTeamId,
+      managerId,
+      data,
+    );
+  }
+
+  @Patch(':nationalTeamId/managers/fire')
+  @ApiOperation({
+    summary: 'Fire the current manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Manager fired successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This nt has no manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  fireManager(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+    @Body() data: FireManagerDto,
+  ) {
+    return this.nationalTeamsService.fireManager(nationalTeamId, data);
+  }
+
+  @Put(':nationalTeamId/managers/replace/:managerId')
+  @ApiOperation({
+    summary: 'Fire the current manager and immediately hire a new one',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The current manager was fired successfully and a new one was hired.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'NT not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This nt has no manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The manager is already managing another nt',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  fireManagerAndHireANewOne(
+    @Param('nationalTeamId', ParseIntPipe) nationalTeamId: number,
+    @Param('managerId', ParseIntPipe) managerId: number,
+    @Body() data: HireManagerDto,
+  ) {
+    return this.nationalTeamsService.fireManagerAndHireANewOne(
+      nationalTeamId,
+      managerId,
+      data,
+    );
   }
 }

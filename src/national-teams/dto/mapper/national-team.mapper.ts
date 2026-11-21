@@ -1,6 +1,8 @@
 import { NationalTeamWithRelations } from '../../national-teams.repository.ts';
 import {
   CurrentCallUpPlayersResponseDto,
+  CurrentManagerResponseDto,
+  ManagerNationalTeam,
   NationalTeamResponseDto,
   PlayerNationalTeam,
 } from '../response/national-team-response.dto.ts';
@@ -30,6 +32,21 @@ export class NationalTeamMapper {
       jerseyNumber: pnt.jerseyNumber,
       startDate: pnt.startDate,
       player: pnt.player,
+    };
+  }
+
+  static mapManagers(mnt: ManagerNationalTeam): CurrentManagerResponseDto {
+    return {
+      id: mnt.id,
+      nationalTeamId: mnt.nationalTeamId,
+      startDate: mnt.startDate,
+      endDate: mnt.endDate,
+      manager: {
+        id: mnt.managerId,
+        name: mnt.manager.name,
+        face: mnt.manager.face,
+        nationality: mnt.manager.nationality,
+      },
     };
   }
 }

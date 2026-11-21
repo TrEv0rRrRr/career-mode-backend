@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Confederation, Prisma } from '@prisma/client';
 import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
+import { FireManagerDto } from '../teams/dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from '../teams/dto/managers/hire-manager.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
+import { CallUpPlayerDto } from './dto/players/callup-player.dto.ts';
+import { DismissPlayerDto } from './dto/players/dismiss-player.dto.ts';
 import { UpdateNationalTeamDto } from './dto/update-national-team.dto.ts';
 
 const nationalTeamInclude = {
@@ -67,7 +71,18 @@ export class NationalTeamsRepository {
     return this.prisma.nationalTeam.delete({ where: { id } });
   }
 
-  // ! Player NT Queries
+  // ! National Team Matches Queries
+
+  findNationalTeamMatches(ntId: number) {
+    return this.prisma.match.findMany({
+      where: {
+        OR: [{ homeTeamId: ntId }, { awayTeamId: ntId }],
+      },
+      include: matchInclude,
+    });
+  }
+
+  // ! Player National Team Queries
 
   findCalledUpPlayers(ntId: number) {
     return this.prisma.playerNationalTeam.findMany({
@@ -81,14 +96,96 @@ export class NationalTeamsRepository {
     });
   }
 
-  // ! National Team Matches Queries
-
-  findNationalTeamMatches(ntId: number) {
-    return this.prisma.match.findMany({
-      where: {
-        OR: [{ homeTeamId: ntId }, { awayTeamId: ntId }],
+  callUpPlayer(
+    playerId: number,
+    nationalTeamId: number,
+    data: CallUpPlayerDto,
+  ) {
+    return this.prisma.playerNationalTeam.create({
+      data: {
+        ...data,
+        nationalTeamId,
+        playerId,
       },
-      include: matchInclude,
+    });
+  }
+
+  dismissPlayer(playerNtId: number, data: DismissPlayerDto) {
+    return this.prisma.playerNationalTeam.update({
+      where: {
+        id: playerNtId,
+      },
+      data,
+    });
+  }
+
+  // ! Manager National Team Queries
+
+  findCurrentManager(nationalTeamId: number) {
+    return this.prisma.managerNationalTeam.findFirst({
+      where: {
+        nationalTeamId,
+        endDate: null,
+      },
+      include: {
+        manager: true,
+      },
+    });
+  }
+
+  findNationalTeamManagerHistory(nationalTeamId: number) {
+    return this.prisma.managerNationalTeam.findMany({
+      where: {
+        nationalTeamId,
+      },
+      include: {
+        manager: true,
+      },
+    });
+  }
+
+  hireManager(nationalTeamId: number, managerId: number, data: HireManagerDto) {
+    return this.prisma.managerNationalTeam.create({
+      data: {
+        ...data,
+        nationalTeamId,
+        managerId,
+      },
+    });
+  }
+
+  fireManager(managerTeamId: number, data: FireManagerDto) {
+    return this.prisma.managerNationalTeam.update({
+      where: {
+        id: managerTeamId,
+      },
+      data,
+    });
+  }
+
+  fireAndHireManager(
+    managerTeamId: number,
+    nationalTeamId: number,
+    managerId: number,
+    data: HireManagerDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.managerNationalTeam.update({
+        where: {
+          id: managerTeamId,
+        },
+        data: {
+          endDate: data.startDate,
+        },
+      });
+
+      return tx.managerNationalTeam.create({
+        data: {
+          ...data,
+          nationalTeamId,
+          managerId,
+        },
+      });
     });
   }
 }
