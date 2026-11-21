@@ -1,8 +1,8 @@
 import { NationalTeamWithRelations } from '../../national-teams.repository.ts';
 import {
   CurrentCallUpPlayersResponseDto,
-  CurrentManagerResponseDto,
-  ManagerNationalTeam,
+  CurrentNationalTeamManagerResponseDto,
+  NationalTeamManagerType,
   NationalTeamResponseDto,
   PlayerNationalTeam,
 } from '../response/national-team-response.dto.ts';
@@ -35,7 +35,9 @@ export class NationalTeamMapper {
     };
   }
 
-  static mapManagers(mnt: ManagerNationalTeam): CurrentManagerResponseDto {
+  static mapManagers(
+    mnt: NationalTeamManagerType,
+  ): CurrentNationalTeamManagerResponseDto {
     return {
       id: mnt.id,
       nationalTeamId: mnt.nationalTeamId,

@@ -29,7 +29,7 @@ export type ManagerResponse = {
   face: string | null;
 };
 
-export type ManagerNationalTeam = {
+export type NationalTeamManagerType = {
   manager: {
     id: number;
     name: string;
@@ -60,7 +60,7 @@ export class CurrentCallUpPlayersResponseDto {
   player!: Player;
 }
 
-export class CurrentManagerResponseDto {
+export class CurrentNationalTeamManagerResponseDto {
   id!: number;
   nationalTeamId!: number;
   startDate!: Date;
