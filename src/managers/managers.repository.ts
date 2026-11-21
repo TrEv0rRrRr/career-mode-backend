@@ -48,7 +48,6 @@ export class ManagersRepository {
         endDate: null,
       },
       include: {
-        manager: true,
         team: true,
       },
     });
@@ -60,8 +59,10 @@ export class ManagersRepository {
         managerId,
       },
       include: {
-        manager: true,
         team: true,
+      },
+      orderBy: {
+        startDate: 'desc',
       },
     });
   }
@@ -75,7 +76,6 @@ export class ManagersRepository {
         endDate: null,
       },
       include: {
-        manager: true,
         nationalTeam: true,
       },
     });
@@ -87,8 +87,10 @@ export class ManagersRepository {
         managerId,
       },
       include: {
-        manager: true,
         nationalTeam: true,
+      },
+      orderBy: {
+        startDate: 'desc',
       },
     });
   }

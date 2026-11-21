@@ -3,13 +3,6 @@ import { NationalTeamResponse } from '../../../matches/dto/response/match-respon
 import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 
 export type ManagerTeamType = {
-  manager: {
-    name: string;
-    id: number;
-    birthDate: Date;
-    nationality: string;
-    face: string | null;
-  };
   team: {
     name: string;
     id: number;
@@ -32,13 +25,6 @@ export type ManagerTeamType = {
 };
 
 export type ManagerNationalTeamType = {
-  manager: {
-    name: string;
-    id: number;
-    birthDate: Date;
-    nationality: string;
-    face: string | null;
-  };
   nationalTeam: {
     name: string;
     id: number;
