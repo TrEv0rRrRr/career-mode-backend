@@ -39,7 +39,57 @@ export class ManagersRepository {
     return this.prisma.manager.delete({ where: { id } });
   }
 
-  // ! Manager Team
+  // ! Manager Team Queries
 
-  // ! Manager National Team
+  findManagerCurrentTeam(managerId: number) {
+    return this.prisma.managerTeam.findFirst({
+      where: {
+        managerId,
+        endDate: null,
+      },
+      include: {
+        manager: true,
+        team: true,
+      },
+    });
+  }
+
+  findManagerTeamHistory(managerId: number) {
+    return this.prisma.managerTeam.findMany({
+      where: {
+        managerId,
+      },
+      include: {
+        manager: true,
+        team: true,
+      },
+    });
+  }
+
+  // ! Manager National Team Queries
+
+  findManagerCurrentNationalTeam(managerId: number) {
+    return this.prisma.managerNationalTeam.findFirst({
+      where: {
+        managerId,
+        endDate: null,
+      },
+      include: {
+        manager: true,
+        nationalTeam: true,
+      },
+    });
+  }
+
+  findManagerNationalTeamHistory(managerId: number) {
+    return this.prisma.managerNationalTeam.findMany({
+      where: {
+        managerId,
+      },
+      include: {
+        manager: true,
+        nationalTeam: true,
+      },
+    });
+  }
 }

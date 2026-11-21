@@ -105,4 +105,50 @@ export class ManagersController {
   deleteManager(@Param('id', ParseIntPipe) id: number) {
     return this.managersService.deleteManager(id);
   }
+
+  // ! Manager Team Endpoints
+  @Get(':managerId/teams/current')
+  @ApiOperation({ summary: "Get a manager's current team" })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  getManagerCurrentTeam(@Param('managerId', ParseIntPipe) managerId: number) {
+    return this.managersService.findManagerCurrentTeam(managerId);
+  }
+
+  @Get(':managerId/teams/history')
+  @ApiOperation({ summary: "Get a manager's team history" })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  getManagerTeamHistory(@Param('managerId', ParseIntPipe) managerId: number) {
+    return this.managersService.findManagerTeamHistory(managerId);
+  }
+
+  // ! Manager National Team Endpoints
+  @Get(':managerId/national-teams/current')
+  @ApiOperation({ summary: "Get a manager's current national team" })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  getManagerCurrentNationalTeam(
+    @Param('managerId', ParseIntPipe) managerId: number,
+  ) {
+    return this.managersService.findManagerCurrentNationalTeam(managerId);
+  }
+
+  @Get(':managerId/national-teams/history')
+  @ApiOperation({ summary: "Get a manager's national team history" })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  getManagerNationalTeamHistory(
+    @Param('managerId', ParseIntPipe) managerId: number,
+  ) {
+    return this.managersService.findManagerNationalTeamHistory(managerId);
+  }
 }

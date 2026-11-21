@@ -1,5 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateManagerDto } from './dto/create-manager.dto.ts';
+import { ManagerMapper } from './dto/mapper/manager.mapper.ts';
 import { UpdateManagerDto } from './dto/update-manager.dto.ts';
 import { ManagerNotFoundException } from './exceptions/manager-not-found.exception.ts';
 import { ManagersRepository } from './managers.repository.ts';
@@ -56,5 +61,45 @@ export class ManagersService {
     await this.findManagerById(id);
 
     return this.repo.delete(id);
+  }
+
+  // ! Manager Team Service Methods
+  async findManagerCurrentTeam(managerId: number) {
+    await this.findManagerById(managerId);
+
+    const currentTeam = await this.repo.findManagerCurrentTeam(managerId);
+
+    if (!currentTeam)
+      throw new NotFoundException(
+        'This manager is not managing any team currently',
+      );
+
+    return ManagerMapper.mapTeams(currentTeam);
+  }
+
+  async findManagerTeamHistory(managerId: number) {
+    await this.findManagerById(managerId);
+    const history = await this.repo.findManagerTeamHistory(managerId);
+    return history.map((h) => ManagerMapper.mapTeams(h));
+  }
+
+  // ! Manager National Team Service Methods
+  async findManagerCurrentNationalTeam(managerId: number) {
+    await this.findManagerById(managerId);
+
+    const currentNationalTeam =
+      await this.repo.findManagerCurrentNationalTeam(managerId);
+
+    if (!currentNationalTeam)
+      throw new NotFoundException(
+        'This manager is not managing any national team currently',
+      );
+    return ManagerMapper.mapNationalTeams(currentNationalTeam);
+  }
+
+  async findManagerNationalTeamHistory(managerId: number) {
+    await this.findManagerById(managerId);
+    const history = await this.repo.findManagerNationalTeamHistory(managerId);
+    return history.map((h) => ManagerMapper.mapNationalTeams(h));
   }
 }
