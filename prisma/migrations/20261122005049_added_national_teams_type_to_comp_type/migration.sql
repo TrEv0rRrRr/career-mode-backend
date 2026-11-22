@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `competition` MODIFY `type` ENUM('LEAGUE', 'CUP', 'SUPER_CUP', 'INTERNATIONAL', 'NATIONAL_TEAMS') NOT NULL;

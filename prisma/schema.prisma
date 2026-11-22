@@ -23,6 +23,7 @@ enum CompetitionType {
   CUP
   SUPER_CUP
   INTERNATIONAL
+  NATIONAL_TEAMS
 }
 
 enum TransferType {
