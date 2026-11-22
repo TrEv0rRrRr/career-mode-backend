@@ -17,7 +17,7 @@ CREATE TABLE `national_team_competition_participant` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `national_team_competition_participant` ADD CONSTRAINT `national_team_competition_participant_competition_edition_id_fkey` FOREIGN KEY (`competition_edition_id`) REFERENCES `competition_edition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `national_team_competition_participant` ADD CONSTRAINT `national_team_competition_participant_competition_edition_i_fkey` FOREIGN KEY (`competition_edition_id`) REFERENCES `competition_edition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `national_team_competition_participant` ADD CONSTRAINT `national_team_competition_participant_national_team_id_fkey` FOREIGN KEY (`national_team_id`) REFERENCES `national_team`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
