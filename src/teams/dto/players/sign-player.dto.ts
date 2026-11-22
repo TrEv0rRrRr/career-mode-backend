@@ -9,16 +9,7 @@ import {
   Min,
 } from 'class-validator';
 
-export class AssignTeamDto {
-  @ApiProperty({
-    example: 1,
-    description: 'The id of the team',
-  })
-  @IsNotEmpty()
-  @IsInt()
-  @Min(1)
-  teamId!: number;
-
+export class SignPlayerDto {
   @ApiProperty({
     example: 1,
     description:
