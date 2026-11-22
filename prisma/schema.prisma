@@ -325,6 +325,7 @@ model NationalTeam {
 
   playerNationalTeams  PlayerNationalTeam[]
   managerNationalTeams ManagerNationalTeam[]
+  competitionParticipants NationalTeamCompetitionParticipant[]
 
   @@map("national_team")
 }
@@ -408,6 +409,7 @@ model CompetitionEdition {
   winnerTeam              Team?                    @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
   runnerUpTeam            Team?                    @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
   competitionParticipants CompetitionParticipant[]
+  nationalTeamParticipants NationalTeamCompetitionParticipant[]
   knockoutRounds          KnockoutRound[]
 
   @@unique([seasonId, competitionId])
@@ -433,6 +435,27 @@ model CompetitionParticipant {
 
   @@id([teamId, competitionEditionId])
   @@map("competition_participant")
+}
+
+model NationalTeamCompetitionParticipant {
+  nationalTeamId       Int     @map("national_team_id")
+  competitionEditionId Int     @map("competition_edition_id")
+  points               Int?
+  position             Int?
+  group                String?
+  played               Int     @default(0)
+  wins                 Int     @default(0)
+  draws                Int     @default(0)
+  losses               Int     @default(0)
+  gf                   Int     @default(0)
+  ga                   Int     @default(0)
+  gd                   Int     @default(0)
+
+  competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
+  nationalTeam       NationalTeam       @relation(fields: [nationalTeamId], references: [id])
+
+  @@id([nationalTeamId, competitionEditionId])
+  @@map("national_team_competition_participant")
 }
 
 model MatchTeamStats {
