@@ -42,6 +42,15 @@ export class SeasonsRepository {
     });
   }
 
+  findCurrentSeason() {
+    return this.prisma.season.findFirst({
+      where: {
+        completed: false,
+      },
+      include: seasonInclude,
+    });
+  }
+
   findByCode(code: string) {
     return this.prisma.season.findUnique({
       where: { code },
@@ -57,6 +66,7 @@ export class SeasonsRepository {
         ...data,
         startDate: new Date(`${firstYear}-07-01`),
         endDate: new Date(`${secondYear}-06-30`),
+        completed: false,
       },
     });
   }

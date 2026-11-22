@@ -51,4 +51,12 @@ export class SeasonsService {
 
     return tss.map((t) => SeasonMapper.teamSeasonStatsToResponse(t));
   }
+
+  async findCurrentSeason() {
+    const season = await this.repo.findCurrentSeason();
+
+    if (!season) throw new SeasonNotFoundException();
+
+    return SeasonMapper.toResponse(season);
+  }
 }

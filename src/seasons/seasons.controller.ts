@@ -26,8 +26,21 @@ export class SeasonsController {
     status: HttpStatus.OK,
     description: 'Gets the seasons',
   })
-  findAll() {
+  getAllSeasons() {
     return this.seasonsService.findSeasons();
+  }
+
+  @Get('/current')
+  @ApiOperation({ summary: 'Get the current season' })
+  @ApiOkResponse({
+    type: [SeasonResponseDto],
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Get the season',
+  })
+  getCurrentSeason() {
+    return this.seasonsService.findCurrentSeason();
   }
 
   @Get(':id')
