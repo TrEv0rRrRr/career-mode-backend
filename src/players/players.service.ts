@@ -2,21 +2,17 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { NationalTeamsService } from '../national-teams/national-teams.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
+import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { PlayerMapper } from './dto/mapper/player.mapper.ts';
-import { CallUpPlayerDto } from './dto/nts/callup-player.dto.ts';
-import { DismissPlayerDto } from './dto/nts/dismiss-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
-import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
-import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 import { PlayerNotFoundException } from './exceptions/player-not-found.exception.ts';
-import { PlayerTeamNotFoundException } from './exceptions/player-team-not-found.exception.ts';
 import { PlayersRepository } from './players.repository.ts';
 
 @Injectable()
@@ -25,7 +21,6 @@ export class PlayersService {
     private repo: PlayersRepository,
     private teamsService: TeamsService,
     private seasonsService: SeasonsService,
-    private nationalTeamsService: NationalTeamsService,
   ) {}
 
   // ! Player Methods
@@ -154,48 +149,33 @@ export class PlayersService {
 
   // ! Player Team Methods
 
-  async findPlayerTeam(playerTeamId: number) {
-    const playerTeam = await this.repo.findPlayerTeam(playerTeamId);
-    if (!playerTeam) throw new PlayerTeamNotFoundException();
-    return playerTeam;
-  }
-
-  async findPlayerTeams(playerId: number) {
+  async findPlayerTeamHistory(playerId: number) {
     await this.findPlayerById(playerId);
-    const playerTeams = await this.repo.findPlayerTeams(playerId);
-    return playerTeams.map((pt) => PlayerMapper.teamsToResponse(pt));
+    const history = await this.repo.findPlayerTeamHistory(playerId);
+    return history.map((h) => PlayerMapper.teamsToResponse(h));
   }
 
   async findCurrentTeam(playerId: number) {
     await this.findPlayerById(playerId);
-    return this.repo.findCurrentTeam(playerId);
+    const currentTeam = await this.repo.findCurrentTeam(playerId);
+    if (!currentTeam)
+      throw new NotFoundException(
+        'This player is not playing for a team currently',
+      );
+    return currentTeam;
   }
 
+  // ! Dev only
   async findCurrentTeams(playerIds: number[]) {
     return this.repo.findCurrentTeams(playerIds);
   }
 
-  async assignTeam(playerId: number, data: AssignTeamDto) {
-    await this.findPlayerById(playerId);
-
-    await this.teamsService.findTeamById(data.teamId);
-
-    const isThePlayerOnATeam = await this.findCurrentTeam(playerId);
-
-    if (isThePlayerOnATeam)
-      throw new ConflictException(
-        'This player is currently playing for a team. You must end his contract first',
-      );
-
-    if (data.endDate && data.endDate < data.startDate)
-      throw new BadRequestException(
-        'The end date cannot be before the start date',
-      );
-
-    return this.repo.assignTeam(playerId, data);
-  }
-
-  async replacePlayerTeams(playerId: number, data: AssignTeamDto[]) {
+  // ! Dev only
+  async replacePlayerTeams(
+    teamId: number,
+    playerId: number,
+    data: SignPlayerDto[],
+  ) {
     await this.findPlayerById(playerId);
 
     for (const team of data) {
@@ -206,9 +186,7 @@ export class PlayersService {
       }
     }
 
-    await Promise.all(
-      data.map((team) => this.teamsService.findTeamById(team.teamId)),
-    );
+    await Promise.all(data.map(() => this.teamsService.findTeamById(teamId)));
 
     const activeContracts = data.filter((team) => team.endDate === null);
 
@@ -218,34 +196,14 @@ export class PlayersService {
       );
     }
 
-    return this.repo.replacePlayerTeams(playerId, data);
+    return this.repo.replacePlayerTeams(teamId, playerId, data);
   }
 
-  async updatePlayerTeam(
-    playerId: number,
-    playerTeamId: number,
-    data: UpdatePlayerTeamDto,
-  ) {
-    await this.findPlayerById(playerId);
-
-    const playerCurrentTeam = await this.findCurrentTeam(playerId);
-
-    if (
-      data.endDate &&
-      playerCurrentTeam &&
-      data.endDate < playerCurrentTeam.startDate
-    )
-      throw new BadRequestException(
-        'The end date cannot be before the start date',
-      );
-
-    return this.repo.updatePlayerTeam(playerTeamId, data);
-  }
-
+  // ! Dev only
   async deletePlayerTeam(playerTeamId: number, playerId: number) {
     await this.findPlayerById(playerId);
 
-    await this.findPlayerTeam(playerTeamId);
+    await this.findCurrentTeam(playerTeamId);
 
     return this.repo.deletePlayerTeam(playerTeamId);
   }
@@ -289,60 +247,21 @@ export class PlayersService {
   // ! Player NT Methods
 
   async findPlayerCallUpHistory(playerId: number) {
-    const callUpHistory = await this.repo.findPlayerCallUpHistory(playerId);
-    return callUpHistory.map((cuh) =>
-      PlayerMapper.nationalTeamsToResponse(cuh),
-    );
+    await this.findPlayerById(playerId);
+    const history = await this.repo.findPlayerCallUpHistory(playerId);
+    return history.map((h) => PlayerMapper.nationalTeamsToResponse(h));
   }
 
   async findPlayerCurrentCallUp(playerId: number) {
     await this.findPlayerById(playerId);
+
     const currentCallUp = await this.repo.findPlayerCurrentCallUp(playerId);
-    return PlayerMapper.nationalTeamsToResponse(currentCallUp!);
-  }
-
-  async callUpPlayer(
-    playerId: number,
-    nationalTeamId: number,
-    data: CallUpPlayerDto,
-  ) {
-    const player = await this.findPlayerById(playerId);
-    const nt =
-      await this.nationalTeamsService.findNationalTeamById(nationalTeamId);
-
-    const currentCallUp = await this.findPlayerCurrentCallUp(playerId);
-
-    if (currentCallUp)
-      throw new BadRequestException(
-        'The player is already called up for a national team',
-      );
-
-    if (player.nationality !== nt.name)
-      throw new BadRequestException(
-        'The player cannot be called up for this national team',
-      );
-
-    if (data.endDate && data.endDate < data.startDate)
-      throw new BadRequestException(
-        'The end date cannot be before the start date',
-      );
-
-    return this.repo.callUpPlayer(playerId, nationalTeamId, data);
-  }
-
-  async dismissPlayer(playerId: number, data: DismissPlayerDto) {
-    const currentCallUp = await this.findPlayerCurrentCallUp(playerId);
 
     if (!currentCallUp)
       throw new BadRequestException(
-        'The player is not currently called up for a national team',
+        'This player has not been called up for his national team',
       );
 
-    if (currentCallUp.startDate > data.endDate)
-      throw new BadRequestException(
-        'The end date cannot be before the start date',
-      );
-
-    return this.repo.dismissPlayer(currentCallUp.id, data);
+    return PlayerMapper.nationalTeamsToResponse(currentCallUp);
   }
 }

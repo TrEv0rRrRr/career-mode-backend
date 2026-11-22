@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.ts';
-import { CallUpPlayerDto } from './dto/nts/callup-player.dto.ts';
-import { DismissPlayerDto } from './dto/nts/dismiss-player.dto.ts';
+import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
-import { AssignTeamDto } from './dto/teams/assign-team.dto.ts';
-import { UpdatePlayerTeamDto } from './dto/teams/update-player-team.dto.ts';
 
 const playerInclude = {
   playerPositions: true,
@@ -173,7 +170,7 @@ export class PlayersRepository {
 
   // ! Player team Queries
 
-  findPlayerTeams(playerId: number) {
+  findPlayerTeamHistory(playerId: number) {
     return this.prisma.playerTeam.findMany({
       where: { playerId },
       include: {
@@ -185,22 +182,19 @@ export class PlayersRepository {
     });
   }
 
-  findPlayerTeam(playerTeamId: number) {
-    return this.prisma.playerTeam.findUnique({
-      where: {
-        id: playerTeamId,
-      },
-    });
-  }
-
   findCurrentTeam(playerId: number) {
     return this.prisma.playerTeam.findFirst({
       where: {
         playerId,
         endDate: null,
       },
+      include: {
+        team: true,
+      },
     });
   }
+
+  // ! Dev only!
 
   findCurrentTeams(playerIds: number[]): Promise<Map<number, number>> {
     return this.prisma.playerTeam
@@ -217,18 +211,12 @@ export class PlayersRepository {
       );
   }
 
-  assignTeam(playerId: number, data: AssignTeamDto) {
-    return this.prisma.playerTeam.create({
-      data: {
-        ...data,
-        playerId,
-      },
-    });
-  }
+  // ! Dev only!
 
-  replacePlayerTeams(playerId: number, data: AssignTeamDto[]) {
+  replacePlayerTeams(teamId: number, playerId: number, data: SignPlayerDto[]) {
     const playerTeams = data.map((team) => ({
       ...team,
+      teamId,
       playerId,
     }));
 
@@ -243,14 +231,7 @@ export class PlayersRepository {
     });
   }
 
-  updatePlayerTeam(playerTeamId: number, data: UpdatePlayerTeamDto) {
-    return this.prisma.playerTeam.update({
-      where: {
-        id: playerTeamId,
-      },
-      data,
-    });
-  }
+  // ! Dev only!
 
   deletePlayerTeam(playerTeamId: number) {
     return this.prisma.playerTeam.delete({
@@ -307,29 +288,6 @@ export class PlayersRepository {
       include: {
         nationalTeam: true,
       },
-    });
-  }
-
-  callUpPlayer(
-    playerId: number,
-    nationalTeamId: number,
-    data: CallUpPlayerDto,
-  ) {
-    return this.prisma.playerNationalTeam.create({
-      data: {
-        ...data,
-        nationalTeamId,
-        playerId,
-      },
-    });
-  }
-
-  dismissPlayer(playerNtId: number, data: DismissPlayerDto) {
-    return this.prisma.playerNationalTeam.update({
-      where: {
-        id: playerNtId,
-      },
-      data,
     });
   }
 }
