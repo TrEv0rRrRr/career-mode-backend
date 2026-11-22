@@ -13,6 +13,8 @@ Backend API for a football career mode simulator, built with NestJS, TypeScript,
 - **Knockout System:** Manage knockout rounds, pairings, one-legged and two-legged ties, and round progression.
 - **Statistics:** Track player and team performance across seasons and individual matches.
 - **Transfers:** Manage player transfers, loans, free-agent signings, and youth promotions.
+- **National Teams:** Manage national team rosters, call-ups, managers, fixtures, and historical records.
+- **National Team Competitions:** Support national-team participants and national team competition formats.
 
 ## Tech Stack
 
@@ -53,6 +55,7 @@ The main domain entities include:
 - **Tie and KnockoutRound:** Handle knockout pairings, legs, and round progression.
 - **Transfer and PlayerTeam:** Track player movements and team associations.
 - **Statistics:** Store player and team statistics at season and match level.
+- **National Team:** Store national-team squads, manager records, matches, and competition participation.
 
 Supported competition formats include:
 
@@ -162,15 +165,9 @@ Once the application is running, access the Swagger UI at:
 
 ## Project Status
 
-**Active Development — Nearing Completion**
+**Complete — 100%**
 
-The main backend functionality is implemented. Remaining work includes:
-
-- National team management.
-- National team competitions.
-- Adapting existing helpers to support national team formats.
-- Expanding response DTO coverage across endpoints.
-- Completing API documentation and final validation.
+The backend implementation is complete, including national team management, national team competitions, competition helpers, response DTO coverage, API documentation, and final validation.
 
 ## License
 
