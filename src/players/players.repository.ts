@@ -15,6 +15,15 @@ const playerInclude = {
 export class PlayersRepository {
   constructor(private prisma: PrismaService) {}
 
+  async teamExists(teamId: number) {
+    return (
+      (await this.prisma.team.findUnique({
+        where: { id: teamId },
+        select: { id: true },
+      })) !== null
+    );
+  }
+
   // ! Player Queries
 
   findById(id: number) {

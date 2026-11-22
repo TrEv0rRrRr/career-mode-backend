@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SeasonsService } from '../seasons/seasons.service.ts';
+import { TeamNotFoundException } from '../teams/exceptions/team-not-found.exception.ts';
 import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
-import { TeamsService } from '../teams/teams.service.ts';
 import { PlayerMapper } from './dto/mapper/player.mapper.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
@@ -19,7 +19,6 @@ import { PlayersRepository } from './players.repository.ts';
 export class PlayersService {
   constructor(
     private repo: PlayersRepository,
-    private teamsService: TeamsService,
     private seasonsService: SeasonsService,
   ) {}
 
@@ -186,7 +185,8 @@ export class PlayersService {
       }
     }
 
-    await Promise.all(data.map(() => this.teamsService.findTeamById(teamId)));
+    if (data.length && !(await this.repo.teamExists(teamId)))
+      throw new TeamNotFoundException();
 
     const activeContracts = data.filter((team) => team.endDate === null);
 
@@ -226,7 +226,7 @@ export class PlayersService {
     seasonId: number,
   ) {
     await this.findPlayerById(playerId);
-    await this.teamsService.findTeamById(teamId);
+    if (!(await this.repo.teamExists(teamId))) throw new TeamNotFoundException();
     await this.seasonsService.findSeasonById(seasonId);
 
     const playerTeamSeasonStats =
