@@ -48,6 +48,25 @@ export class ParticipantTeam {
   team!: TeamResponse;
 }
 
+export class ParticipantNationalTeam {
+  points!: number | null;
+  position!: number | null;
+  group!: string | null;
+  played!: number;
+  wins!: number;
+  draws!: number;
+  losses!: number;
+  gf!: number;
+  ga!: number;
+  gd!: number;
+  nationalTeam!: {
+    id: number;
+    name: string;
+    logo: string | null;
+    confederation: Confederation;
+  };
+}
+
 export type ParticipantTeamType = {
   team: {
     id: number;
@@ -95,6 +114,7 @@ export class CompetitionEditionResponseDto {
   winnerTeam!: Optional<TeamResponse>;
   runnerUpTeam!: Optional<TeamResponse>;
   participantTeams!: ParticipantTeam[];
+  participantNationalTeams!: ParticipantNationalTeam[];
 }
 
 export class LeagueStandingsResponseDto {

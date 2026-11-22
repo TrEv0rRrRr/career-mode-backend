@@ -15,6 +15,11 @@ const competitionEditionInclude = {
       team: true,
     },
   },
+  nationalTeamParticipants: {
+    include: {
+      nationalTeam: true,
+    },
+  },
 } as const;
 
 const competitionEditionByIdInclude = {
@@ -123,6 +128,17 @@ export class CompetitionsRepository {
     });
   }
 
+  findNationalTeamCompetitionParticipants(competitionEditionId: number) {
+    return this.prisma.nationalTeamCompetitionParticipant.findMany({
+      where: {
+        competitionEditionId,
+      },
+      include: {
+        nationalTeam: true,
+      },
+    });
+  }
+
   findLeagueStandings(competitionEditionId: number) {
     return this.prisma.competitionParticipant.findMany({
       where: {
@@ -160,8 +176,29 @@ export class CompetitionsRepository {
     });
   }
 
+  registerNationalTeamParticipants(
+    competitionEditionId: number,
+    nationalTeamIds: number[],
+  ) {
+    return this.prisma.nationalTeamCompetitionParticipant.createMany({
+      data: nationalTeamIds.map((nationalTeamId) => ({
+        competitionEditionId,
+        nationalTeamId,
+        points: 0,
+      })),
+    });
+  }
+
   countCompetitionParticipants(competitionEditionId: number) {
     return this.prisma.competitionParticipant.count({
+      where: {
+        competitionEditionId,
+      },
+    });
+  }
+
+  countNationalTeamCompetitionParticipants(competitionEditionId: number) {
+    return this.prisma.nationalTeamCompetitionParticipant.count({
       where: {
         competitionEditionId,
       },
@@ -184,9 +221,39 @@ export class CompetitionsRepository {
           competitionEditionId,
         },
       });
+      await tx.nationalTeamCompetitionParticipant.deleteMany({
+        where: {
+          competitionEditionId,
+        },
+      });
 
       await tx.competitionParticipant.createMany({
         data: teamSeasonData,
+      });
+    });
+  }
+
+  replaceNationalTeamCompetitionParticipants(
+    competitionEditionId: number,
+    nationalTeamIds: number[],
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.competitionParticipant.deleteMany({
+        where: {
+          competitionEditionId,
+        },
+      });
+      await tx.nationalTeamCompetitionParticipant.deleteMany({
+        where: {
+          competitionEditionId,
+        },
+      });
+      await tx.nationalTeamCompetitionParticipant.createMany({
+        data: nationalTeamIds.map((nationalTeamId) => ({
+          competitionEditionId,
+          nationalTeamId,
+          points: 0,
+        })),
       });
     });
   }
@@ -202,12 +269,40 @@ export class CompetitionsRepository {
     });
   }
 
+  deleteNationalTeamCompetitionParticipant(
+    competitionEditionId: number,
+    nationalTeamId: number,
+  ) {
+    return this.prisma.nationalTeamCompetitionParticipant.delete({
+      where: {
+        nationalTeamId_competitionEditionId: {
+          competitionEditionId,
+          nationalTeamId,
+        },
+      },
+    });
+  }
+
   findCompetitionParticipant(competitionEditionId: number, teamId: number) {
     return this.prisma.competitionParticipant.findUnique({
       where: {
         teamId_competitionEditionId: {
           competitionEditionId,
           teamId,
+        },
+      },
+    });
+  }
+
+  findNationalTeamCompetitionParticipant(
+    competitionEditionId: number,
+    nationalTeamId: number,
+  ) {
+    return this.prisma.nationalTeamCompetitionParticipant.findUnique({
+      where: {
+        nationalTeamId_competitionEditionId: {
+          competitionEditionId,
+          nationalTeamId,
         },
       },
     });

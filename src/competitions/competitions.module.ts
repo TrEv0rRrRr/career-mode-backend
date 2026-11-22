@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module.ts';
+import { NationalTeamsModule } from '../national-teams/national-teams.module.ts';
 import { SeasonsModule } from '../seasons/seasons.module.ts';
 import { TeamsModule } from '../teams/teams.module.ts';
 import { CompetitionsController } from './competitions.controller.ts';
@@ -11,6 +12,7 @@ import { CompetitionEditionQueryService } from './services/competition-edition-q
 @Module({
   imports: [
     PrismaModule,
+    NationalTeamsModule,
     TeamsModule,
     SeasonsModule,
     forwardRef(() => CompetitionFixtureModule),

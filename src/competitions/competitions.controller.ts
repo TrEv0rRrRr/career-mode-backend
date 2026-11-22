@@ -220,11 +220,11 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Gets the teams',
+    description: 'Gets the competition participants',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Participant not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -233,7 +233,7 @@ export class CompetitionsController {
   getCompetitionParticipants(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
   ) {
-    return this.competitionsService.findCompetitionParticipants(
+    return this.competitionsService.findAllCompetitionParticipants(
       competitionEditionId,
     );
   }
@@ -262,15 +262,16 @@ export class CompetitionsController {
 
   @Post('/editions/:competitionEditionId/teams')
   @ApiOperation({
-    summary: 'Register a list of teams to a competition',
+    summary:
+      'Register participants to a competition (teams, or national teams for NATIONAL_TEAMS competitions)',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Teams registered!',
+    description: 'Participants registered!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Participant not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -292,26 +293,25 @@ export class CompetitionsController {
   })
   registerParticipant(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Body() teamIds: number[],
+    @Body() participantIds: number[],
   ) {
     return this.competitionsService.registerParticipant(
       competitionEditionId,
-      teamIds,
+      participantIds,
     );
   }
 
   @Put('/editions/:competitionEditionId/teams')
   @ApiOperation({
-    summary:
-      'Updates the entire list of teams that are participating in the given competition',
+    summary: 'Updates the entire list of participants for a competition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Gets the teams',
+    description: 'Updates the competition participants',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Participant not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -324,17 +324,17 @@ export class CompetitionsController {
   })
   replaceCompetitionParticipants(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Body() teamIds: number[],
+    @Body() participantIds: number[],
   ) {
     return this.competitionsService.replaceCompetitionParticipants(
       competitionEditionId,
-      teamIds,
+      participantIds,
     );
   }
 
   @Delete('/editions/:competitionEditionId/teams/:teamId')
   @ApiOperation({
-    summary: 'Deletes a team from a competition',
+    summary: 'Deletes a participant from a competition',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
@@ -346,7 +346,7 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Participant not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,

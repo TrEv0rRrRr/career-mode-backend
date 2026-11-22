@@ -4,9 +4,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
+import { NationalTeamsService } from '../national-teams/national-teams.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
-import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { CompetitionMapper } from './dto/mapper/competition.mapper.ts';
@@ -21,6 +22,7 @@ export class CompetitionsService {
     private repo: CompetitionsRepository,
     private teamsService: TeamsService,
     private seasonService: SeasonsService,
+    private nationalTeamsService: NationalTeamsService,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -165,6 +167,30 @@ export class CompetitionsService {
     }));
   }
 
+  async findAllCompetitionParticipants(competitionEditionId: number) {
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
+
+    if (edition.competition.type === CompetitionType.NATIONAL_TEAMS) {
+      const participants =
+        await this.repo.findNationalTeamCompetitionParticipants(
+          competitionEditionId,
+        );
+
+      return participants.map((participant) => ({
+        nationalTeam: participant.nationalTeam,
+        position: participant.position,
+      }));
+    }
+
+    const participants =
+      await this.repo.findCompetitionParticipants(competitionEditionId);
+
+    return participants.map((participant) => ({
+      team: participant.team,
+      position: participant.position,
+    }));
+  }
+
   async findLeagueStandings(competitionEditionId: number) {
     const edition = await this.findCompetitionEditionById(competitionEditionId);
 
@@ -183,63 +209,136 @@ export class CompetitionsService {
   }
 
   async countCompetitionParticipants(competitionEditionId: number) {
-    await this.findCompetitionEditionById(competitionEditionId);
-
-    return this.repo.countCompetitionParticipants(competitionEditionId);
-  }
-
-  async registerParticipant(competitionEditionId: number, teamIds: number[]) {
-    await Promise.all(
-      teamIds.map((teamId) => this.teamsService.findTeamById(teamId)),
-    );
     const edition = await this.findCompetitionEditionById(competitionEditionId);
 
-    if (!edition) throw new CompetitionEditionNotFoundException();
+    return edition.competition.type === CompetitionType.NATIONAL_TEAMS
+      ? this.repo.countNationalTeamCompetitionParticipants(competitionEditionId)
+      : this.repo.countCompetitionParticipants(competitionEditionId);
+  }
+
+  async registerParticipant(
+    competitionEditionId: number,
+    participantIds: number[],
+  ) {
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
+    const isNationalTeamsCompetition =
+      edition.competition.type === CompetitionType.NATIONAL_TEAMS;
+
+    if (new Set(participantIds).size !== participantIds.length) {
+      throw new ConflictException(
+        'A participant cannot be registered more than once',
+      );
+    }
+
+    if (isNationalTeamsCompetition) {
+      await Promise.all(
+        participantIds.map((id) =>
+          this.nationalTeamsService.findNationalTeamById(id),
+        ),
+      );
+    } else {
+      await Promise.all(
+        participantIds.map((id) => this.teamsService.findTeamById(id)),
+      );
+    }
 
     const participants = await Promise.all(
-      teamIds.map((teamId) =>
-        this.repo.findCompetitionParticipant(competitionEditionId, teamId),
+      participantIds.map((id) =>
+        isNationalTeamsCompetition
+          ? this.repo.findNationalTeamCompetitionParticipant(
+              competitionEditionId,
+              id,
+            )
+          : this.repo.findCompetitionParticipant(competitionEditionId, id),
       ),
     );
 
     if (participants.some((participant) => participant)) {
-      throw new ConflictException('This team has already been registered');
+      throw new ConflictException(
+        'This participant has already been registered',
+      );
     }
 
-    const registeredTeams =
+    const registeredParticipants =
       await this.countCompetitionParticipants(competitionEditionId);
 
-    if (registeredTeams >= edition.competition.maxTeamsNumber)
+    if (
+      registeredParticipants + participantIds.length >
+      edition.competition.maxTeamsNumber
+    )
       throw new BadRequestException(
-        "You can't register more teams, the maximum number has been reached",
+        "You can't register more participants, the maximum number has been reached",
       );
 
-    return this.repo.registerParticipant(competitionEditionId, teamIds);
+    return isNationalTeamsCompetition
+      ? this.repo.registerNationalTeamParticipants(
+          competitionEditionId,
+          participantIds,
+        )
+      : this.repo.registerParticipant(competitionEditionId, participantIds);
   }
 
   async replaceCompetitionParticipants(
     competitionEditionId: number,
-    teamIds: number[],
+    participantIds: number[],
   ) {
-    await this.findCompetitionEditionById(competitionEditionId);
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
+    const isNationalTeamsCompetition =
+      edition.competition.type === CompetitionType.NATIONAL_TEAMS;
+
+    if (participantIds.length > edition.competition.maxTeamsNumber) {
+      throw new BadRequestException(
+        "You can't register more participants, the maximum number has been reached",
+      );
+    }
+
+    if (new Set(participantIds).size !== participantIds.length) {
+      throw new ConflictException(
+        'A participant cannot be registered more than once',
+      );
+    }
+
+    if (isNationalTeamsCompetition) {
+      await Promise.all(
+        participantIds.map((id) =>
+          this.nationalTeamsService.findNationalTeamById(id),
+        ),
+      );
+      return this.repo.replaceNationalTeamCompetitionParticipants(
+        competitionEditionId,
+        participantIds,
+      );
+    }
 
     await Promise.all(
-      teamIds.map((teamId) => this.teamsService.findTeamById(teamId)),
+      participantIds.map((id) => this.teamsService.findTeamById(id)),
     );
 
     return this.repo.replaceCompetitionParticipants(
       competitionEditionId,
-      teamIds,
+      participantIds,
     );
   }
 
   async deleteCompetitionParticipant(
     competitionEditionId: number,
-    teamId: number,
+    participantId: number,
   ) {
-    await this.validateData(competitionEditionId, teamId);
+    const edition = await this.findCompetitionEditionById(competitionEditionId);
 
-    return this.repo.deleteCompetitionParticipant(competitionEditionId, teamId);
+    if (edition.competition.type === CompetitionType.NATIONAL_TEAMS) {
+      await this.nationalTeamsService.findNationalTeamById(participantId);
+      return this.repo.deleteNationalTeamCompetitionParticipant(
+        competitionEditionId,
+        participantId,
+      );
+    }
+
+    await this.teamsService.findTeamById(participantId);
+    return this.repo.deleteCompetitionParticipant(
+      competitionEditionId,
+      participantId,
+    );
   }
 
   async findCompetitionParticipant(

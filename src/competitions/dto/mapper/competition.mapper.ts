@@ -44,6 +44,26 @@ export class CompetitionMapper {
         },
       }),
     );
+    const participantNationalTeams = cE.nationalTeamParticipants.map(
+      (participant) => ({
+        points: participant.points,
+        position: participant.position,
+        group: participant.group,
+        played: participant.played,
+        wins: participant.wins,
+        draws: participant.draws,
+        losses: participant.losses,
+        gf: participant.gf,
+        ga: participant.ga,
+        gd: participant.gd,
+        nationalTeam: {
+          id: participant.nationalTeamId,
+          name: participant.nationalTeam.name,
+          logo: participant.nationalTeam.logo,
+          confederation: participant.nationalTeam.confederation,
+        },
+      }),
+    );
 
     return {
       id: cE.id,
@@ -68,6 +88,7 @@ export class CompetitionMapper {
         confederation: cE.runnerUpTeam?.confederation,
       },
       participantTeams,
+      participantNationalTeams,
     };
   }
 
