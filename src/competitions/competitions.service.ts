@@ -85,6 +85,22 @@ export class CompetitionsService {
     return edition;
   }
 
+  async findEditionsOfTheCurrentSeason() {
+    const season = await this.seasonService.findCurrentSeason();
+
+    const editions = await this.repo.findEditionsOfTheCurrentSeason(season.id);
+
+    return editions.map((e) => CompetitionMapper.editionsToResponse(e));
+  }
+
+  async findEditionsBySeason(seasonId: number) {
+    await this.seasonService.findSeasonById(seasonId);
+
+    const editions = await this.repo.findEditionsBySeason(seasonId);
+
+    return editions.map((e) => CompetitionMapper.editionsToResponse(e));
+  }
+
   async createEdition(
     competitionId: number,
     data: CreateCompetitionEditionDto,

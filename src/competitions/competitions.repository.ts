@@ -95,6 +95,24 @@ export class CompetitionsRepository {
     });
   }
 
+  findEditionsOfTheCurrentSeason(seasonId: number) {
+    return this.prisma.competitionEdition.findMany({
+      where: {
+        seasonId,
+      },
+      include: competitionEditionInclude,
+    });
+  }
+
+  findEditionsBySeason(seasonId: number) {
+    return this.prisma.competitionEdition.findMany({
+      where: {
+        seasonId,
+      },
+      include: competitionEditionInclude,
+    });
+  }
+
   createEdition(competitionId: number, data: CreateCompetitionEditionDto) {
     return this.prisma.competitionEdition.create({
       data: {

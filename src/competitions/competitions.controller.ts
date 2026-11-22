@@ -145,6 +145,38 @@ export class CompetitionsController {
     );
   }
 
+  @Get('/editions/season/current')
+  @ApiOperation({
+    summary: 'Get all the editions that are being played in the current season',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the editions',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getEditionsOfTheCurrentSeason() {
+    return this.competitionsService.findEditionsOfTheCurrentSeason();
+  }
+
+  @Get('/editions/season/:seasonId')
+  @ApiOperation({
+    summary: 'Get all the editions that are being played in the given season',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the editions',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
+  })
+  getEditionsBySeason(@Param('seasonId', ParseIntPipe) seasonId: number) {
+    return this.competitionsService.findEditionsBySeason(seasonId);
+  }
+
   @Post(':competitionId/editions')
   @ApiOperation({ summary: 'Create a new edition for a competition' })
   @ApiResponse({

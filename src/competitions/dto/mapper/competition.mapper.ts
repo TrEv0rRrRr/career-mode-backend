@@ -1,4 +1,4 @@
-import { Competition } from '@prisma/client';
+import { Competition, CompetitionType } from '@prisma/client';
 import { CompetitionEditionWithRelations } from '../../competitions.repository.ts';
 import {
   CompetitionEditionResponseDto,
@@ -23,6 +23,9 @@ export class CompetitionMapper {
   static editionsToResponse(
     cE: CompetitionEditionWithRelations,
   ): CompetitionEditionResponseDto {
+    const isANationalTeamsCompetition =
+      cE.competition.type === CompetitionType.NATIONAL_TEAMS;
+
     const participantTeams: ParticipantTeam[] = cE.competitionParticipants.map(
       (pt) => ({
         points: pt.points,
@@ -87,8 +90,11 @@ export class CompetitionMapper {
         country: cE.runnerUpTeam?.country,
         confederation: cE.runnerUpTeam?.confederation,
       },
-      participantTeams,
-      participantNationalTeams,
+      ...(isANationalTeamsCompetition
+        ? {
+            participantNationalTeams,
+          }
+        : { participantTeams }),
     };
   }
 

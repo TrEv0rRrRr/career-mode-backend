@@ -113,8 +113,8 @@ export class CompetitionEditionResponseDto {
   competition!: CompetitionResponse;
   winnerTeam!: Optional<TeamResponse>;
   runnerUpTeam!: Optional<TeamResponse>;
-  participantTeams!: ParticipantTeam[];
-  participantNationalTeams!: ParticipantNationalTeam[];
+  participantTeams?: ParticipantTeam[];
+  participantNationalTeams?: ParticipantNationalTeam[];
 }
 
 export class LeagueStandingsResponseDto {
