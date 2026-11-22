@@ -238,6 +238,7 @@ model Season {
   startDate DateTime @map("start_date") @db.Date
   endDate   DateTime @map("end_date") @db.Date
   careerId  Int      @map("career_id")
+  completed Boolean
 
   career              Career               @relation(fields: [careerId], references: [id])
   transfers           Transfer[]
