@@ -7,6 +7,24 @@ import { CreateTransferDto } from './dto/create-transfer.dto.ts';
 export class TransfersRepository {
   constructor(private prisma: PrismaService) {}
 
+  async playerExists(playerId: number) {
+    return (
+      (await this.prisma.player.findUnique({
+        where: { id: playerId },
+        select: { id: true },
+      })) !== null
+    );
+  }
+
+  findCurrentTeam(playerId: number) {
+    return this.prisma.playerTeam.findFirst({
+      where: {
+        playerId,
+        endDate: null,
+      },
+    });
+  }
+
   findById(id: number) {
     return this.prisma.transfer.findUnique({ where: { id } });
   }
@@ -20,6 +38,15 @@ export class TransfersRepository {
       where: { type },
       orderBy: { fee: 'desc' },
     });
+  }
+
+  async teamExists(teamId: number) {
+    return (
+      (await this.prisma.team.findUnique({
+        where: { id: teamId },
+        select: { id: true },
+      })) !== null
+    );
   }
 
   completeTransfer(

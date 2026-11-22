@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { TransferType } from '@prisma/client';
-import { PlayersService } from '../players/players.service.ts';
+import { PlayerNotFoundException } from '../players/exceptions/player-not-found.exception.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
-import { TeamsService } from '../teams/teams.service.ts';
+import { TeamNotFoundException } from '../teams/exceptions/team-not-found.exception.ts';
 import { CreateTransferDto } from './dto/create-transfer.dto.ts';
 
 import { SeasonNotFoundException } from '../seasons/exceptions/season-not-found.exception.ts';
@@ -13,8 +13,6 @@ import { TransfersRepository } from './transfers.repository.ts';
 export class TransfersService {
   constructor(
     private repo: TransfersRepository,
-    private teamsService: TeamsService,
-    private playerService: PlayersService,
     private seasonService: SeasonsService,
   ) {}
 
@@ -35,11 +33,14 @@ export class TransfersService {
   }
 
   async completeTransfer(data: CreateTransferDto, type: TransferType) {
-    await this.playerService.findPlayerById(data.playerId);
+    if (!(await this.repo.playerExists(data.playerId)))
+      throw new PlayerNotFoundException();
 
-    if (data.fromTeamId) await this.teamsService.findTeamById(data.fromTeamId);
+    if (data.fromTeamId && !(await this.repo.teamExists(data.fromTeamId)))
+      throw new TeamNotFoundException();
 
-    await this.teamsService.findTeamById(data.toTeamId);
+    if (!(await this.repo.teamExists(data.toTeamId)))
+      throw new TeamNotFoundException();
 
     const season = await this.seasonService.findSeasonById(data.seasonId);
 
@@ -53,7 +54,7 @@ export class TransfersService {
     if (0 > data.fee)
       throw new BadRequestException('The transfer fee cannot be negative');
 
-    const currentTeam = await this.playerService.findCurrentTeam(data.playerId);
+    const currentTeam = await this.repo.findCurrentTeam(data.playerId);
 
     if (
       data.fromTeamId === data.toTeamId &&
