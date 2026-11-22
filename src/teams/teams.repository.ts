@@ -3,6 +3,11 @@ import { Prisma } from '@prisma/client';
 import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
+import { FireManagerDto } from './dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from './dto/managers/hire-manager.dto.ts';
+import { ChangePlayerJerseyNumberDto } from './dto/players/change-player-jersey-number.dto.ts';
+import { ReleasePlayerDto } from './dto/players/release-player.dto.ts';
+import { SignPlayerDto } from './dto/players/sign-player.dto.ts';
 import { UpdateTeamDto } from './dto/update-team.dto.ts';
 
 const teamInclude = {
@@ -89,6 +94,49 @@ export class TeamsRepository {
     });
   }
 
+  findPlayer(teamId: number, playerId: number) {
+    return this.prisma.playerTeam.findFirst({
+      where: {
+        teamId,
+        playerId,
+      },
+      include: {
+        player: true,
+      },
+    });
+  }
+
+  signPlayer(teamId: number, playerId: number, data: SignPlayerDto) {
+    return this.prisma.playerTeam.create({
+      data: {
+        ...data,
+        teamId,
+        playerId,
+      },
+    });
+  }
+
+  changePlayerJerseyNumber(
+    playerTeamId: number,
+    data: ChangePlayerJerseyNumberDto,
+  ) {
+    return this.prisma.playerTeam.update({
+      where: {
+        id: playerTeamId,
+      },
+      data,
+    });
+  }
+
+  releasePlayer(playerTeamId: number, data: ReleasePlayerDto) {
+    return this.prisma.playerTeam.update({
+      where: {
+        id: playerTeamId,
+      },
+      data,
+    });
+  }
+
   // ! Player Season Stats Queries
 
   findTeamPlayerStats(teamId: number) {
@@ -137,6 +185,78 @@ export class TeamsRepository {
         OR: [{ homeTeamId: teamId }, { awayTeamId: teamId }],
       },
       include: matchInclude,
+    });
+  }
+
+  // ! Manager Team Queries
+  findCurrentManager(teamId: number) {
+    return this.prisma.managerTeam.findFirst({
+      where: {
+        teamId,
+        endDate: null,
+      },
+      include: {
+        manager: true,
+      },
+    });
+  }
+
+  findTeamManagerHistory(teamId: number) {
+    return this.prisma.managerTeam.findMany({
+      where: {
+        teamId,
+      },
+      include: {
+        manager: true,
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
+  }
+
+  hireManager(teamId: number, managerId: number, data: HireManagerDto) {
+    return this.prisma.managerTeam.create({
+      data: {
+        ...data,
+        teamId,
+        managerId,
+      },
+    });
+  }
+
+  fireManager(managerTeamId: number, data: FireManagerDto) {
+    return this.prisma.managerTeam.update({
+      where: {
+        id: managerTeamId,
+      },
+      data,
+    });
+  }
+
+  fireAndHireManager(
+    managerTeamId: number,
+    teamId: number,
+    managerId: number,
+    data: HireManagerDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.managerTeam.update({
+        where: {
+          id: managerTeamId,
+        },
+        data: {
+          endDate: data.startDate,
+        },
+      });
+
+      return tx.managerTeam.create({
+        data: {
+          ...data,
+          teamId,
+          managerId,
+        },
+      });
     });
   }
 }

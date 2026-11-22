@@ -1,5 +1,6 @@
 import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
+import { ManagerResponse } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 
 export class TeamResponse {
   id!: number;
@@ -83,6 +84,22 @@ export type PlayerTeamType = {
   endDate: Date | null;
 };
 
+export type ManagerTeamType = {
+  manager: {
+    id: number;
+    name: string;
+    birthDate: Date;
+    nationality: string;
+    face: string | null;
+  };
+} & {
+  id: number;
+  managerId: number;
+  startDate: Date;
+  endDate: Date | null;
+  teamId: number;
+};
+
 export class TeamResponseDto extends TeamResponse {
   manager!: string | null;
   stadium!: string;
@@ -90,6 +107,7 @@ export class TeamResponseDto extends TeamResponse {
 }
 
 export class TeamPlayersResponseDto {
+  id!: number;
   jerseyNumber!: number;
   startDate!: Date;
   endDate!: Date | null;
@@ -115,4 +133,11 @@ export class TeamSeasonStatsResponseDto {
   ga!: number;
   gd!: number;
   season!: string;
+}
+export class CurrentManagerTeamResponseDto {
+  id!: number;
+  teamId!: number;
+  startDate!: Date;
+  endDate!: Date | null;
+  manager!: ManagerResponse;
 }

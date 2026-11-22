@@ -1,5 +1,7 @@
 import { TeamWithRelations } from '../../teams.repository.ts';
 import {
+  CurrentManagerTeamResponseDto,
+  ManagerTeamType,
   PlayerTeamType,
   TeamPlayerSquadType,
   TeamPlayersResponseDto,
@@ -25,6 +27,7 @@ export class TeamMapper {
 
   static teamPlayerToResponse(pt: PlayerTeamType): TeamPlayersResponseDto {
     return {
+      id: pt.id,
       jerseyNumber: pt.jerseyNumber,
       startDate: pt.startDate,
       endDate: pt.endDate,
@@ -64,6 +67,21 @@ export class TeamMapper {
       gf: tss.gf,
       ga: tss.ga,
       gd: tss.gd,
+    };
+  }
+
+  static mapManagers(mt: ManagerTeamType): CurrentManagerTeamResponseDto {
+    return {
+      id: mt.id,
+      teamId: mt.teamId,
+      startDate: mt.startDate,
+      endDate: mt.endDate,
+      manager: {
+        id: mt.managerId,
+        name: mt.manager.name,
+        face: mt.manager.face,
+        nationality: mt.manager.nationality,
+      },
     };
   }
 }

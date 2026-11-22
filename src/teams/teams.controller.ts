@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,11 @@ import {
 } from '@nestjs/swagger';
 import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
 import { CreateTeamDto } from './dto/create-team.dto.ts';
+import { FireManagerDto } from './dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from './dto/managers/hire-manager.dto.ts';
+import { ChangePlayerJerseyNumberDto } from './dto/players/change-player-jersey-number.dto.ts';
+import { ReleasePlayerDto } from './dto/players/release-player.dto.ts';
+import { SignPlayerDto } from './dto/players/sign-player.dto.ts';
 import {
   TeamPlayersResponseDto,
   TeamResponseDto,
@@ -149,9 +155,9 @@ export class TeamsController {
 
   // ! Player Team Endpoint
 
-  @Get(':teamId/players')
+  @Get(':teamId/squad')
   @ApiOperation({
-    summary: 'Gets the players that are currently playing for the given team',
+    summary: "Gets the team's current squad",
   })
   @ApiOkResponse({
     type: [TeamPlayersResponseDto],
@@ -164,8 +170,97 @@ export class TeamsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Team not found',
   })
-  getTeamPlayers(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findPlayers(teamId);
+  getCurrentSquad(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findSquad(teamId);
+  }
+
+  @Post(':teamId/sign/:playerId')
+  @ApiOperation({ summary: 'Sign a player for a team' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Player signed successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'The player is already playing for a team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  signPlayerToTeam(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: SignPlayerDto,
+  ) {
+    return this.teamsService.signPlayer(teamId, playerId, data);
+  }
+
+  @Patch(':teamId/squad/:playerId')
+  @ApiOperation({ summary: 'Change the jersey number for the given player' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player jersey number updated!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The requested number is already in use',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This player is not playing for any team currently',
+  })
+  changePlayerJerseyNumber(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: ChangePlayerJerseyNumberDto,
+  ) {
+    return this.teamsService.changePlayerJerseyNumber(teamId, playerId, data);
+  }
+
+  @Patch(':teamId/squad/:playerId/release')
+  @ApiOperation({ summary: 'Release the given player from the given team' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Player released successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Player not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This player is not currently playing for a team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  releasePlayer(
+    @Param('playerId', ParseIntPipe) playerId: number,
+    @Body() data: ReleasePlayerDto,
+  ) {
+    return this.teamsService.releasePlayer(playerId, data);
   }
 
   // ! Player Season Stats Endpoints
@@ -281,5 +376,130 @@ export class TeamsController {
   })
   getTeamMatches(@Param('teamId', ParseIntPipe) teamId: number) {
     return this.teamsService.findTeamMatches(teamId);
+  }
+
+  // ! Manager Team Endpoints
+  @Get(':teamId/managers/current')
+  @ApiOperation({
+    summary: "Get the team's current manager",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getCurrentManager(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findCurrentManager(teamId);
+  }
+
+  @Get(':teamId/managers/history')
+  @ApiOperation({
+    summary: "Get the team's manager history",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  getManagerHistory(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamsService.findManagerHistory(teamId);
+  }
+
+  @Post(':teamId/managers/:managerId/hire')
+  @ApiOperation({
+    summary: 'Hire a new manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Manager hired successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The manager is already managing another team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  hireManager(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('managerId', ParseIntPipe) managerId: number,
+    @Body() data: HireManagerDto,
+  ) {
+    return this.teamsService.hireManager(teamId, managerId, data);
+  }
+
+  @Patch(':teamId/managers/fire')
+  @ApiOperation({
+    summary: 'Fire the current manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Manager fired successfully!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This team has no manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  fireManager(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Body() data: FireManagerDto,
+  ) {
+    return this.teamsService.fireManager(teamId, data);
+  }
+
+  @Put(':teamId/managers/replace/:managerId')
+  @ApiOperation({
+    summary: 'Fire the current manager and immediately hire a new one',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description:
+      'The current manager was fired successfully and a new one was hired.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Team not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Manager not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'This team has no manager',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The manager is already managing another team',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'The end date cannot be before the start date',
+  })
+  fireManagerAndHireANewOne(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('managerId', ParseIntPipe) managerId: number,
+    @Body() data: HireManagerDto,
+  ) {
+    return this.teamsService.fireManagerAndHireANewOne(teamId, managerId, data);
   }
 }
