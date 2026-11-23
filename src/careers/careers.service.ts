@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { ClubsService } from '../clubs/clubs.service.ts';
 import { CareersRepository } from './careers.repository.ts';
 import { CreateCareerDto } from './dto/create-career.dto.ts';
 import { CareerNotFoundException } from './exceptions/career-not-found.exception.ts';
 
 @Injectable()
 export class CareersService {
-  constructor(private repo: CareersRepository) {}
+  constructor(
+    private repo: CareersRepository,
+    private clubsService: ClubsService,
+  ) {}
 
   findCareers() {
     return this.repo.findAll();
@@ -19,7 +23,8 @@ export class CareersService {
     return career;
   }
 
-  createCareer(data: CreateCareerDto) {
+  async createCareer(data: CreateCareerDto) {
+    await this.clubsService.findClubById(data.clubId);
     return this.repo.create(data);
   }
 

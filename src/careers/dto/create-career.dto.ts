@@ -20,11 +20,11 @@ export class CreateCareerDto {
   @ApiProperty({
     example: 1,
     description:
-      'The foreign key that connects my career with the team I coached',
+      'The foreign key that connects my career with the club I coached',
   })
   @IsNotEmpty()
   @IsInt()
-  teamId!: number;
+  clubId!: number;
 
   @ApiProperty({
     example: '2026-07-20',
