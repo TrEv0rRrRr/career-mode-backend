@@ -67,20 +67,20 @@ export class TransfersController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The selling team cannot be the same as the buying team',
+    description: 'The selling club cannot be the same as the buying club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      'The player is not currently playing for the specified selling team.',
+      'The player is not currently playing for the specified selling club.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The player is not currently registered with any team.',
+    description: 'The player is not currently registered with any club.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The player already belongs to a team.',
+    description: 'The player already belongs to a club.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerTeam, TransferType } from '@prisma/client';
+import { PlayerClub, TransferType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateTransferDto } from './dto/create-transfer.dto.ts';
 
@@ -16,8 +16,8 @@ export class TransfersRepository {
     );
   }
 
-  findCurrentTeam(playerId: number) {
-    return this.prisma.playerTeam.findFirst({
+  findCurrentClub(playerId: number) {
+    return this.prisma.playerClub.findFirst({
       where: {
         playerId,
         endDate: null,
@@ -40,35 +40,35 @@ export class TransfersRepository {
     });
   }
 
-  async teamExists(teamId: number) {
+  async clubExists(clubId: number) {
     return (
-      (await this.prisma.team.findUnique({
-        where: { id: teamId },
+      (await this.prisma.club.findUnique({
+        where: { id: clubId },
         select: { id: true },
       })) !== null
     );
   }
 
   completeTransfer(
-    currentTeam: PlayerTeam | null,
+    currentClub: PlayerClub | null,
     data: CreateTransferDto,
     type: TransferType,
   ) {
     return this.prisma.$transaction(async (tx) => {
-      if (currentTeam)
-        await tx.playerTeam.update({
+      if (currentClub)
+        await tx.playerClub.update({
           where: {
-            id: currentTeam.id,
+            id: currentClub.id,
           },
           data: {
             endDate: data.date,
           },
         });
 
-      await tx.playerTeam.create({
+      await tx.playerClub.create({
         data: {
           playerId: data.playerId,
-          teamId: data.toTeamId,
+          clubId: data.toClubId,
           jerseyNumber: data.jerseyNumber,
           startDate: data.date,
         },
@@ -79,8 +79,8 @@ export class TransfersRepository {
           date: data.date,
           fee: data.fee,
           type,
-          fromTeamId: data.fromTeamId,
-          toTeamId: data.toTeamId,
+          fromClubId: data.fromClubId,
+          toClubId: data.toClubId,
           playerId: data.playerId,
           seasonId: data.seasonId,
         },

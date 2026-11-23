@@ -50,27 +50,27 @@ export class CreateTransferDto {
   @ApiProperty({
     example: 1,
     description:
-      'The id of the team that sold the player. Can be null in case of free agents or youth promotions.',
+      'The id of the club that sold the player. Can be null in case of free agents or youth promotions.',
     required: false,
   })
   @IsOptional()
   @IsInt()
   @Min(1)
-  fromTeamId?: number;
+  fromClubId?: number;
 
   @ApiProperty({
     example: 2,
-    description: 'The id of the team that signed the player',
+    description: 'The id of the club that signed the player',
   })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  toTeamId!: number;
+  toClubId!: number;
 
   @ApiProperty({
     example: 1,
     description:
-      'The jersey number that the player will be using in his new team',
+      'The jersey number that the player will be using in his new club',
   })
   @IsNotEmpty()
   @IsInt()
