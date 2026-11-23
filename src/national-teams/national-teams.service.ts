@@ -5,11 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Confederation } from '@prisma/client';
+import { FireManagerDto } from '../clubs/dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from '../clubs/dto/managers/hire-manager.dto.ts';
 import { ManagersService } from '../managers/managers.service.ts';
 import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { PlayersService } from '../players/players.service.ts';
-import { FireManagerDto } from '../teams/dto/managers/fire-manager.dto.ts';
-import { HireManagerDto } from '../teams/dto/managers/hire-manager.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { NationalTeamMapper } from './dto/mapper/national-team.mapper.ts';
 import { CallUpPlayerDto } from './dto/players/callup-player.dto.ts';

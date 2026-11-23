@@ -20,14 +20,14 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { Confederation } from '@prisma/client';
+import { FireManagerDto } from '../clubs/dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from '../clubs/dto/managers/hire-manager.dto.ts';
 import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
-import { FireManagerDto } from '../teams/dto/managers/fire-manager.dto.ts';
-import { HireManagerDto } from '../teams/dto/managers/hire-manager.dto.ts';
-import { UpdateTeamDto } from '../teams/dto/update-team.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { NationalTeamQueryDto } from './dto/national-team-query.dto.ts';
 import { CallUpPlayerDto } from './dto/players/callup-player.dto.ts';
 import { DismissPlayerDto } from './dto/players/dismiss-player.dto.ts';
+import { UpdateNationalTeamDto } from './dto/update-national-team.dto.ts';
 import { NationalTeamsService } from './national-teams.service.ts';
 
 @Controller('national-teams')
@@ -129,9 +129,9 @@ export class NationalTeamsController {
     status: HttpStatus.NOT_FOUND,
     description: 'NT not found',
   })
-  updateTeam(
+  updateNationalTeam(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: UpdateTeamDto,
+    @Body() data: UpdateNationalTeamDto,
   ) {
     return this.nationalTeamsService.updateNationalTeam(id, data);
   }

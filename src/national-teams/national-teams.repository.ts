@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Confederation, Prisma } from '@prisma/client';
+import { FireManagerDto } from '../clubs/dto/managers/fire-manager.dto.ts';
+import { HireManagerDto } from '../clubs/dto/managers/hire-manager.dto.ts';
 import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
-import { FireManagerDto } from '../teams/dto/managers/fire-manager.dto.ts';
-import { HireManagerDto } from '../teams/dto/managers/hire-manager.dto.ts';
 import { CreateNationalTeamDto } from './dto/create-national-team.dto.ts';
 import { CallUpPlayerDto } from './dto/players/callup-player.dto.ts';
 import { DismissPlayerDto } from './dto/players/dismiss-player.dto.ts';
@@ -76,7 +76,7 @@ export class NationalTeamsRepository {
   findNationalTeamMatches(ntId: number) {
     return this.prisma.match.findMany({
       where: {
-        OR: [{ homeTeamId: ntId }, { awayTeamId: ntId }],
+        OR: [{ homeNationalTeamId: ntId }, { awayNationalTeamId: ntId }],
       },
       include: matchInclude,
     });
