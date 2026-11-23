@@ -4,9 +4,9 @@ import { PlayersModule } from '../players/players.module.ts';
 import { PrismaModule } from '../prisma/prisma.module.ts';
 import { SeasonsModule } from '../seasons/seasons.module.ts';
 import { TransfersModule } from '../transfers/transfers.module.ts';
-import { TeamsController } from './teams.controller.ts';
-import { TeamsRepository } from './teams.repository.ts';
-import { TeamsService } from './teams.service.ts';
+import { ClubsController } from './clubs.controller.ts';
+import { ClubsRepository } from './clubs.repository.ts';
+import { ClubsService } from './clubs.service.ts';
 
 @Module({
   imports: [
@@ -16,8 +16,8 @@ import { TeamsService } from './teams.service.ts';
     ManagersModule,
     TransfersModule,
   ],
-  controllers: [TeamsController],
-  providers: [TeamsService, TeamsRepository],
-  exports: [TeamsService],
+  controllers: [ClubsController],
+  providers: [ClubsService, ClubsRepository],
+  exports: [ClubsService],
 })
-export class TeamsModule {}
+export class ClubsModule {}

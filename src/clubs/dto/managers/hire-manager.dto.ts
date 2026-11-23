@@ -15,7 +15,7 @@ export class HireManagerDto {
   @ApiProperty({
     example: '2030-07-21',
     description:
-      "The date when the manager contract finished or when the manager got sacked. Can be null, which means that he's currently managing the team.",
+      "The date when the manager contract finished or when the manager got sacked. Can be null, which means that he's currently managing the club.",
     required: false,
   })
   @Type(() => Date)

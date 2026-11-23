@@ -2,7 +2,7 @@ import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
 import { ManagerResponse } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 
-export class TeamResponse {
+export class ClubSummary {
   id!: number;
   name!: string;
   logo!: string | null;
@@ -18,7 +18,7 @@ export type PlayerType = {
   face: string | null;
 };
 
-export type TeamSeasonStatsType = {
+export type ClubSeasonStatsType = {
   season: {
     id: number;
     startDate: Date;
@@ -28,7 +28,7 @@ export type TeamSeasonStatsType = {
     careerId: number;
   };
 } & {
-  teamId: number;
+  clubId: number;
   seasonId: number;
   played: number;
   wins: number;
@@ -39,7 +39,7 @@ export type TeamSeasonStatsType = {
   gd: number;
 };
 
-export type TeamPlayerSquadType = {
+export type ClubPlayerSquadType = {
   player: {
     id: number;
     name: string;
@@ -54,7 +54,7 @@ export type TeamPlayerSquadType = {
 } & {
   matches: number;
   playerId: number;
-  teamId: number;
+  clubId: number;
   seasonId: number;
   goals: number;
   assists: number;
@@ -63,7 +63,7 @@ export type TeamPlayerSquadType = {
   rating: Decimal;
 };
 
-export type PlayerTeamType = {
+export type PlayerClubType = {
   player: {
     name: string;
     id: number;
@@ -78,13 +78,13 @@ export type PlayerTeamType = {
 } & {
   id: number;
   playerId: number;
-  teamId: number;
+  clubId: number;
   jerseyNumber: number;
   startDate: Date;
   endDate: Date | null;
 };
 
-export type ManagerTeamType = {
+export type ManagerClubType = {
   manager: {
     id: number;
     name: string;
@@ -97,16 +97,16 @@ export type ManagerTeamType = {
   managerId: number;
   startDate: Date;
   endDate: Date | null;
-  teamId: number;
+  clubId: number;
 };
 
-export class TeamResponseDto extends TeamResponse {
+export class ClubResponseDto extends ClubSummary {
   manager!: string | null;
   stadium!: string;
   league!: string;
 }
 
-export class TeamPlayersResponseDto {
+export class ClubPlayersResponseDto {
   id!: number;
   jerseyNumber!: number;
   startDate!: Date;
@@ -114,7 +114,7 @@ export class TeamPlayersResponseDto {
   player!: Player;
 }
 
-export class TeamSquadStatsResponseDto {
+export class ClubSquadStatsResponseDto {
   matches!: number;
   goals!: number;
   assists!: number;
@@ -124,7 +124,7 @@ export class TeamSquadStatsResponseDto {
   player!: PlayerType;
 }
 
-export class TeamSeasonStatsResponseDto {
+export class ClubSeasonStatsResponseDto {
   played!: number;
   wins!: number;
   draws!: number;
@@ -134,9 +134,10 @@ export class TeamSeasonStatsResponseDto {
   gd!: number;
   season!: string;
 }
-export class CurrentManagerTeamResponseDto {
+
+export class CurrentManagerClubResponseDto {
   id!: number;
-  teamId!: number;
+  clubId!: number;
   startDate!: Date;
   endDate!: Date | null;
   manager!: ManagerResponse;

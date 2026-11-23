@@ -2,10 +2,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
-export class TeamQueryDto {
+export class ClubQueryDto {
   @ApiPropertyOptional({
     example: 'Spain',
-    description: 'The country were the team was founded',
+    description: 'The country where the club was founded',
   })
   @IsOptional()
   @IsString()
@@ -14,7 +14,7 @@ export class TeamQueryDto {
   @ApiPropertyOptional({
     example: 2,
     description:
-      'The foreign key that connects the team to the league where it plays',
+      'The foreign key that connects the club to the league where it plays',
   })
   @IsOptional()
   @Type(() => Number)

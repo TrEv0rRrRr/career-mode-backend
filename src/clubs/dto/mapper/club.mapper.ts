@@ -1,31 +1,31 @@
-import { TeamWithRelations } from '../../teams.repository.ts';
+import { ClubWithRelations } from '../../clubs.repository.ts';
 import {
-  CurrentManagerTeamResponseDto,
-  ManagerTeamType,
-  PlayerTeamType,
-  TeamPlayerSquadType,
-  TeamPlayersResponseDto,
-  TeamResponseDto,
-  TeamSeasonStatsResponseDto,
-  TeamSeasonStatsType,
-  TeamSquadStatsResponseDto,
-} from '../response/team-response.dto.ts';
+  ClubPlayerSquadType,
+  ClubPlayersResponseDto,
+  ClubResponseDto,
+  ClubSeasonStatsResponseDto,
+  ClubSeasonStatsType,
+  ClubSquadStatsResponseDto,
+  CurrentManagerClubResponseDto,
+  ManagerClubType,
+  PlayerClubType,
+} from '../response/club-response.dto.ts';
 
-export class TeamMapper {
-  static toResponse(team: TeamWithRelations): TeamResponseDto {
+export class ClubMapper {
+  static toResponse(club: ClubWithRelations): ClubResponseDto {
     return {
-      id: team.id,
-      name: team.name,
-      logo: team.logo,
-      country: team.country,
-      confederation: team.confederation,
-      manager: team.managerTeams[0]?.manager.name ?? null,
-      stadium: team.stadium.name,
-      league: team.competition.name,
+      id: club.id,
+      name: club.name,
+      logo: club.logo,
+      country: club.country,
+      confederation: club.confederation,
+      manager: club.managerClubs[0]?.manager.name ?? null,
+      stadium: club.stadium.name,
+      league: club.competition.name,
     };
   }
 
-  static teamPlayerToResponse(pt: PlayerTeamType): TeamPlayersResponseDto {
+  static clubPlayerToResponse(pt: PlayerClubType): ClubPlayersResponseDto {
     return {
       id: pt.id,
       jerseyNumber: pt.jerseyNumber,
@@ -35,9 +35,9 @@ export class TeamMapper {
     };
   }
 
-  static teamSquadStatsToResponse(
-    ts: TeamPlayerSquadType,
-  ): TeamSquadStatsResponseDto {
+  static clubSquadStatsToResponse(
+    ts: ClubPlayerSquadType,
+  ): ClubSquadStatsResponseDto {
     return {
       matches: ts.matches,
       goals: ts.goals,
@@ -55,9 +55,9 @@ export class TeamMapper {
     };
   }
 
-  static teamSeasonStatsToResponse(
-    tss: TeamSeasonStatsType,
-  ): TeamSeasonStatsResponseDto {
+  static clubSeasonStatsToResponse(
+    tss: ClubSeasonStatsType,
+  ): ClubSeasonStatsResponseDto {
     return {
       season: tss.season.code,
       played: tss.played,
@@ -70,10 +70,10 @@ export class TeamMapper {
     };
   }
 
-  static mapManagers(mt: ManagerTeamType): CurrentManagerTeamResponseDto {
+  static mapManagers(mt: ManagerClubType): CurrentManagerClubResponseDto {
     return {
       id: mt.id,
-      teamId: mt.teamId,
+      clubId: mt.clubId,
       startDate: mt.startDate,
       endDate: mt.endDate,
       manager: {

@@ -19,148 +19,148 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
-import { CreateTeamDto } from './dto/create-team.dto.ts';
+import { ClubsService } from './clubs.service.ts';
+import { ClubQueryDto } from './dto/club-query.dto.ts';
+import { CreateClubDto } from './dto/create-club.dto.ts';
 import { FireManagerDto } from './dto/managers/fire-manager.dto.ts';
 import { HireManagerDto } from './dto/managers/hire-manager.dto.ts';
 import { ChangePlayerJerseyNumberDto } from './dto/players/change-player-jersey-number.dto.ts';
 import { ReleasePlayerDto } from './dto/players/release-player.dto.ts';
 import { SignPlayerDto } from './dto/players/sign-player.dto.ts';
 import {
-  TeamPlayersResponseDto,
-  TeamResponseDto,
-  TeamSeasonStatsResponseDto,
-  TeamSquadStatsResponseDto,
-} from './dto/response/team-response.dto.ts';
-import { TeamQueryDto } from './dto/team-query.dto.ts';
-import { UpdateTeamDto } from './dto/update-team.dto.ts';
-import { TeamsService } from './teams.service.ts';
+  ClubPlayersResponseDto,
+  ClubResponseDto,
+  ClubSeasonStatsResponseDto,
+  ClubSquadStatsResponseDto,
+} from './dto/response/club-response.dto.ts';
+import { UpdateClubDto } from './dto/update-club.dto.ts';
 
-@Controller('teams')
-export class TeamsController {
-  constructor(private readonly teamsService: TeamsService) {}
+@Controller('clubs')
+export class ClubsController {
+  constructor(private readonly clubsService: ClubsService) {}
 
   @Get()
   @ApiOperation({
     summary:
-      'Get all teams or filters them by country or the league where they play at',
+      'Get all clubs or filters them by country or the league where they play at',
   })
   @ApiOkResponse({
-    type: [TeamResponseDto],
+    type: [ClubResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Gets the teams',
+    description: 'Gets the clubs',
   })
-  getAllTeams(@Query() query: TeamQueryDto) {
+  getAllClubs(@Query() query: ClubQueryDto) {
     if (query.country) {
-      return this.teamsService.findTeamsByCountry(query.country);
+      return this.clubsService.findClubsByCountry(query.country);
     }
 
     if (query.leagueId) {
-      return this.teamsService.findTeamsByLeague(query.leagueId);
+      return this.clubsService.findClubsByLeague(query.leagueId);
     }
 
-    return this.teamsService.findTeams();
+    return this.clubsService.findClubs();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a team by its id' })
+  @ApiOperation({ summary: 'Get a club by its id' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Gets the team',
+    description: 'Gets the club',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getTeamById(@Param('id', ParseIntPipe) id: number) {
-    return this.teamsService.findTeamById(id);
+  getClubById(@Param('id', ParseIntPipe) id: number) {
+    return this.clubsService.findClubById(id);
   }
 
   @Get('name/:name')
-  @ApiOperation({ summary: 'Get a team by its name' })
+  @ApiOperation({ summary: 'Get a club by its name' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Gets the team',
+    description: 'Gets the club',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getTeamByName(@Param('name') name: string) {
-    return this.teamsService.findTeamByName(name);
+  getClubByName(@Param('name') name: string) {
+    return this.clubsService.findClubByName(name);
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create a team' })
+  @ApiOperation({ summary: 'Create a club' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Team created!',
+    description: 'Club created!',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'There is a team with that name already',
+    description: 'There is a club with that name already',
   })
-  createTeam(@Body() data: CreateTeamDto) {
-    return this.teamsService.createTeam(data);
+  createClub(@Body() data: CreateClubDto) {
+    return this.clubsService.createClub(data);
   }
 
   @Post('/many')
-  @ApiOperation({ summary: 'Create as many teams as you want' })
-  @ApiBody({ type: [CreateTeamDto] })
+  @ApiOperation({ summary: 'Create as many clubs as you want' })
+  @ApiBody({ type: [CreateClubDto] })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Teams created!',
+    description: 'Clubs created!',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: "There's a team with that name already",
+    description: "There's a club with that name already",
   })
-  createManyTeams(
-    @Body(new ParseArrayPipe({ items: CreateTeamDto })) data: CreateTeamDto[],
+  createManyClubs(
+    @Body(new ParseArrayPipe({ items: CreateClubDto })) data: CreateClubDto[],
   ) {
-    return this.teamsService.createManyTeams(data);
+    return this.clubsService.createManyClubs(data);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a team' })
+  @ApiOperation({ summary: 'Update a club' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Team updated',
+    description: 'Club updated',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  updateTeam(
+  updateClub(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: UpdateTeamDto,
+    @Body() data: UpdateClubDto,
   ) {
-    return this.teamsService.updateTeam(id, data);
+    return this.clubsService.updateClub(id, data);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a team' })
+  @ApiOperation({ summary: 'Delete a club' })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description: 'Team deleted',
+    description: 'Club deleted',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  deleteTeam(@Param('id', ParseIntPipe) id: number) {
-    return this.teamsService.deleteTeam(id);
+  deleteClub(@Param('id', ParseIntPipe) id: number) {
+    return this.clubsService.deleteClub(id);
   }
 
-  // ! Player Team Endpoint
+  // ! Player Club Endpoint
 
-  @Get(':teamId/squad')
+  @Get(':clubId/squad')
   @ApiOperation({
-    summary: "Gets the team's current squad",
+    summary: "Gets the club's current squad",
   })
   @ApiOkResponse({
-    type: [TeamPlayersResponseDto],
+    type: [ClubPlayersResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -168,14 +168,14 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getCurrentSquad(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findSquad(teamId);
+  getCurrentSquad(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findSquad(clubId);
   }
 
-  @Post(':teamId/sign/:playerId')
-  @ApiOperation({ summary: 'Sign a player for a team' })
+  @Post(':clubId/sign/:playerId')
+  @ApiOperation({ summary: 'Sign a player for a club' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Player signed successfully!',
@@ -186,25 +186,25 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'The player is already playing for a team',
+    description: 'The player is already playing for a club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'The end date cannot be before the start date',
   })
-  signPlayerToTeam(
-    @Param('teamId', ParseIntPipe) teamId: number,
+  signPlayerToClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('playerId', ParseIntPipe) playerId: number,
     @Body() data: SignPlayerDto,
   ) {
-    return this.teamsService.signPlayer(teamId, playerId, data);
+    return this.clubsService.signPlayer(clubId, playerId, data);
   }
 
-  @Patch(':teamId/squad/:playerId')
+  @Patch(':clubId/squad/:playerId')
   @ApiOperation({ summary: 'Change the jersey number for the given player' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -212,7 +212,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -224,25 +224,25 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'This player is not playing for any team currently',
+    description: 'This player is not playing for any club currently',
   })
   changePlayerJerseyNumber(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('playerId', ParseIntPipe) playerId: number,
     @Body() data: ChangePlayerJerseyNumberDto,
   ) {
-    return this.teamsService.changePlayerJerseyNumber(teamId, playerId, data);
+    return this.clubsService.changePlayerJerseyNumber(clubId, playerId, data);
   }
 
-  @Patch(':teamId/squad/:playerId/release')
-  @ApiOperation({ summary: 'Release the given player from the given team' })
+  @Patch(':clubId/squad/:playerId/release')
+  @ApiOperation({ summary: 'Release the given player from the given club' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Player released successfully!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -250,7 +250,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'This player is not currently playing for a team',
+    description: 'This player is not currently playing for a club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -260,17 +260,17 @@ export class TeamsController {
     @Param('playerId', ParseIntPipe) playerId: number,
     @Body() data: ReleasePlayerDto,
   ) {
-    return this.teamsService.releasePlayer(playerId, data);
+    return this.clubsService.releasePlayer(playerId, data);
   }
 
   // ! Player Season Stats Endpoints
 
-  @Get(':teamId/player-stats')
+  @Get(':clubId/player-stats')
   @ApiOperation({
     summary: 'Gets the squad stats',
   })
   @ApiOkResponse({
-    type: [TeamSquadStatsResponseDto],
+    type: [ClubSquadStatsResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -278,18 +278,18 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getSquadStats(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findTeamPlayerStats(teamId);
+  getSquadStats(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findClubPlayerStats(clubId);
   }
 
-  @Get(':teamId/player-stats/:seasonId')
+  @Get(':clubId/player-stats/:seasonId')
   @ApiOperation({
     summary: 'Gets the squad stats by season',
   })
   @ApiOkResponse({
-    type: [TeamSquadStatsResponseDto],
+    type: [ClubSquadStatsResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -297,27 +297,27 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Season not found',
   })
   getSquadStatsBySeason(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('seasonId', ParseIntPipe) seasonId: number,
   ) {
-    return this.teamsService.findTeamPlayerStatsBySeason(teamId, seasonId);
+    return this.clubsService.findClubPlayerStatsBySeason(clubId, seasonId);
   }
 
-  // ! Team Season Endpoints
+  // ! Club Season Endpoints
 
-  @Get(':teamId/team-stats')
+  @Get(':clubId/club-stats')
   @ApiOperation({
-    summary: 'Gets the team stats',
+    summary: 'Gets the club stats',
   })
   @ApiOkResponse({
-    type: [TeamSeasonStatsResponseDto],
+    type: [ClubSeasonStatsResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -325,18 +325,18 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getTeamStats(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findTeamStats(teamId);
+  getClubStats(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findClubStats(clubId);
   }
 
-  @Get(':teamId/team-stats/:seasonId')
+  @Get(':clubId/club-stats/:seasonId')
   @ApiOperation({
-    summary: 'Gets the team stats by season',
+    summary: 'Gets the club stats by season',
   })
   @ApiOkResponse({
-    type: TeamSeasonStatsResponseDto,
+    type: ClubSeasonStatsResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -344,24 +344,24 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Season not found',
   })
-  getTeamStatsBySeason(
-    @Param('teamId', ParseIntPipe) teamId: number,
+  getClubStatsBySeason(
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('seasonId', ParseIntPipe) seasonId: number,
   ) {
-    return this.teamsService.findTeamStatsBySeason(teamId, seasonId);
+    return this.clubsService.findClubStatsBySeason(clubId, seasonId);
   }
 
-  // ! Team Matches Endpoint
+  // ! Club Matches Endpoint
 
-  @Get(':teamId/matches')
+  @Get(':clubId/matches')
   @ApiOperation({
-    summary: 'Gets the team matches or filter them by home or away',
+    summary: 'Gets the club matches or filter them by home or away',
   })
   @ApiOkResponse({
     type: [MatchResponseDto],
@@ -372,38 +372,38 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getTeamMatches(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findTeamMatches(teamId);
+  getClubMatches(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findClubMatches(clubId);
   }
 
-  // ! Manager Team Endpoints
-  @Get(':teamId/managers/current')
+  // ! Manager Club Endpoints
+  @Get(':clubId/managers/current')
   @ApiOperation({
-    summary: "Get the team's current manager",
+    summary: "Get the club's current manager",
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getCurrentManager(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findCurrentManager(teamId);
+  getCurrentManager(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findCurrentManager(clubId);
   }
 
-  @Get(':teamId/managers/history')
+  @Get(':clubId/managers/history')
   @ApiOperation({
-    summary: "Get the team's manager history",
+    summary: "Get the club's manager history",
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
-  getManagerHistory(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamsService.findManagerHistory(teamId);
+  getManagerHistory(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.clubsService.findManagerHistory(clubId);
   }
 
-  @Post(':teamId/managers/:managerId/hire')
+  @Post(':clubId/managers/:managerId/hire')
   @ApiOperation({
     summary: 'Hire a new manager',
   })
@@ -413,7 +413,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -421,21 +421,21 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The manager is already managing another team',
+    description: 'The manager is already managing another club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'The end date cannot be before the start date',
   })
   hireManager(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('managerId', ParseIntPipe) managerId: number,
     @Body() data: HireManagerDto,
   ) {
-    return this.teamsService.hireManager(teamId, managerId, data);
+    return this.clubsService.hireManager(clubId, managerId, data);
   }
 
-  @Patch(':teamId/managers/fire')
+  @Patch(':clubId/managers/fire')
   @ApiOperation({
     summary: 'Fire the current manager',
   })
@@ -445,24 +445,24 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'This team has no manager',
+    description: 'This club has no manager',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'The end date cannot be before the start date',
   })
   fireManager(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Body() data: FireManagerDto,
   ) {
-    return this.teamsService.fireManager(teamId, data);
+    return this.clubsService.fireManager(clubId, data);
   }
 
-  @Put(':teamId/managers/replace/:managerId')
+  @Put(':clubId/managers/replace/:managerId')
   @ApiOperation({
     summary: 'Fire the current manager and immediately hire a new one',
   })
@@ -473,7 +473,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -481,7 +481,7 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'This team has no manager',
+    description: 'This club has no manager',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -489,17 +489,17 @@ export class TeamsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The manager is already managing another team',
+    description: 'The manager is already managing another club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'The end date cannot be before the start date',
   })
   fireManagerAndHireANewOne(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('managerId', ParseIntPipe) managerId: number,
     @Body() data: HireManagerDto,
   ) {
-    return this.teamsService.fireManagerAndHireANewOne(teamId, managerId, data);
+    return this.clubsService.fireManagerAndHireANewOne(clubId, managerId, data);
   }
 }

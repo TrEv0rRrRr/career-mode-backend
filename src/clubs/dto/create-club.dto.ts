@@ -11,10 +11,10 @@ import {
   Min,
 } from 'class-validator';
 
-export class CreateTeamDto {
+export class CreateClubDto {
   @ApiProperty({
     example: 'FC Barcelona',
-    description: 'The name of the team',
+    description: 'The name of the club',
   })
   @IsNotEmpty()
   @IsString()
@@ -22,7 +22,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: 'FCB',
-    description: "The initials of the team's name",
+    description: "The initials of the club's name",
   })
   @IsNotEmpty()
   @IsString()
@@ -30,7 +30,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: 'Spain',
-    description: 'The country were the team was founded',
+    description: 'The country were the club was founded',
   })
   @IsNotEmpty()
   @IsString()
@@ -39,15 +39,15 @@ export class CreateTeamDto {
   @ApiProperty({
     enum: Confederation,
     example: Confederation.UEFA,
-    description: 'The confederation the team belongs to',
+    description: 'The confederation the club belongs to',
   })
   @IsNotEmpty()
   @IsEnum(Confederation)
   confederation!: Confederation;
 
   @ApiProperty({
-    example: '/images/teams/fc-barcelona.png',
-    description: "The team's logo",
+    example: '/images/clubs/fc-barcelona.png',
+    description: "The club's logo",
   })
   @IsOptional()
   @IsString()
@@ -55,7 +55,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: '1899-11-29',
-    description: 'The date when the team was founded',
+    description: 'The date when the club was founded',
   })
   @IsNotEmpty()
   @Type(() => Date)
@@ -64,7 +64,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: '#14285d',
-    description: "The main color of the team's jersey",
+    description: "The main color of the club's jersey",
   })
   @IsNotEmpty()
   @IsString()
@@ -72,7 +72,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: '#8c0035',
-    description: "The secondary color of the team's jersey",
+    description: "The secondary color of the club's jersey",
   })
   @IsNotEmpty()
   @IsString()
@@ -80,7 +80,7 @@ export class CreateTeamDto {
 
   @ApiProperty({
     example: 1,
-    description: 'The foreign key that connects the team to its stadium',
+    description: 'The foreign key that connects the club to its stadium',
   })
   @IsNotEmpty()
   @IsInt()
@@ -90,7 +90,7 @@ export class CreateTeamDto {
   @ApiProperty({
     example: 2,
     description:
-      'The foreign key that connects the team to the league where it plays',
+      'The foreign key that connects the club to the league where it plays',
   })
   @IsNotEmpty()
   @IsInt()

@@ -13,7 +13,7 @@ export class SignPlayerDto {
   @ApiProperty({
     example: 1,
     description:
-      'The jersey number that the player will be using in his new team',
+      'The jersey number that the player will be using in his new club',
   })
   @IsNotEmpty()
   @IsInt()
