@@ -15,9 +15,10 @@ import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { MatchResponseDto } from '../matches/dto/response/match-response.dto.ts';
 import { CompetitionsService } from './competitions.service.ts';
+import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
 import { CompetitionQueryDto } from './dto/competition-query.dto.ts';
-import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { CreateCompetitionGroupsDto } from './dto/create-competition-groups.dto.ts';
+import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionFixtureService } from './services/competition-fixture.service.ts';
 
@@ -177,21 +178,63 @@ export class CompetitionsController {
     return this.competitionsService.findEditionsBySeason(seasonId);
   }
 
-  @Post(':competitionId/editions')
-  @ApiOperation({ summary: 'Create a new edition for a competition' })
+  @Post('/editions/season/current/create')
+  @ApiOperation({ summary: 'Create new editions for the current season' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Edition created',
   })
   @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'This competition already has an edition for this season.',
+    status: HttpStatus.NOT_FOUND,
+    description: 'Season not found',
   })
-  createCompetitionEdition(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
-    @Body() data: CreateCompetitionEditionDto,
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description:
+      "There's a competition with an edition already created for the current season",
+  })
+  @ApiBody({
+    schema: {
+      example: [
+        {
+          competitionId: 1,
+        },
+        {
+          competitionId: 6,
+          finalStadiumId: 1,
+        },
+      ],
+    },
+  })
+  createEditionsForTheCurrentSeason(@Body() data: CreateManyEditionsDto[]) {
+    return this.competitionsService.createEditionsForTheCurrentSeason(data);
+  }
+
+  @Patch('/editions/:editionId/final-stadium')
+  @ApiOperation({
+    summary: 'Change the edition final stadium for another, if available',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Stadium changed',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Edition not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Stadium not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'This stadium is already set for another competition edition',
+  })
+  changeEditionFinalStadium(
+    @Param('editionId', ParseIntPipe) editionId: number,
+    @Body() data: ChangeEditionFinalStadiumDto,
   ) {
-    return this.competitionsService.createEdition(competitionId, data);
+    return this.competitionsService.changeEditionFinalStadium(editionId, data);
   }
 
   @Patch(':competitionId/editions/:editionId')

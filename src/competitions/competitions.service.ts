@@ -7,9 +7,11 @@ import { CompetitionFormat, CompetitionType } from '@prisma/client';
 import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { NationalTeamsService } from '../national-teams/national-teams.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
+import { StadiumsService } from '../stadiums/stadiums.service.ts';
 import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
-import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
+import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
+import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
 import { CompetitionMapper } from './dto/mapper/competition.mapper.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 import { CompetitionNotFoundException } from './exceptions/competition-not-found.exception.ts';
@@ -23,6 +25,7 @@ export class CompetitionsService {
     private teamsService: TeamsService,
     private seasonService: SeasonsService,
     private nationalTeamsService: NationalTeamsService,
+    private stadiumsService: StadiumsService,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -101,29 +104,63 @@ export class CompetitionsService {
     return editions.map((e) => CompetitionMapper.editionsToResponse(e));
   }
 
-  async createEdition(
-    competitionId: number,
-    data: CreateCompetitionEditionDto,
-  ) {
-    const competition = await this.findCompetitionById(competitionId);
-    await this.seasonService.findSeasonById(data.seasonId);
+  async createEditionsForTheCurrentSeason(data: CreateManyEditionsDto[]) {
+    const season = await this.seasonService.findCurrentSeason();
 
-    const edition = await this.repo.findEditionByCompetitionAndSeason(
-      competitionId,
-      data.seasonId,
+    await Promise.all(
+      data.map(async (d) => ({
+        comp: await this.findCompetitionById(d.competitionId),
+        finalStadium: d.finalStadiumId,
+      })),
+    ).then(async (data) => {
+      for (const d of data) {
+        if (d.comp.format !== CompetitionFormat.LEAGUE) {
+          if (!d.finalStadium)
+            throw new BadRequestException(
+              "If the competition doesn't have a league format, then you have to assign a stadium for the final.",
+            );
+          else await this.stadiumsService.findStadiumById(d.finalStadium);
+        }
+      }
+    });
+
+    const existingEditions = await Promise.all(
+      data.map((d) =>
+        this.findEditionByCompetitionAndSeason(d.competitionId, season.id),
+      ),
     );
 
-    if (edition)
-      throw new BadRequestException(
-        'This competition already has an edition for this season.',
+    const isNotFullOfNulls = !existingEditions.every(
+      (edition) => edition === null,
+    );
+
+    if (isNotFullOfNulls)
+      throw new ConflictException(
+        "There's a competition with an edition already created for the current season",
       );
 
-    if (competition.format !== CompetitionFormat.LEAGUE && !data.finalStadiumId)
-      throw new BadRequestException(
-        "If the competition doesn't have a league format, then you have to assign a stadium for the final.",
+    return this.repo.createEditionsForTheCurrentSeason(season.id, data);
+  }
+
+  async changeEditionFinalStadium(
+    editionId: number,
+    data: ChangeEditionFinalStadiumDto,
+  ) {
+    await this.repo.findEditionById(editionId);
+    await this.stadiumsService.findStadiumById(data.finalStadiumId);
+
+    const currentEditions = await this.findEditionsOfTheCurrentSeason();
+
+    const isTheStadiumInUse = currentEditions.some(
+      (e) => e.id !== editionId && e.finalStadium.id === data.finalStadiumId,
+    );
+
+    if (isTheStadiumInUse)
+      throw new ConflictException(
+        'This stadium is already set for another competition edition',
       );
 
-    return this.repo.createEdition(competitionId, data);
+    return this.repo.changeEditionFinalStadium(editionId, data);
   }
 
   async assignWinnerAndRunnerUp(

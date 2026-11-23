@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { CompetitionFormat, CompetitionType, Prisma } from '@prisma/client';
 import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
+import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
 import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
+import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 
 const competitionEditionInclude = {
@@ -10,6 +12,7 @@ const competitionEditionInclude = {
   season: true,
   winnerTeam: true,
   runnerUpTeam: true,
+  stadium: true,
   competitionParticipants: {
     include: {
       team: true,
@@ -113,13 +116,44 @@ export class CompetitionsRepository {
     });
   }
 
-  createEdition(competitionId: number, data: CreateCompetitionEditionDto) {
+  createEdition(
+    competitionId: number,
+    seasonId: number,
+    data: CreateCompetitionEditionDto,
+  ) {
     return this.prisma.competitionEdition.create({
       data: {
         competitionId,
-        seasonId: data.seasonId,
+        seasonId,
         finalStadiumId: data.finalStadiumId,
       },
+    });
+  }
+
+  createEditionsForTheCurrentSeason(
+    seasonId: number,
+    data: CreateManyEditionsDto[],
+  ) {
+    const compEdData = data.map((d) => ({
+      competitionId: d.competitionId,
+      finalStadiumId: d.finalStadiumId,
+      seasonId,
+    }));
+
+    return this.prisma.$transaction(async (tx) => {
+      return tx.competitionEdition.createMany({
+        data: compEdData,
+      });
+    });
+  }
+
+  changeEditionFinalStadium(
+    editionId: number,
+    data: ChangeEditionFinalStadiumDto,
+  ) {
+    return this.prisma.competitionEdition.update({
+      where: { id: editionId },
+      data,
     });
   }
 
