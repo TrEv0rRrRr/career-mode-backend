@@ -4,8 +4,8 @@ import {
   Confederation,
 } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
+import { Optional } from '../../../common/types/Optional.ts';
 import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
-import { Optional } from '../../../seasons/dto/response/season-response.dto.ts';
 import { StadiumSummary } from '../../../stadiums/dto/response/stadiums.response.ts';
 
 export type LeagueStandings = {

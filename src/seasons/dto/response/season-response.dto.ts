@@ -1,13 +1,8 @@
 import { Confederation, TransferType } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
+import { Optional } from '../../../common/types/Optional.ts';
 import { CompetitionSummary } from '../../../competitions/dto/response/competition-response.dto.ts';
 import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
-/**
- * Make all properties in T optional, but now seriously. Similar to Partial<>
- */
-export type Optional<T> = {
-  [P in keyof T]: T[P] | null | undefined;
-};
 
 type PlayerTransferResponseDto = {
   id: number;
