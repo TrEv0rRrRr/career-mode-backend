@@ -1,5 +1,6 @@
 import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/wasm-compiler-edge';
+import { ManagerSummary } from '../../../managers/dto/response/manager-response.dto.ts';
 
 export type PlayerNationalTeam = {
   player: {
@@ -38,13 +39,6 @@ export type NationalTeamManagerType = {
   endDate: Date | null;
 };
 
-export type ManagerResponse = {
-  id: number;
-  name: string;
-  nationality: string;
-  face: string | null;
-};
-
 export class NationalTeamResponseDto {
   id!: number;
   name!: string;
@@ -70,5 +64,5 @@ export class CurrentNationalTeamManagerResponseDto {
   nationalTeamId!: number;
   startDate!: Date;
   endDate!: Date | null;
-  manager!: ManagerResponse;
+  manager!: ManagerSummary;
 }
