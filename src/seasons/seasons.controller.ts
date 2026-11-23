@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -89,6 +90,16 @@ export class SeasonsController {
   })
   createSeason(@Body() data: CreateSeasonDto) {
     return this.seasonsService.createSeason(data);
+  }
+
+  @Patch('/current/complete')
+  @ApiOperation({ summary: 'Complete the current season' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Season completed successfully!',
+  })
+  completeCurrentSeason() {
+    return this.seasonsService.completeCurrentSeason();
   }
 
   @Delete(':id')

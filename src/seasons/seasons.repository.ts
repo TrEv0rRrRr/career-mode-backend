@@ -71,6 +71,17 @@ export class SeasonsRepository {
     });
   }
 
+  completeCurrentSeason(seasonId: number) {
+    return this.prisma.season.update({
+      where: {
+        id: seasonId,
+      },
+      data: {
+        completed: true,
+      },
+    });
+  }
+
   delete(id: number) {
     return this.prisma.season.delete({ where: { id } });
   }

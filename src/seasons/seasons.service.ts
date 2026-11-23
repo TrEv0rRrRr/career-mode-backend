@@ -38,6 +38,12 @@ export class SeasonsService {
     return this.repo.create(data);
   }
 
+  async completeCurrentSeason() {
+    const currentSeason = await this.findCurrentSeason();
+
+    return this.repo.completeCurrentSeason(currentSeason.id);
+  }
+
   async deleteSeason(id: number) {
     await this.findSeasonById(id);
 
