@@ -66,10 +66,10 @@ export const generateGroupFixture = (
 
   return Object.values(groups).flatMap((teamIds) => {
     const firstLeg = createSingleRoundRobin(teamIds).map((round, roundIndex) =>
-      round.map(([firstTeamId, secondTeamId], pairingIndex) =>
+      round.map(([firstClubId, secondClubId], pairingIndex) =>
         (roundIndex + pairingIndex) % 2 === 0
-          ? ([firstTeamId, secondTeamId] as [number, number])
-          : ([secondTeamId, firstTeamId] as [number, number]),
+          ? ([firstClubId, secondClubId] as [number, number])
+          : ([secondClubId, firstClubId] as [number, number]),
       ),
     );
     const rounds = isDoubleRoundRobin
@@ -82,9 +82,9 @@ export const generateGroupFixture = (
       : firstLeg;
 
     return rounds.flatMap((round, roundIndex) =>
-      round.map(([homeTeamId, awayTeamId]) => ({
-        homeTeamId,
-        awayTeamId,
+      round.map(([homeClubId, awayClubId]) => ({
+        homeClubId,
+        awayClubId,
         matchType: MatchType.GROUP_STAGE,
         matchday: matchdays[roundIndex],
       })),

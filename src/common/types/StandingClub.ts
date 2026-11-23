@@ -1,5 +1,5 @@
-export type StandingTeam = {
-  teamId: number;
+export type StandingClub = {
+  clubId: number;
   points: number | null;
   gf: number;
   ga: number;

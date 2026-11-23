@@ -31,18 +31,18 @@ export const resolveKnockoutLosers = (
       ? resolveTwoLeggedWinner(tieMatches)
       : resolveSingleLegWinner(tieMatches[0]);
 
-    const teams = new Set<number>();
+    const clubs = new Set<number>();
 
     for (const match of tieMatches) {
-      if (match.homeTeamId === null || match.awayTeamId === null) {
-        throw new Error('Knockout matches must have two club teams.');
+      if (match.homeClubId === null || match.awayClubId === null) {
+        throw new Error('Knockout matches must have two club clubs.');
       }
 
-      teams.add(match.homeTeamId);
-      teams.add(match.awayTeamId);
+      clubs.add(match.homeClubId);
+      clubs.add(match.awayClubId);
     }
 
-    const loser = [...teams].find((teamId) => teamId !== winner);
+    const loser = [...clubs].find((clubId) => clubId !== winner);
 
     if (!loser) {
       throw new Error('Could not determine knockout loser.');

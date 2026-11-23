@@ -1,7 +1,7 @@
 import { MatchLeg, MatchType } from '@prisma/client';
 export interface MatchPairing {
-  homeTeamId: number;
-  awayTeamId: number;
+  homeClubId: number;
+  awayClubId: number;
   matchType: MatchType;
   matchday?: number;
   leg?: MatchLeg;

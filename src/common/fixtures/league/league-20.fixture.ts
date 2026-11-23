@@ -1,8 +1,8 @@
 import { MatchType } from '@prisma/client';
 import type { MatchPairing } from '../../types/MatchPairing.ts';
-import { ParticipatingTeam } from '../../types/ParticipatingTeams.ts';
+import { ParticipatingClub } from '../../types/ParticipatingClub.ts';
 
-export const fixtureByTeam: Record<number, number[]> = {
+export const fixtureByClub: Record<number, number[]> = {
   1: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   2: [1, 20, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
   3: [19, 1, 2, 20, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
@@ -26,7 +26,7 @@ export const fixtureByTeam: Record<number, number[]> = {
 };
 
 const getRivalPosition = (position: number, matchday: number) =>
-  fixtureByTeam[position][matchday - 1];
+  fixtureByClub[position][matchday - 1];
 
 const addReturnLeg = (
   firstLegFixture: MatchPairing[],
@@ -35,32 +35,32 @@ const addReturnLeg = (
   ...firstLegFixture,
   ...firstLegFixture.map((match) => ({
     ...match,
-    homeTeamId: match.awayTeamId,
-    awayTeamId: match.homeTeamId,
+    homeClubId: match.awayClubId,
+    awayClubId: match.homeClubId,
     matchday: (match.matchday ?? 0) + firstLegMatchdayCount,
   })),
 ];
 
 export const generateLeagueFixture = (
-  participatingTeams: ParticipatingTeam[],
+  participatingClubs: ParticipatingClub[],
 ): MatchPairing[] => {
-  const orderedTeams = [...participatingTeams].sort(
+  const orderedClubs = [...participatingClubs].sort(
     (first, second) =>
       (first.position ?? Number.MAX_SAFE_INTEGER) -
         (second.position ?? Number.MAX_SAFE_INTEGER) ||
-      first.team.id - second.team.id,
+      first.club.id - second.club.id,
   );
-  const positions = orderedTeams.map(({ position }) => position);
-  const hasCompleteTwentyTeamRanking =
-    orderedTeams.length === 20 &&
+  const positions = orderedClubs.map(({ position }) => position);
+  const hasCompleteTwentyClubRanking =
+    orderedClubs.length === 20 &&
     positions.every(
       (position): position is number =>
         position !== null && position >= 1 && position <= 20,
     ) &&
     new Set(positions).size === 20;
 
-  if (hasCompleteTwentyTeamRanking) {
-    const teamIdsByPosition = orderedTeams.map(({ team }) => team.id);
+  if (hasCompleteTwentyClubRanking) {
+    const clubIdsByPosition = orderedClubs.map(({ club }) => club.id);
     const fixture: MatchPairing[] = [];
 
     for (let matchday = 1; matchday <= 19; matchday++) {
@@ -70,8 +70,8 @@ export const generateLeagueFixture = (
         if (position < rivalPosition) {
           fixture.push({
             matchday,
-            homeTeamId: teamIdsByPosition[position - 1],
-            awayTeamId: teamIdsByPosition[rivalPosition - 1],
+            homeClubId: clubIdsByPosition[position - 1],
+            awayClubId: clubIdsByPosition[rivalPosition - 1],
             matchType: MatchType.LEAGUE,
           });
         }
@@ -81,39 +81,39 @@ export const generateLeagueFixture = (
     return addReturnLeg(fixture, 19);
   }
 
-  const rotatingTeams: (number | null)[] = orderedTeams.map(
-    ({ team }) => team.id,
+  const rotatingClubs: (number | null)[] = orderedClubs.map(
+    ({ club }) => club.id,
   );
 
-  if (rotatingTeams.length % 2 !== 0) rotatingTeams.push(null);
+  if (rotatingClubs.length % 2 !== 0) rotatingClubs.push(null);
 
   const fixture: MatchPairing[] = [];
-  const rounds = rotatingTeams.length - 1;
+  const rounds = rotatingClubs.length - 1;
 
   for (let roundIndex = 0; roundIndex < rounds; roundIndex++) {
     for (
       let pairingIndex = 0;
-      pairingIndex < rotatingTeams.length / 2;
+      pairingIndex < rotatingClubs.length / 2;
       pairingIndex++
     ) {
-      const firstTeamId = rotatingTeams[pairingIndex];
-      const secondTeamId =
-        rotatingTeams[rotatingTeams.length - 1 - pairingIndex];
+      const firstClubId = rotatingClubs[pairingIndex];
+      const secondClubId =
+        rotatingClubs[rotatingClubs.length - 1 - pairingIndex];
 
-      if (firstTeamId === null || secondTeamId === null) continue;
+      if (firstClubId === null || secondClubId === null) continue;
 
       const swapHomeAndAway = (roundIndex + pairingIndex) % 2 !== 0;
 
       fixture.push({
-        homeTeamId: swapHomeAndAway ? secondTeamId : firstTeamId,
-        awayTeamId: swapHomeAndAway ? firstTeamId : secondTeamId,
+        homeClubId: swapHomeAndAway ? secondClubId : firstClubId,
+        awayClubId: swapHomeAndAway ? firstClubId : secondClubId,
         matchday: roundIndex + 1,
         matchType: MatchType.LEAGUE,
       });
     }
 
-    const lastTeam = rotatingTeams.pop()!;
-    rotatingTeams.splice(1, 0, lastTeam);
+    const lastClub = rotatingClubs.pop()!;
+    rotatingClubs.splice(1, 0, lastClub);
   }
 
   return addReturnLeg(fixture, rounds);

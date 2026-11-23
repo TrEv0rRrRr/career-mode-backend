@@ -1,16 +1,16 @@
 import { Match } from '@prisma/client';
-import { StandingTeam } from '../../types/StandingTeam.ts';
+import { StandingClub } from '../../types/StandingClub.ts';
 import { buildHeadToHeadTable } from './buildHeadToHeadTable.ts';
 
 export const resolveTie = (
-  tiedTeams: StandingTeam[],
+  tiedTeams: StandingClub[],
   matches: Match[],
-): StandingTeam[] => {
+): StandingClub[] => {
   const headToHeadTable = buildHeadToHeadTable(matches);
 
-  const h2hMap = new Map(headToHeadTable.map((team) => [team.teamId, team]));
+  const h2hMap = new Map(headToHeadTable.map((club) => [club.clubId, club]));
 
-  const compareOverallCriteria = (a: StandingTeam, b: StandingTeam) => {
+  const compareOverallCriteria = (a: StandingClub, b: StandingClub) => {
     if (a.gd !== b.gd) {
       return b.gd - a.gd;
     }
@@ -25,13 +25,13 @@ export const resolveTie = (
     return aFairPlay - bFairPlay;
   };
 
-  if (tiedTeams.some(({ teamId }) => !h2hMap.has(teamId))) {
+  if (tiedTeams.some(({ clubId }) => !h2hMap.has(clubId))) {
     return [...tiedTeams].sort(compareOverallCriteria);
   }
 
   return [...tiedTeams].sort((a, b) => {
-    const aH2H = h2hMap.get(a.teamId)!;
-    const bH2H = h2hMap.get(b.teamId)!;
+    const aH2H = h2hMap.get(a.clubId)!;
+    const bH2H = h2hMap.get(b.clubId)!;
 
     if (aH2H.points !== bH2H.points) {
       return bH2H.points - aH2H.points;

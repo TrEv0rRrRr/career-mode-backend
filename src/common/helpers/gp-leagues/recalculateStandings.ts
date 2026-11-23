@@ -1,21 +1,21 @@
 import { Match } from '@prisma/client';
-import { StandingTeam } from '../../types/StandingTeam.ts';
+import { StandingClub } from '../../types/StandingClub.ts';
 import { resolveTie } from './resolveTie.ts';
 
 export const recalculateStandings = (
-  teams: StandingTeam[],
+  clubs: StandingClub[],
   matches: Match[],
-): StandingTeam[] => {
-  const standings = [...teams].sort(
+): StandingClub[] => {
+  const standings = [...clubs].sort(
     (a, b) => (b.points || 0) - (a.points || 0),
   );
 
-  const result: StandingTeam[] = [];
+  const result: StandingClub[] = [];
 
   let i = 0;
 
   while (i < standings.length) {
-    const tiedTeams = [standings[i]];
+    const tiedClubs = [standings[i]];
 
     let j = i + 1;
 
@@ -23,26 +23,26 @@ export const recalculateStandings = (
       j < standings.length &&
       standings[j].points === standings[i].points
     ) {
-      tiedTeams.push(standings[j]);
+      tiedClubs.push(standings[j]);
       j++;
     }
 
-    if (tiedTeams.length === 1) {
-      result.push(tiedTeams[0]);
+    if (tiedClubs.length === 1) {
+      result.push(tiedClubs[0]);
     } else {
-      const tiedTeamIds = new Set(tiedTeams.map(({ teamId }) => teamId));
+      const tiedClubIds = new Set(tiedClubs.map(({ clubId }) => clubId));
 
       const headToHeadMatches = matches.filter(
         (match) =>
-          match.homeTeamId !== null &&
-          match.awayTeamId !== null &&
-          tiedTeamIds.has(match.homeTeamId) &&
-          tiedTeamIds.has(match.awayTeamId),
+          match.homeClubId !== null &&
+          match.awayClubId !== null &&
+          tiedClubIds.has(match.homeClubId) &&
+          tiedClubIds.has(match.awayClubId),
       );
 
-      const resolvedTeams = resolveTie(tiedTeams, headToHeadMatches);
+      const resolvedClubs = resolveTie(tiedClubs, headToHeadMatches);
 
-      result.push(...resolvedTeams);
+      result.push(...resolvedClubs);
     }
 
     i = j;

@@ -5,9 +5,9 @@ export const resolveSingleLegWinner = (match: Match): number => {
     throw new Error('The match has not been played yet.');
   }
 
-  if (match.winnerTeamId === null) {
+  if (match.winnerClubId === null) {
     throw new Error('A knockout match must have a winner.');
   }
 
-  return match.winnerTeamId;
+  return match.winnerClubId;
 };

@@ -1,5 +1,5 @@
 export type HeadToHeadStanding = {
-  teamId: number;
+  clubId: number;
   points: number;
   gf: number;
   ga: number;
