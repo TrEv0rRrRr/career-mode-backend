@@ -47,6 +47,7 @@ export class CompetitionMapper {
         },
       }),
     );
+
     const participantNationalTeams = cE.nationalTeamParticipants.map(
       (participant) => ({
         points: participant.points,
@@ -68,6 +69,33 @@ export class CompetitionMapper {
       }),
     );
 
+    const winnerClub = {
+      id: cE.winnerClubId,
+      name: cE.winnerClub?.name,
+      logo: cE.winnerClub?.logo,
+      country: cE.winnerClub?.country,
+      confederation: cE.winnerClub?.confederation,
+    };
+    const runnerUpClub = {
+      id: cE.runnerUpClubId,
+      name: cE.runnerUpClub?.name,
+      logo: cE.runnerUpClub?.logo,
+      country: cE.runnerUpClub?.country,
+      confederation: cE.runnerUpClub?.confederation,
+    };
+    const winnerNationalTeam = {
+      id: cE.winnerNationalTeamId,
+      name: cE.winnerNationalTeam?.name,
+      logo: cE.winnerNationalTeam?.logo,
+      confederation: cE.winnerNationalTeam?.confederation,
+    };
+    const runnerUpNationalTeam = {
+      id: cE.runnerUpNationalTeamId,
+      name: cE.runnerUpNationalTeam?.name,
+      logo: cE.runnerUpNationalTeam?.logo,
+      confederation: cE.runnerUpNationalTeam?.confederation,
+    };
+
     return {
       id: cE.id,
       season: cE.season.code,
@@ -82,37 +110,13 @@ export class CompetitionMapper {
         image: cE.stadium?.image,
         country: cE.stadium?.country,
       },
-      winnerClub: {
-        id: cE.winnerClubId,
-        name: cE.winnerClub?.name,
-        logo: cE.winnerClub?.logo,
-        country: cE.winnerClub?.country,
-        confederation: cE.winnerClub?.confederation,
-      },
-      runnerUpClub: {
-        id: cE.runnerUpClubId,
-        name: cE.runnerUpClub?.name,
-        logo: cE.runnerUpClub?.logo,
-        country: cE.runnerUpClub?.country,
-        confederation: cE.runnerUpClub?.confederation,
-      },
-      winnerNationalTeam: {
-        id: cE.winnerNationalTeamId,
-        name: cE.winnerNationalTeam?.name,
-        logo: cE.winnerNationalTeam?.logo,
-        confederation: cE.winnerNationalTeam?.confederation,
-      },
-      runnerUpNationalTeam: {
-        id: cE.runnerUpNationalTeamId,
-        name: cE.runnerUpNationalTeam?.name,
-        logo: cE.runnerUpNationalTeam?.logo,
-        confederation: cE.runnerUpNationalTeam?.confederation,
-      },
       ...(isANationalTeamsCompetition
         ? {
+            winnerNationalTeam,
+            runnerUpNationalTeam,
             participantNationalTeams,
           }
-        : { participantClubs }),
+        : { winnerClub, runnerUpClub, participantClubs }),
     };
   }
 

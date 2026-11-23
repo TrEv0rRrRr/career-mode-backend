@@ -4,7 +4,9 @@ import {
   Confederation,
 } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
+import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 import { Optional } from '../../../seasons/dto/response/season-response.dto.ts';
+import { StadiumSummary } from '../../../stadiums/dto/response/stadiums.response.ts';
 
 export type LeagueStandings = {
   club: {
@@ -34,38 +36,6 @@ export type LeagueStandings = {
   ga: number;
   gd: number;
 };
-export class ParticipantClub {
-  points!: number | null;
-  position!: number | null;
-  group!: string | null;
-  played!: number;
-  wins!: number;
-  draws!: number;
-  losses!: number;
-  gf!: number;
-  ga!: number;
-  gd!: number;
-  club!: ClubSummary;
-}
-
-export class ParticipantNationalTeam {
-  points!: number | null;
-  position!: number | null;
-  group!: string | null;
-  played!: number;
-  wins!: number;
-  draws!: number;
-  losses!: number;
-  gf!: number;
-  ga!: number;
-  gd!: number;
-  nationalTeam!: {
-    id: number;
-    name: string;
-    logo: string | null;
-    confederation: Confederation;
-  };
-}
 
 export type ParticipantClubType = {
   club: {
@@ -96,41 +66,49 @@ export type ParticipantClubType = {
   gd: number;
 };
 
-export class CompetitionResponse {
+class ParticipantTeam {
+  points!: number | null;
+  position!: number | null;
+  group!: string | null;
+  played!: number;
+  wins!: number;
+  draws!: number;
+  losses!: number;
+  gf!: number;
+  ga!: number;
+  gd!: number;
+}
+
+export class ParticipantClub extends ParticipantTeam {
+  club!: ClubSummary;
+}
+
+export class ParticipantNationalTeam extends ParticipantTeam {
+  nationalTeam!: NationalTeamSummary;
+}
+
+export class CompetitionResponseDto {
   id!: number;
   name!: string;
   logo!: string | null;
-}
-
-export class CompetitionResponseDto extends CompetitionResponse {
   type!: CompetitionType;
   format!: CompetitionFormat;
 }
 
+export type CompetitionSummary = Omit<
+  CompetitionResponseDto,
+  'type' | 'format'
+>;
+
 export class CompetitionEditionResponseDto {
   id!: number;
   season!: string;
-  competition!: CompetitionResponse;
-  finalStadium!: {
-    id: number | null | undefined;
-    name: string | null | undefined;
-    image: string | null | undefined;
-    country: string | null | undefined;
-  };
-  winnerClub!: Optional<ClubSummary>;
-  runnerUpClub!: Optional<ClubSummary>;
-  winnerNationalTeam!: Optional<{
-    id: number;
-    name: string;
-    logo: string | null;
-    confederation: Confederation;
-  }>;
-  runnerUpNationalTeam!: Optional<{
-    id: number;
-    name: string;
-    logo: string | null;
-    confederation: Confederation;
-  }>;
+  competition!: CompetitionSummary;
+  finalStadium!: Optional<StadiumSummary>;
+  winnerClub?: Optional<ClubSummary>;
+  runnerUpClub?: Optional<ClubSummary>;
+  winnerNationalTeam?: Optional<NationalTeamSummary>;
+  runnerUpNationalTeam?: Optional<NationalTeamSummary>;
   participantClubs?: ParticipantClub[];
   participantNationalTeams?: ParticipantNationalTeam[];
 }
