@@ -1,8 +1,8 @@
 import { SeasonWithRelations } from '../../seasons.repository.ts';
 import {
+  ClubSeasonStatsResponse,
   CompetitionEditionsResponse,
   SeasonResponseDto,
-  TeamSeasonStatsResponse,
   TransfersResponse,
   TSS,
 } from '../response/season-response.dto.ts';
@@ -20,23 +20,23 @@ export class SeasonMapper {
         nationality: transfer.player.nationality,
         face: transfer.player.face,
       },
-      fromTeam: {
-        id: transfer.fromTeamId,
-        name: transfer.fromTeam?.name,
-        logo: transfer.fromTeam?.logo,
-        country: transfer.fromTeam?.country,
-        confederation: transfer.fromTeam?.confederation,
+      fromClub: {
+        id: transfer.fromClubId,
+        name: transfer.fromClub?.name,
+        logo: transfer.fromClub?.logo,
+        country: transfer.fromClub?.country,
+        confederation: transfer.fromClub?.confederation,
       },
-      toTeam: {
-        id: transfer.toTeamId,
-        name: transfer.toTeam?.name,
-        logo: transfer.toTeam?.logo,
-        country: transfer.toTeam?.country,
-        confederation: transfer.toTeam?.confederation,
+      toClub: {
+        id: transfer.toClubId,
+        name: transfer.toClub?.name,
+        logo: transfer.toClub?.logo,
+        country: transfer.toClub?.country,
+        confederation: transfer.toClub?.confederation,
       },
     }));
-    const teamSeasonStats: TeamSeasonStatsResponse[] =
-      season.teamSeasonStats.map((tss) => ({
+    const clubSeasonStats: ClubSeasonStatsResponse[] =
+      season.clubSeasonStats.map((tss) => ({
         played: tss.played,
         wins: tss.wins,
         draws: tss.draws,
@@ -44,12 +44,12 @@ export class SeasonMapper {
         gf: tss.gf,
         ga: tss.ga,
         gd: tss.gd,
-        team: {
-          id: tss.teamId,
-          name: tss.team.name,
-          logo: tss.team.logo,
-          country: tss.team.country,
-          confederation: tss.team.confederation,
+        club: {
+          id: tss.clubId,
+          name: tss.club.name,
+          logo: tss.club.logo,
+          country: tss.club.country,
+          confederation: tss.club.confederation,
         },
       }));
     const competitionEditions: CompetitionEditionsResponse[] =
@@ -60,12 +60,12 @@ export class SeasonMapper {
           name: cE.competition.name,
           logo: cE.competition.logo,
         },
-        winnerTeam: {
-          id: cE.winnerTeamId,
-          name: cE.winnerTeam?.name,
-          logo: cE.winnerTeam?.logo,
-          country: cE.winnerTeam?.country,
-          confederation: cE.winnerTeam?.confederation,
+        winnerClub: {
+          id: cE.winnerClubId,
+          name: cE.winnerClub?.name,
+          logo: cE.winnerClub?.logo,
+          country: cE.winnerClub?.country,
+          confederation: cE.winnerClub?.confederation,
         },
       }));
 
@@ -77,26 +77,26 @@ export class SeasonMapper {
       endDate: season.endDate,
       careerId: season.careerId,
       transfers,
-      teamSeasonStats,
+      clubSeasonStats,
       competitionEditions,
     };
   }
 
-  static teamSeasonStatsToResponse(t: TSS): TeamSeasonStatsResponse {
+  static clubSeasonStatsToResponse(c: TSS): ClubSeasonStatsResponse {
     return {
-      played: t.played,
-      wins: t.wins,
-      draws: t.draws,
-      losses: t.losses,
-      gf: t.gf,
-      ga: t.ga,
-      gd: t.gd,
-      team: {
-        id: t.teamId,
-        name: t.team.name,
-        logo: t.team.logo,
-        country: t.team.country,
-        confederation: t.team.confederation,
+      played: c.played,
+      wins: c.wins,
+      draws: c.draws,
+      losses: c.losses,
+      gf: c.gf,
+      ga: c.ga,
+      gd: c.gd,
+      club: {
+        id: c.clubId,
+        name: c.club.name,
+        logo: c.club.logo,
+        country: c.club.country,
+        confederation: c.club.confederation,
       },
     };
   }

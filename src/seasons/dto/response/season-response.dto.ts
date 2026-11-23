@@ -1,6 +1,6 @@
 import { Confederation, TransferType } from '@prisma/client';
+import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
 import { CompetitionResponse } from '../../../competitions/dto/response/competition-response.dto.ts';
-import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 /**
  * Make all properties in T optional, but now seriously. Similar to Partial<>
  */
@@ -21,12 +21,12 @@ export type TransfersResponse = {
   date: Date;
   type: TransferType;
   player: PlayerTransferResponseDto;
-  fromTeam: Optional<TeamResponse>;
-  toTeam: Optional<TeamResponse>;
+  fromClub: Optional<ClubSummary>;
+  toClub: Optional<ClubSummary>;
 };
 
 export type TSS = {
-  team: {
+  club: {
     id: number;
     name: string;
     shortName: string;
@@ -41,7 +41,7 @@ export type TSS = {
   };
 } & {
   seasonId: number;
-  teamId: number;
+  clubId: number;
   played: number;
   wins: number;
   draws: number;
@@ -51,7 +51,7 @@ export type TSS = {
   gd: number;
 };
 
-export class TeamSeasonStatsResponse {
+export class ClubSeasonStatsResponse {
   played!: number;
   wins!: number;
   draws!: number;
@@ -59,13 +59,13 @@ export class TeamSeasonStatsResponse {
   gf!: number;
   ga!: number;
   gd!: number;
-  team!: TeamResponse;
+  club!: ClubSummary;
 }
 
 export type CompetitionEditionsResponse = {
   id: number;
   competition: CompetitionResponse;
-  winnerTeam: Optional<TeamResponse>;
+  winnerClub: Optional<ClubSummary>;
 };
 
 export class SeasonResponseDto {
@@ -76,6 +76,6 @@ export class SeasonResponseDto {
   endDate!: Date;
   careerId!: number;
   transfers!: TransfersResponse[];
-  teamSeasonStats!: TeamSeasonStatsResponse[];
+  clubSeasonStats!: ClubSeasonStatsResponse[];
   competitionEditions!: CompetitionEditionsResponse[];
 }

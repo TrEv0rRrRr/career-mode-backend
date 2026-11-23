@@ -50,12 +50,12 @@ export class SeasonsService {
     return this.repo.delete(id);
   }
 
-  async findAllTeamStats(seasonId: number) {
+  async findAllClubStats(seasonId: number) {
     await this.findSeasonById(seasonId);
 
-    const tss = await this.repo.findAllTeamStats(seasonId);
+    const css = await this.repo.findAllClubStats(seasonId);
 
-    return tss.map((t) => SeasonMapper.teamSeasonStatsToResponse(t));
+    return css.map((c) => SeasonMapper.clubSeasonStatsToResponse(c));
   }
 
   async findCurrentSeason() {

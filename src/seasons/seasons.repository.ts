@@ -7,19 +7,19 @@ const seasonInclude = {
   transfers: {
     include: {
       player: true,
-      fromTeam: true,
-      toTeam: true,
+      fromClub: true,
+      toClub: true,
     },
   },
-  teamSeasonStats: {
+  clubSeasonStats: {
     include: {
-      team: true,
+      club: true,
     },
   },
   competitionEditions: {
     include: {
       competition: true,
-      winnerTeam: true,
+      winnerClub: true,
     },
   },
 } as const;
@@ -86,10 +86,10 @@ export class SeasonsRepository {
     return this.prisma.season.delete({ where: { id } });
   }
 
-  findAllTeamStats(seasonId: number) {
-    return this.prisma.teamSeasonStats.findMany({
+  findAllClubStats(seasonId: number) {
+    return this.prisma.clubSeasonStats.findMany({
       where: { seasonId },
-      include: { team: true },
+      include: { club: true },
     });
   }
 }
