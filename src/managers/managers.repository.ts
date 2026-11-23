@@ -39,27 +39,27 @@ export class ManagersRepository {
     return this.prisma.manager.delete({ where: { id } });
   }
 
-  // ! Manager Team Queries
+  // ! Manager Club Queries
 
-  findManagerCurrentTeam(managerId: number) {
-    return this.prisma.managerTeam.findFirst({
+  findManagerCurrentClub(managerId: number) {
+    return this.prisma.managerClub.findFirst({
       where: {
         managerId,
         endDate: null,
       },
       include: {
-        team: true,
+        club: true,
       },
     });
   }
 
-  findManagerTeamHistory(managerId: number) {
-    return this.prisma.managerTeam.findMany({
+  findManagerClubHistory(managerId: number) {
+    return this.prisma.managerClub.findMany({
       where: {
         managerId,
       },
       include: {
-        team: true,
+        club: true,
       },
       orderBy: {
         startDate: 'desc',
@@ -67,7 +67,7 @@ export class ManagersRepository {
     });
   }
 
-  // ! Manager National Team Queries
+  // ! Manager National Club Queries
 
   findManagerCurrentNationalTeam(managerId: number) {
     return this.prisma.managerNationalTeam.findFirst({

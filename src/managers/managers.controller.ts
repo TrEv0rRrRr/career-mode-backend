@@ -106,47 +106,47 @@ export class ManagersController {
     return this.managersService.deleteManager(id);
   }
 
-  // ! Manager Team Endpoints
-  @Get(':managerId/teams/current')
-  @ApiOperation({ summary: "Get a manager's current team" })
+  // ! Manager Club Endpoints
+  @Get(':managerId/clubs/current')
+  @ApiOperation({ summary: "Get a manager's current club" })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Manager not found',
   })
-  getManagerCurrentTeam(@Param('managerId', ParseIntPipe) managerId: number) {
-    return this.managersService.findManagerCurrentTeam(managerId);
+  getManagerCurrentClub(@Param('managerId', ParseIntPipe) managerId: number) {
+    return this.managersService.findManagerCurrentClub(managerId);
   }
 
-  @Get(':managerId/teams/history')
-  @ApiOperation({ summary: "Get a manager's team history" })
+  @Get(':managerId/clubs/history')
+  @ApiOperation({ summary: "Get a manager's club history" })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Manager not found',
   })
-  getManagerTeamHistory(@Param('managerId', ParseIntPipe) managerId: number) {
-    return this.managersService.findManagerTeamHistory(managerId);
+  getManagerClubHistory(@Param('managerId', ParseIntPipe) managerId: number) {
+    return this.managersService.findManagerClubHistory(managerId);
   }
 
-  // ! Manager National Team Endpoints
-  @Get(':managerId/national-teams/current')
-  @ApiOperation({ summary: "Get a manager's current national team" })
+  // ! Manager National Club Endpoints
+  @Get(':managerId/national-clubs/current')
+  @ApiOperation({ summary: "Get a manager's current national club" })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Manager not found',
   })
-  getManagerCurrentNationalTeam(
+  getManagerCurrentNationalClub(
     @Param('managerId', ParseIntPipe) managerId: number,
   ) {
     return this.managersService.findManagerCurrentNationalTeam(managerId);
   }
 
-  @Get(':managerId/national-teams/history')
-  @ApiOperation({ summary: "Get a manager's national team history" })
+  @Get(':managerId/national-clubs/history')
+  @ApiOperation({ summary: "Get a manager's national club history" })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Manager not found',
   })
-  getManagerNationalTeamHistory(
+  getManagerNationalClubHistory(
     @Param('managerId', ParseIntPipe) managerId: number,
   ) {
     return this.managersService.findManagerNationalTeamHistory(managerId);

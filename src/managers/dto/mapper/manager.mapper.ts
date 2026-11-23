@@ -1,21 +1,21 @@
 import {
+  ManagerClubResponseDto,
+  ManagerClubType,
   ManagerNationalTeamResponseDto,
   ManagerNationalTeamType,
-  ManagerTeamResponseDto,
-  ManagerTeamType,
 } from '../response/manager-response.dto.ts';
 
 export class ManagerMapper {
-  static mapTeams(mt: ManagerTeamType): ManagerTeamResponseDto {
+  static mapClubs(mc: ManagerClubType): ManagerClubResponseDto {
     return {
-      id: mt.id,
-      startDate: mt.startDate,
-      endDate: mt.endDate,
-      team: {
-        id: mt.teamId,
-        name: mt.team.name,
-        logo: mt.team.logo,
-        country: mt.team.country,
+      id: mc.id,
+      startDate: mc.startDate,
+      endDate: mc.endDate,
+      club: {
+        id: mc.clubId,
+        name: mc.club.name,
+        logo: mc.club.logo,
+        country: mc.club.country,
       },
     };
   }

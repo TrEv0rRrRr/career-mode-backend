@@ -63,27 +63,27 @@ export class ManagersService {
     return this.repo.delete(id);
   }
 
-  // ! Manager Team Service Methods
-  async findManagerCurrentTeam(managerId: number) {
+  // ! Manager Club Service Methods
+  async findManagerCurrentClub(managerId: number) {
     await this.findManagerById(managerId);
 
-    const currentTeam = await this.repo.findManagerCurrentTeam(managerId);
+    const currentClub = await this.repo.findManagerCurrentClub(managerId);
 
-    if (!currentTeam)
+    if (!currentClub)
       throw new NotFoundException(
         'This manager is not managing any team currently',
       );
 
-    return ManagerMapper.mapTeams(currentTeam);
+    return ManagerMapper.mapClubs(currentClub);
   }
 
-  async findManagerTeamHistory(managerId: number) {
+  async findManagerClubHistory(managerId: number) {
     await this.findManagerById(managerId);
-    const history = await this.repo.findManagerTeamHistory(managerId);
-    return history.map((h) => ManagerMapper.mapTeams(h));
+    const history = await this.repo.findManagerClubHistory(managerId);
+    return history.map((h) => ManagerMapper.mapClubs(h));
   }
 
-  // ! Manager National Team Service Methods
+  // ! Manager National Club Service Methods
   async findManagerCurrentNationalTeam(managerId: number) {
     await this.findManagerById(managerId);
 
