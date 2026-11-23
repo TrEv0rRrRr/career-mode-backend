@@ -13,12 +13,12 @@ export class CreateMatchPlayerStatsDto {
 
   @ApiProperty({
     example: 1,
-    description: 'The id of the team',
+    description: 'The id of the club',
   })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  teamId!: number;
+  clubId!: number;
 
   @ApiProperty({
     example: 1,

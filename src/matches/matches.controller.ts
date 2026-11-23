@@ -102,7 +102,7 @@ export class MatchesController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -114,15 +114,15 @@ export class MatchesController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: "The home team doesn't participate in the given competition",
+    description: "The home club doesn't participate in the given competition",
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: "The away team doesn't participate in the given competition",
+    description: "The away club doesn't participate in the given competition",
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'The teams must be different',
+    description: 'The clubs must be different',
   })
   @ApiQuery({
     name: 'type',
@@ -163,7 +163,7 @@ export class MatchesController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      'If the match reached the penalties, you should enter the penalty score for both home and away team',
+      'If the match reached the penalties, you should enter the penalty score for both home and away club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,

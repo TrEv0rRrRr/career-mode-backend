@@ -51,19 +51,19 @@ export class CreateMatchDto {
 
   @ApiProperty({
     example: 1,
-    description: 'The id of the home team',
+    description: 'The id of the home club',
   })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  homeTeamId!: number;
+  homeClubId!: number;
 
   @ApiProperty({
     example: 2,
-    description: 'The id of the away team',
+    description: 'The id of the away club',
   })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  awayTeamId!: number;
+  awayClubId!: number;
 }

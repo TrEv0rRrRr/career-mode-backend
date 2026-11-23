@@ -13,7 +13,7 @@ import { DefaultArgs } from '@prisma/client/runtime/client';
 import { recalculateStandings } from '../common/helpers/gp-leagues/recalculateStandings.ts';
 import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
 import { resolveKnockoutWinners } from '../common/helpers/knockouts/resolveKnockoutWinners.ts';
-import { StandingTeam } from '../common/types/StandingTeam.ts';
+import { StandingClub } from '../common/types/StandingClub.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
@@ -21,7 +21,7 @@ import { PlayMatchDto } from './dto/play-match.dto.ts';
 
 type fairPlayStatsType = (Prisma.PickEnumerable<
   Prisma.MatchPlayerStatsGroupByOutputType,
-  'teamId'[]
+  'clubId'[]
 > & {
   _sum: {
     redCards: number | null;
@@ -35,11 +35,11 @@ type txType = Omit<
 >;
 
 export const matchInclude = {
-  homeTeam: true,
-  awayTeam: true,
+  homeClub: true,
+  awayClub: true,
   homeNationalTeam: true,
   awayNationalTeam: true,
-  matchTeamStats: true,
+  matchClubStats: true,
   matchPlayerStats: true,
   stadium: true,
 } satisfies Prisma.MatchInclude;
@@ -167,11 +167,11 @@ export class MatchesRepository {
     matches: CreateMatchDto[],
   ) {
     return this.prisma.$transaction(async (tx) => {
-      for (const [group, teamIds] of Object.entries(groups)) {
+      for (const [group, clubIds] of Object.entries(groups)) {
         const updatedParticipants = await tx.competitionParticipant.updateMany({
           where: {
             competitionEditionId,
-            teamId: { in: teamIds },
+            clubId: { in: clubIds },
           },
           data: {
             group,
@@ -187,9 +187,9 @@ export class MatchesRepository {
           },
         });
 
-        if (updatedParticipants.count !== teamIds.length) {
+        if (updatedParticipants.count !== clubIds.length) {
           throw new BadRequestException(
-            'A group contains teams that do not participate in this competition edition.',
+            'A group contains clubs that do not participate in this competition edition.',
           );
         }
       }
@@ -218,10 +218,10 @@ export class MatchesRepository {
     competitionEditionId: number,
     tx: txType,
   ) {
-    const participants: StandingTeam[] = competitionParticipants.map(
+    const participants: StandingClub[] = competitionParticipants.map(
       (participant) => {
         const fairPlay = fairPlayStats.find(
-          (stat) => stat.teamId === participant.teamId,
+          (stat) => stat.clubId === participant.clubId,
         );
 
         if (participant.points === null) {
@@ -231,7 +231,7 @@ export class MatchesRepository {
         }
 
         return {
-          teamId: participant.teamId,
+          clubId: participant.clubId,
           points: participant.points,
           group: participant.group,
           gf: participant.gf,
@@ -245,11 +245,11 @@ export class MatchesRepository {
 
     const standings = recalculateStandings(participants, matches);
 
-    for (const [index, team] of standings.entries()) {
+    for (const [index, club] of standings.entries()) {
       await tx.competitionParticipant.update({
         where: {
-          teamId_competitionEditionId: {
-            teamId: team.teamId,
+          clubId_competitionEditionId: {
+            clubId: club.clubId,
             competitionEditionId,
           },
         },
@@ -273,23 +273,23 @@ export class MatchesRepository {
         (participant) => participant.group === group,
       );
 
-      const groupTeamIds = new Set(
-        groupParticipants.map(({ teamId }) => teamId),
+      const groupClubIds = new Set(
+        groupParticipants.map(({ clubId }) => clubId),
       );
 
       const groupMatches = matches.filter(
         (match) =>
-          match.homeTeamId !== null &&
-          match.awayTeamId !== null &&
-          groupTeamIds.has(match.homeTeamId) &&
-          groupTeamIds.has(match.awayTeamId) &&
+          match.homeClubId !== null &&
+          match.awayClubId !== null &&
+          groupClubIds.has(match.homeClubId) &&
+          groupClubIds.has(match.awayClubId) &&
           match.type === MatchType.GROUP_STAGE,
       );
 
-      const participants: StandingTeam[] = groupParticipants.map(
+      const participants: StandingClub[] = groupParticipants.map(
         (participant) => {
           const fairPlay = fairPlayStats.find(
-            (stats) => stats.teamId === participant.teamId,
+            (stats) => stats.clubId === participant.clubId,
           );
 
           if (participant.points === null) {
@@ -297,7 +297,7 @@ export class MatchesRepository {
           }
 
           return {
-            teamId: participant.teamId,
+            clubId: participant.clubId,
             points: participant.points,
             gf: participant.gf,
             ga: participant.ga,
@@ -310,11 +310,11 @@ export class MatchesRepository {
 
       const standings = recalculateStandings(participants, groupMatches);
 
-      for (const [index, team] of standings.entries()) {
+      for (const [index, club] of standings.entries()) {
         await tx.competitionParticipant.update({
           where: {
-            teamId_competitionEditionId: {
-              teamId: team.teamId,
+            clubId_competitionEditionId: {
+              clubId: club.clubId,
               competitionEditionId,
             },
           },
@@ -329,9 +329,9 @@ export class MatchesRepository {
   playMatch(
     matchId: number,
     competitionFormat: CompetitionFormat,
-    playerTeamsIds: Map<number, number>,
+    playerClubsIds: Map<number, number>,
     seasonId: number,
-    winnerTeamId: number | null,
+    winnerClubId: number | null,
     data: PlayMatchDto,
     finishType: MatchFinishType,
   ) {
@@ -342,16 +342,16 @@ export class MatchesRepository {
           ...data.match,
           finishType,
           status: MatchStatus.PLAYED,
-          winnerTeamId,
+          winnerClubId,
         },
       });
 
-      const homeTeamId = updatedMatch.homeTeamId;
-      const awayTeamId = updatedMatch.awayTeamId;
+      const homeClubId = updatedMatch.homeClubId;
+      const awayClubId = updatedMatch.awayClubId;
 
-      if (homeTeamId === null || awayTeamId === null) {
+      if (homeClubId === null || awayClubId === null) {
         throw new BadRequestException(
-          'Player and team stats can only be recorded for club matches.',
+          'Player and club stats can only be recorded for club matches.',
         );
       }
 
@@ -359,12 +359,12 @@ export class MatchesRepository {
         data: data.playerStats.map((stats) => ({
           ...stats,
           matchId,
-          teamId: playerTeamsIds.get(stats.playerId)!,
+          clubId: playerClubsIds.get(stats.playerId)!,
         })),
       });
 
-      await tx.matchTeamStats.createMany({
-        data: data.teamStats.map((stats) => ({
+      await tx.matchClubStats.createMany({
+        data: data.clubStats.map((stats) => ({
           ...stats,
           matchId,
         })),
@@ -372,13 +372,13 @@ export class MatchesRepository {
 
       for (const stats of data.playerStats) {
         const playerId = stats.playerId;
-        const teamId = playerTeamsIds.get(playerId)!;
+        const clubId = playerClubsIds.get(playerId)!;
 
         const currentStats = await tx.playerSeasonStats.findUnique({
           where: {
-            playerId_teamId_seasonId: {
+            playerId_clubId_seasonId: {
               playerId,
-              teamId,
+              clubId,
               seasonId,
             },
           },
@@ -392,15 +392,15 @@ export class MatchesRepository {
 
         await tx.playerSeasonStats.upsert({
           where: {
-            playerId_teamId_seasonId: {
+            playerId_clubId_seasonId: {
               playerId,
-              teamId,
+              clubId,
               seasonId,
             },
           },
           create: {
             playerId,
-            teamId,
+            clubId,
             seasonId,
             matches: 1,
             assists: stats.assists,
@@ -426,7 +426,7 @@ export class MatchesRepository {
 
       const isAwayWinner = data.match.awayGoals > data.match.homeGoals;
 
-      const updateHomeTeamSeasonStats = {
+      const updateHomeClubSeasonStats = {
         played: { increment: 1 },
         wins: { increment: isHomeWinner ? 1 : 0 },
         draws: { increment: isDraw ? 1 : 0 },
@@ -436,7 +436,7 @@ export class MatchesRepository {
         gd: { increment: data.match.homeGoals - data.match.awayGoals },
       };
 
-      const updateAwayTeamSeasonStats = {
+      const updateAwayClubSeasonStats = {
         played: { increment: 1 },
         wins: { increment: isAwayWinner ? 1 : 0 },
         draws: { increment: isDraw ? 1 : 0 },
@@ -446,15 +446,15 @@ export class MatchesRepository {
         gd: { increment: data.match.awayGoals - data.match.homeGoals },
       };
 
-      await tx.teamSeasonStats.upsert({
+      await tx.clubSeasonStats.upsert({
         where: {
-          teamId_seasonId: {
-            teamId: homeTeamId,
+          clubId_seasonId: {
+            clubId: homeClubId,
             seasonId,
           },
         },
         create: {
-          teamId: homeTeamId,
+          clubId: homeClubId,
           seasonId,
           played: 1,
           wins: isHomeWinner ? 1 : 0,
@@ -464,18 +464,18 @@ export class MatchesRepository {
           ga: data.match.awayGoals,
           gd: data.match.homeGoals - data.match.awayGoals,
         },
-        update: updateHomeTeamSeasonStats,
+        update: updateHomeClubSeasonStats,
       });
 
-      await tx.teamSeasonStats.upsert({
+      await tx.clubSeasonStats.upsert({
         where: {
-          teamId_seasonId: {
-            teamId: awayTeamId,
+          clubId_seasonId: {
+            clubId: awayClubId,
             seasonId,
           },
         },
         create: {
-          teamId: awayTeamId,
+          clubId: awayClubId,
           seasonId,
           played: 1,
           wins: isAwayWinner ? 1 : 0,
@@ -485,7 +485,7 @@ export class MatchesRepository {
           ga: data.match.homeGoals,
           gd: data.match.awayGoals - data.match.homeGoals,
         },
-        update: updateAwayTeamSeasonStats,
+        update: updateAwayClubSeasonStats,
       });
 
       const competitionEditionId = updatedMatch.competitionEditionId;
@@ -528,8 +528,8 @@ export class MatchesRepository {
 
       await tx.competitionParticipant.update({
         where: {
-          teamId_competitionEditionId: {
-            teamId: homeTeamId,
+          clubId_competitionEditionId: {
+            clubId: homeClubId,
             competitionEditionId,
           },
         },
@@ -538,8 +538,8 @@ export class MatchesRepository {
 
       await tx.competitionParticipant.update({
         where: {
-          teamId_competitionEditionId: {
-            teamId: awayTeamId,
+          clubId_competitionEditionId: {
+            clubId: awayClubId,
             competitionEditionId,
           },
         },
@@ -563,7 +563,7 @@ export class MatchesRepository {
       });
 
       const fairPlayStats = await tx.matchPlayerStats.groupBy({
-        by: ['teamId'],
+        by: ['clubId'],
         where: {
           matchId: {
             in: matchIds,
@@ -604,19 +604,19 @@ export class MatchesRepository {
           leagueMatches.length > 0 &&
           leagueMatches.every(({ status }) => status === MatchStatus.PLAYED)
         ) {
-          const topTeams = await tx.competitionParticipant.findMany({
+          const topClubs = await tx.competitionParticipant.findMany({
             where: { competitionEditionId },
-            orderBy: [{ position: 'asc' }, { teamId: 'asc' }],
+            orderBy: [{ position: 'asc' }, { clubId: 'asc' }],
             take: 2,
-            select: { teamId: true },
+            select: { clubId: true },
           });
 
-          if (topTeams.length === 2) {
+          if (topClubs.length === 2) {
             await tx.competitionEdition.update({
               where: { id: competitionEditionId },
               data: {
-                winnerTeamId: topTeams[0].teamId,
-                runnerUpTeamId: topTeams[1].teamId,
+                winnerClubId: topClubs[0].clubId,
+                runnerUpClubId: topClubs[1].clubId,
               },
             });
           }
@@ -695,7 +695,7 @@ export class MatchesRepository {
           select: {
             name: true,
             groups: true,
-            teamsPerGroup: true,
+            clubsPerGroup: true,
           },
         },
       },
@@ -718,14 +718,14 @@ export class MatchesRepository {
 
     const isThreeGroupsOfFour =
       edition.competition.groups === 3 &&
-      edition.competition.teamsPerGroup === 4 &&
+      edition.competition.clubsPerGroup === 4 &&
       groupedParticipants.size === 3 &&
       [...groupedParticipants.values()].every((group) => group.length === 4);
     const thirdPlaceParticipants = participants.filter(
       ({ position }) => position === 3,
     );
-    const fairPlayScore = (teamId: number) => {
-      const stats = fairPlayStats.find((entry) => entry.teamId === teamId);
+    const fairPlayScore = (clubId: number) => {
+      const stats = fairPlayStats.find((entry) => entry.clubId === clubId);
       return (stats?._sum.yellowCards ?? 0) + (stats?._sum.redCards ?? 0) * 3;
     };
     const bestThirdPlaceIds = isThreeGroupsOfFour
@@ -735,14 +735,14 @@ export class MatchesRepository {
               (b.points ?? 0) - (a.points ?? 0) ||
               b.gd - a.gd ||
               b.gf - a.gf ||
-              fairPlayScore(a.teamId) - fairPlayScore(b.teamId),
+              fairPlayScore(a.clubId) - fairPlayScore(b.clubId),
           )
           .slice(0, 2)
-          .map(({ teamId }) => teamId)
+          .map(({ clubId }) => clubId)
       : [];
     const europaLeagueThirdPlaceIds =
       edition.competition.name === 'UEFA Champions League'
-        ? thirdPlaceParticipants.map(({ teamId }) => teamId)
+        ? thirdPlaceParticipants.map(({ clubId }) => clubId)
         : [];
 
     if (europaLeagueThirdPlaceIds.length > 0) {
@@ -763,31 +763,31 @@ export class MatchesRepository {
       }
 
       await tx.competitionParticipant.createMany({
-        data: europaLeagueThirdPlaceIds.map((teamId) => ({
+        data: europaLeagueThirdPlaceIds.map((clubId) => ({
           competitionEditionId: europaLeagueEdition.id,
-          teamId,
+          clubId,
           points: 0,
         })),
         skipDuplicates: true,
       });
     }
 
-    const qualifiedTeamIds = new Set([
+    const qualifiedClubIds = new Set([
       ...participants
         .filter(({ position }) => position === 1 || position === 2)
-        .map(({ teamId }) => teamId),
+        .map(({ clubId }) => clubId),
       ...bestThirdPlaceIds,
       ...europaLeagueThirdPlaceIds,
     ]);
-    const eliminatedTeamIds = participants
-      .filter(({ teamId }) => !qualifiedTeamIds.has(teamId))
-      .map(({ teamId }) => teamId);
+    const eliminatedClubIds = participants
+      .filter(({ clubId }) => !qualifiedClubIds.has(clubId))
+      .map(({ clubId }) => clubId);
 
-    if (eliminatedTeamIds.length > 0) {
+    if (eliminatedClubIds.length > 0) {
       await tx.competitionParticipant.deleteMany({
         where: {
           competitionEditionId,
-          teamId: { in: eliminatedTeamIds },
+          clubId: { in: eliminatedClubIds },
         },
       });
     }
@@ -812,13 +812,13 @@ export class MatchesRepository {
     });
   }
 
-  // ! Match Team Stats Queries
+  // ! Match Club Stats Queries
 
-  findMatchTeamStats(matchId: number, teamId: number) {
-    return this.prisma.matchTeamStats.findUnique({
+  findMatchClubStats(matchId: number, clubId: number) {
+    return this.prisma.matchClubStats.findUnique({
       where: {
-        teamId_matchId: {
-          teamId,
+        clubId_matchId: {
+          clubId,
           matchId,
         },
       },

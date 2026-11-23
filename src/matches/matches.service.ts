@@ -13,6 +13,8 @@ import {
   MatchStatus,
   MatchType,
 } from '@prisma/client';
+import { ClubsService } from '../clubs/clubs.service.ts';
+import { ClubSummary } from '../clubs/dto/response/club-response.dto.ts';
 import { getNextKnockoutRounds } from '../common/helpers/knockouts/getNextKnockoutRounds.ts';
 import { inferFirstKnockoutRound } from '../common/helpers/knockouts/inferFirstKnockoutRound.ts';
 import { isKnockoutMatch } from '../common/helpers/knockouts/isKnockoutMatch.ts';
@@ -24,22 +26,20 @@ import { CompetitionEditionQueryService } from '../competitions/services/competi
 import { KnockoutRoundService } from '../knockout-round/knockout-round.service.ts';
 import { PlayersService } from '../players/players.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
-import { TeamsService } from '../teams/teams.service.ts';
-import type { TeamResponse } from '../teams/dto/response/team-response.dto.ts';
 import { ChangeMatchStadiumDTO } from './dto/change-match-stadium.dto.ts';
 import { CreateMatchDto } from './dto/create-match.dto.ts';
 import { MatchMapper } from './dto/mapper/match.mapper.ts';
 import { PlayMatchDto } from './dto/play-match.dto.ts';
 import { MatchResponseDto } from './dto/response/match-response.dto.ts';
+import { CreateMatchClubStatsDto } from './dto/stats/create-match-club-stats.dto.ts';
 import { CreateMatchPlayerStatsDto } from './dto/stats/create-match-player-stats.dto.ts';
-import { CreateMatchTeamStatsDto } from './dto/stats/create-match-team-stats.dto.ts';
 import { UpdateMatchDto } from './dto/update-match.dto.ts';
 import { MatchNotFoundException } from './exceptions/match-not-found.exception.ts';
 import { MatchesRepository } from './matches.repository.ts';
 
 type ClubMatchResponse = MatchResponseDto & {
-  homeTeam: TeamResponse;
-  awayTeam: TeamResponse;
+  homeClub: ClubSummary;
+  awayClub: ClubSummary;
 };
 
 @Injectable()
@@ -47,7 +47,7 @@ export class MatchesService {
   constructor(
     private repo: MatchesRepository,
     private playersService: PlayersService,
-    private teamsService: TeamsService,
+    private clubsService: ClubsService,
     private stadiumsService: StadiumsService,
     private competitionEditionQueryService: CompetitionEditionQueryService,
     @Inject(forwardRef(() => KnockoutRoundService))
@@ -122,25 +122,25 @@ export class MatchesService {
   }
 
   async createMatch(competitionEditionId: number, data: CreateMatchDto) {
-    await this.teamsService.findTeamById(
-      data.homeTeamId,
-      "The home team doesn't exist",
+    await this.clubsService.findClubById(
+      data.homeClubId,
+      "The home club doesn't exist",
     );
-    await this.teamsService.findTeamById(
-      data.awayTeamId,
-      "The away team doesn't exist",
-    );
-
-    await this.competitionEditionQueryService.findCompetitionParticipant(
-      competitionEditionId,
-      data.homeTeamId,
-      "The home team doesn't participate in the given competition",
+    await this.clubsService.findClubById(
+      data.awayClubId,
+      "The away club doesn't exist",
     );
 
     await this.competitionEditionQueryService.findCompetitionParticipant(
       competitionEditionId,
-      data.awayTeamId,
-      "The away team doesn't participate in the given competition",
+      data.homeClubId,
+      "The home club doesn't participate in the given competition",
+    );
+
+    await this.competitionEditionQueryService.findCompetitionParticipant(
+      competitionEditionId,
+      data.awayClubId,
+      "The away club doesn't participate in the given competition",
     );
 
     await this.stadiumsService.findStadiumById(data.stadiumId);
@@ -155,8 +155,8 @@ export class MatchesService {
         'Since the competition has a two legged knockout, you have to enter the match leg',
       );
 
-    if (data.homeTeamId === data.awayTeamId)
-      throw new BadRequestException('The teams must be different');
+    if (data.homeClubId === data.awayClubId)
+      throw new BadRequestException('The clubs must be different');
 
     const type = inferFirstKnockoutRound(edition.competition);
 
@@ -164,8 +164,8 @@ export class MatchesService {
   }
 
   async validateMatchPlayerStats(
-    homeTeamId: number,
-    awayTeamId: number,
+    homeClubId: number,
+    awayClubId: number,
     matchResult: UpdateMatchDto,
     playerStats: CreateMatchPlayerStatsDto[],
   ) {
@@ -177,33 +177,33 @@ export class MatchesService {
       );
     }
 
-    const playersTeams = await this.playersService.findCurrentTeams(playerIds);
+    const playersClubs = await this.playersService.findCurrentClubs(playerIds);
 
     let homePlayerGoals = 0;
     let awayPlayerGoals = 0;
 
     for (const stats of playerStats) {
-      const teamId = playersTeams.get(stats.playerId);
+      const clubId = playersClubs.get(stats.playerId);
 
-      if (teamId === homeTeamId) {
+      if (clubId === homeClubId) {
         homePlayerGoals += stats.goals;
-      } else if (teamId === awayTeamId) {
+      } else if (clubId === awayClubId) {
         awayPlayerGoals += stats.goals;
       } else {
         throw new BadRequestException(
-          "There's a player whose team didn't play this match.",
+          "There's a player whose club didn't play this match.",
         );
       }
     }
 
     if (homePlayerGoals > matchResult.homeGoals)
       throw new BadRequestException(
-        "Home players can't score more goals than the home team.",
+        "Home players can't score more goals than the home club.",
       );
 
     if (awayPlayerGoals > matchResult.awayGoals)
       throw new BadRequestException(
-        "Away players can't score more goals than the away team.",
+        "Away players can't score more goals than the away club.",
       );
   }
 
@@ -214,15 +214,15 @@ export class MatchesService {
     tieId?: number,
   ) {
     const foundMatch = await this.findMatch(matchId);
-    const { homeTeam, awayTeam } = foundMatch;
+    const { homeClub, awayClub } = foundMatch;
 
-    if (!homeTeam || !awayTeam) {
+    if (!homeClub || !awayClub) {
       throw new BadRequestException(
-        'Player and team stats can only be recorded for club matches.',
+        'Player and club stats can only be recorded for club matches.',
       );
     }
 
-    const match: ClubMatchResponse = { ...foundMatch, homeTeam, awayTeam };
+    const match: ClubMatchResponse = { ...foundMatch, homeClub, awayClub };
 
     const competitionEdition =
       await this.competitionEditionQueryService.findCompetitionEditionById(
@@ -230,8 +230,8 @@ export class MatchesService {
       );
     const playerIds = data.playerStats.map(({ playerId }) => playerId);
 
-    const playerTeamsIds =
-      await this.playersService.findCurrentTeams(playerIds);
+    const playerClubsIds =
+      await this.playersService.findCurrentClubs(playerIds);
 
     const hasTwoLeggedKnockout =
       competitionEdition.competition.hasTwoLeggedKnockout;
@@ -283,22 +283,22 @@ export class MatchesService {
       isTwoLeggedKnockout,
       secondLegAggregateIsTied,
     );
-    this.validateMatchTeamStats(data.teamStats, match);
+    this.validateMatchClubStats(data.clubStats, match);
     await this.validateMatchPlayerStats(
-      match.homeTeam.id,
-      match.awayTeam.id,
+      match.homeClub.id,
+      match.awayClub.id,
       data.match,
       data.playerStats,
     );
 
-    const winnerTeamId = this.getWinnerTeamId(match, data.match, finishType);
+    const winnerClubId = this.getWinnerClubId(match, data.match, finishType);
 
     const playedMatch = await this.repo.playMatch(
       matchId,
       competitionEdition.competition.format,
-      playerTeamsIds,
+      playerClubsIds,
       competitionEdition.seasonId,
-      winnerTeamId,
+      winnerClubId,
       data,
       finishType,
     );
@@ -340,11 +340,11 @@ export class MatchesService {
 
     if (
       matches.some(
-        ({ homeTeamId, awayTeamId }) =>
-          homeTeamId === null || awayTeamId === null,
+        ({ homeClubId, awayClubId }) =>
+          homeClubId === null || awayClubId === null,
       )
     ) {
-      throw new Error('Knockout matches must have two club teams.');
+      throw new Error('Knockout matches must have two club clubs.');
     }
 
     const edition =
@@ -371,25 +371,25 @@ export class MatchesService {
     if (matchType === MatchType.FINAL) {
       await this.knockoutRoundService.completeKnockoutRound(currentRound.id);
 
-      const winnerTeamId = winners[0];
+      const winnerClubId = winners[0];
 
       const finalMatch = matches[0];
 
-      if (finalMatch.homeTeamId === null || finalMatch.awayTeamId === null) {
-        throw new Error('The final must have two club teams.');
+      if (finalMatch.homeClubId === null || finalMatch.awayClubId === null) {
+        throw new Error('The final must have two club clubs.');
       }
 
-      const runnerUpTeamId =
-        winnerTeamId === finalMatch.homeTeamId
-          ? finalMatch.awayTeamId
-          : finalMatch.homeTeamId;
+      const runnerUpClubId =
+        winnerClubId === finalMatch.homeClubId
+          ? finalMatch.awayClubId
+          : finalMatch.homeClubId;
 
       await this.competitionEditionQueryService.assignWinnerAndRunnerUp(
         edition.competition.id,
         edition.id,
         {
-          winnerTeamId,
-          runnerUpTeamId,
+          winnerClubId,
+          runnerUpClubId,
         },
       );
 
@@ -405,17 +405,17 @@ export class MatchesService {
     const keepSemiFinalLosers =
       matchType === MatchType.SEMI_FINAL &&
       edition.competition.hasThirdPlaceMatch;
-    const eliminatedTeamIds = keepSemiFinalLosers ? [] : losers;
+    const eliminatedClubIds = keepSemiFinalLosers ? [] : losers;
 
     const roundsToCreate = nextRounds.map((nextRound) => ({
       type: nextRound,
-      qualifiedTeamIds: nextRound === MatchType.THIRD_PLACE ? losers : winners,
+      qualifiedClubIds: nextRound === MatchType.THIRD_PLACE ? losers : winners,
     }));
 
     await this.knockoutRoundService.resolveRoundAndCreateNextRounds(
       currentRound.id,
       roundsToCreate,
-      eliminatedTeamIds,
+      eliminatedClubIds,
     );
   }
 
@@ -468,7 +468,7 @@ export class MatchesService {
           );
         if (!match.homePenaltyGoals || !match.awayPenaltyGoals)
           throw new BadRequestException(
-            'If the match reached the penalties, you should enter the penalty score for both home and away team',
+            'If the match reached the penalties, you should enter the penalty score for both home and away club',
           );
         if (match.homePenaltyGoals === match.awayPenaltyGoals)
           throw new BadRequestException("The penalties can't end in a tie");
@@ -507,35 +507,35 @@ export class MatchesService {
     finishType: MatchFinishType,
   ): boolean {
     if (
-      firstLeg.homeTeamId === null ||
-      firstLeg.awayTeamId === null ||
-      secondLeg.homeTeamId === null ||
-      secondLeg.awayTeamId === null ||
-      ![firstLeg.homeTeamId, firstLeg.awayTeamId].includes(
-        secondLeg.homeTeamId,
+      firstLeg.homeClubId === null ||
+      firstLeg.awayClubId === null ||
+      secondLeg.homeClubId === null ||
+      secondLeg.awayClubId === null ||
+      ![firstLeg.homeClubId, firstLeg.awayClubId].includes(
+        secondLeg.homeClubId,
       ) ||
-      ![firstLeg.homeTeamId, firstLeg.awayTeamId].includes(secondLeg.awayTeamId)
+      ![firstLeg.homeClubId, firstLeg.awayClubId].includes(secondLeg.awayClubId)
     ) {
       throw new BadRequestException(
-        'Both legs must feature the same two club teams.',
+        'Both legs must feature the same two club clubs.',
       );
     }
 
-    const firstTeamSecondLegGoals =
-      secondLeg.homeTeamId === firstLeg.homeTeamId
+    const firstClubSecondLegGoals =
+      secondLeg.homeClubId === firstLeg.homeClubId
         ? result.homeGoals
         : result.awayGoals;
-    const secondTeamSecondLegGoals =
-      secondLeg.homeTeamId === firstLeg.awayTeamId
+    const secondClubSecondLegGoals =
+      secondLeg.homeClubId === firstLeg.awayClubId
         ? result.homeGoals
         : result.awayGoals;
 
-    const firstTeamAggregateGoals =
-      firstLeg.homeGoals + firstTeamSecondLegGoals;
-    const secondTeamAggregateGoals =
-      firstLeg.awayGoals + secondTeamSecondLegGoals;
+    const firstClubAggregateGoals =
+      firstLeg.homeGoals + firstClubSecondLegGoals;
+    const secondClubAggregateGoals =
+      firstLeg.awayGoals + secondClubSecondLegGoals;
     const aggregateIsTied =
-      firstTeamAggregateGoals === secondTeamAggregateGoals;
+      firstClubAggregateGoals === secondClubAggregateGoals;
 
     if (aggregateIsTied && finishType !== MatchFinishType.PENALTIES)
       throw new BadRequestException(
@@ -561,50 +561,50 @@ export class MatchesService {
     return MatchMapper.toModelFromResponse(firstLeg);
   }
 
-  private validateMatchTeamStats(
-    teamStats: CreateMatchTeamStatsDto[],
+  private validateMatchClubStats(
+    clubStats: CreateMatchClubStatsDto[],
     match: ClubMatchResponse,
   ) {
-    if (teamStats.length !== 2)
+    if (clubStats.length !== 2)
       throw new BadRequestException(
-        'The list of teams must contain only 2 teams',
+        'The list of clubs must contain only 2 clubs',
       );
 
-    const teamIds = teamStats.map(({ teamId }) => teamId);
+    const clubIds = clubStats.map(({ clubId }) => clubId);
 
-    if (new Set(teamIds).size !== teamIds.length) {
+    if (new Set(clubIds).size !== clubIds.length) {
       throw new BadRequestException(
-        'A team cannot have multiple stat records for the same match.',
+        'A club cannot have multiple stat records for the same match.',
       );
     }
 
-    const homeTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.homeTeam.id,
+    const homeClubStats = clubStats.find(
+      ({ clubId }) => clubId === match.homeClub.id,
     );
 
-    const awayTeamStats = teamStats.find(
-      ({ teamId }) => teamId === match.awayTeam.id,
+    const awayClubStats = clubStats.find(
+      ({ clubId }) => clubId === match.awayClub.id,
     );
 
-    if (!homeTeamStats || !awayTeamStats)
+    if (!homeClubStats || !awayClubStats)
       throw new BadRequestException(
-        "One of the teams whose stats you are trying to create didn't play this match.",
+        "One of the clubs whose stats you are trying to create didn't play this match.",
       );
 
-    if (homeTeamStats.possession + awayTeamStats.possession !== 100)
+    if (homeClubStats.possession + awayClubStats.possession !== 100)
       throw new BadRequestException(
-        'The total team possession must be exactly 100%.',
+        'The total club possession must be exactly 100%.',
       );
 
-    for (const team of teamStats) {
-      if (team.shotsOnTarget > team.shots)
+    for (const club of clubStats) {
+      if (club.shotsOnTarget > club.shots)
         throw new BadRequestException(
           "The total number of shots on target can't be greater than the total number of shots.",
         );
     }
   }
 
-  private getWinnerTeamId(
+  private getWinnerClubId(
     match: ClubMatchResponse,
     data: UpdateMatchDto,
     finishType: MatchFinishType,
@@ -615,11 +615,11 @@ export class MatchesService {
       data.awayPenaltyGoals
     )
       return data.homePenaltyGoals > data.awayPenaltyGoals
-        ? match.homeTeam.id
-        : match.awayTeam.id;
+        ? match.homeClub.id
+        : match.awayClub.id;
 
-    if (data.homeGoals > data.awayGoals) return match.homeTeam.id;
-    else if (data.awayGoals > data.homeGoals) return match.awayTeam.id;
+    if (data.homeGoals > data.awayGoals) return match.homeClub.id;
+    else if (data.awayGoals > data.homeGoals) return match.awayClub.id;
     else return null;
   }
 }

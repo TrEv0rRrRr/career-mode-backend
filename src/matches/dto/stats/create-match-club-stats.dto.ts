@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 
-export class CreateMatchTeamStatsDto {
+export class CreateMatchClubStatsDto {
   @ApiProperty({
     example: 1,
-    description: 'The id of the team',
+    description: 'The id of the club',
   })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  teamId!: number;
+  clubId!: number;
 
   @ApiProperty({
     example: 50,
     description:
-      'The percentage of possession the team got when the match finished',
+      'The percentage of possession the club got when the match finished',
   })
   @IsNotEmpty()
   @IsInt()

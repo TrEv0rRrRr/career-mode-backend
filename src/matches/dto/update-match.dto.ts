@@ -4,7 +4,7 @@ import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 export class UpdateMatchDto {
   @ApiProperty({
     example: 2,
-    description: 'The number of goals the home team scored',
+    description: 'The number of goals the home club scored',
   })
   @IsNotEmpty()
   @IsInt()
@@ -13,7 +13,7 @@ export class UpdateMatchDto {
 
   @ApiProperty({
     example: 0,
-    description: 'The number of goals the away team scored',
+    description: 'The number of goals the away club scored',
   })
   @IsNotEmpty()
   @IsInt()
@@ -23,7 +23,7 @@ export class UpdateMatchDto {
   @ApiProperty({
     example: 4,
     description:
-      'In case of penalties, this is the number the home team scored',
+      'In case of penalties, this is the number the home club scored',
     required: false,
   })
   @IsOptional()
@@ -34,7 +34,7 @@ export class UpdateMatchDto {
   @ApiProperty({
     example: 3,
     description:
-      'In case of penalties, this is the number the away team scored',
+      'In case of penalties, this is the number the away club scored',
     required: false,
   })
   @IsOptional()
