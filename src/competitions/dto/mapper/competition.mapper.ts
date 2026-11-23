@@ -76,6 +76,12 @@ export class CompetitionMapper {
         name: cE.competition.name,
         logo: cE.competition.logo,
       },
+      finalStadium: {
+        id: cE.finalStadiumId,
+        name: cE.stadium?.name,
+        image: cE.stadium?.image,
+        country: cE.stadium?.country,
+      },
       winnerTeam: {
         id: cE.winnerTeamId,
         name: cE.winnerTeam?.name,

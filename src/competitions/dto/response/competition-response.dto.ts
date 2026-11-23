@@ -111,6 +111,12 @@ export class CompetitionEditionResponseDto {
   id!: number;
   season!: string;
   competition!: CompetitionResponse;
+  finalStadium!: {
+    id: number | null | undefined;
+    name: string | null | undefined;
+    image: string | null | undefined;
+    country: string | null | undefined;
+  };
   winnerTeam!: Optional<TeamResponse>;
   runnerUpTeam!: Optional<TeamResponse>;
   participantTeams?: ParticipantTeam[];
