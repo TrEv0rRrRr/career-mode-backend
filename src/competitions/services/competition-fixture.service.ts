@@ -207,7 +207,7 @@ export class CompetitionFixtureService {
     const participantIds = participantClubs.map(({ club }) => club.id);
     const assignedIds: number[] = [];
     const expectedClubsPerGroup =
-      competition.clubsPerGroup ?? groupEntries[0][1]?.length;
+      competition.teamsPerGroup ?? groupEntries[0][1]?.length;
 
     for (const [groupName, clubIds] of groupEntries) {
       if (

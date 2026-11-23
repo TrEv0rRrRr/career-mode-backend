@@ -178,7 +178,7 @@ export class NationalTeamsService {
     await this.managersService.findManagerById(managerId);
 
     const currentTeam =
-      await this.managersService.findManagerCurrentTeam(managerId);
+      await this.managersService.findManagerCurrentNationalTeam(managerId);
 
     if (currentTeam)
       throw new BadRequestException(
@@ -215,7 +215,7 @@ export class NationalTeamsService {
     const currentManager = await this.findCurrentManager(nationalTeamId);
 
     const currentTeam =
-      await this.managersService.findManagerCurrentTeam(managerId);
+      await this.managersService.findManagerCurrentNationalTeam(managerId);
 
     // Manager sacking validations
 

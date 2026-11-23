@@ -695,7 +695,7 @@ export class MatchesRepository {
           select: {
             name: true,
             groups: true,
-            clubsPerGroup: true,
+            teamsPerGroup: true,
           },
         },
       },
@@ -718,7 +718,7 @@ export class MatchesRepository {
 
     const isThreeGroupsOfFour =
       edition.competition.groups === 3 &&
-      edition.competition.clubsPerGroup === 4 &&
+      edition.competition.teamsPerGroup === 4 &&
       groupedParticipants.size === 3 &&
       [...groupedParticipants.values()].every((group) => group.length === 4);
     const thirdPlaceParticipants = participants.filter(

@@ -127,6 +127,6 @@ export class SeasonsController {
     description: 'Season not found',
   })
   getAllTeamStats(@Param('seasonId', ParseIntPipe) seasonId: number) {
-    return this.seasonsService.findAllTeamStats(seasonId);
+    return this.seasonsService.findAllClubStats(seasonId);
   }
 }
