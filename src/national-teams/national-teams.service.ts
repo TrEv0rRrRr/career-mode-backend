@@ -180,7 +180,7 @@ export class NationalTeamsService {
     const currentTeam =
       await this.managersService.findManagerCurrentNationalTeam(managerId);
 
-    if (currentTeam)
+    if (!('notFound' in currentTeam))
       throw new BadRequestException(
         'The manager is already managing another nt.',
       );
@@ -229,7 +229,7 @@ export class NationalTeamsService {
 
     // Manager hiring validations
 
-    if (currentTeam)
+    if (!('notFound' in currentTeam))
       throw new BadRequestException(
         'The manager is already managing another nt.',
       );
