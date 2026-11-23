@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CareerModule } from './careers/careers.module.ts';
+import { ClubsModule } from './clubs/clubs.module.ts';
 import { CompetitionsModule } from './competitions/competitions.module.ts';
 import { KnockoutRoundModule } from './knockout-round/knockout-round.module.ts';
 import { ManagersModule } from './managers/managers.module.ts';
@@ -10,7 +11,6 @@ import { PositionsModule } from './positions/positions.module.ts';
 import { PrismaModule } from './prisma/prisma.module.ts';
 import { SeasonsModule } from './seasons/seasons.module.ts';
 import { StadiumsModule } from './stadiums/stadiums.module.ts';
-import { TeamsModule } from './teams/teams.module.ts';
 import { TransfersModule } from './transfers/transfers.module.ts';
 
 @Module({
@@ -20,7 +20,7 @@ import { TransfersModule } from './transfers/transfers.module.ts';
     PlayersModule,
     ManagersModule,
     StadiumsModule,
-    TeamsModule,
+    ClubsModule,
     CareerModule,
     SeasonsModule,
     PositionsModule,
