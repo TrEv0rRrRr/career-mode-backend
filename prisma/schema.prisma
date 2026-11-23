@@ -91,7 +91,7 @@ model Player {
   matchPlayerStats    MatchPlayerStats[]
   transfers           Transfer[]
   playerSeasonStats   PlayerSeasonStats[]
-  playerTeams         PlayerTeam[]
+  playerClubs         PlayerClub[]
   playerPositions     PlayerPosition[]
   playerNationalTeams PlayerNationalTeam[]
 
@@ -104,7 +104,7 @@ model Manager {
   birthDate            DateTime              @map("birth_date") @db.Date
   nationality          String
   face                 String?
-  managerTeams         ManagerTeam[]
+  managerClubs         ManagerClub[]
   managerNationalTeams ManagerNationalTeam[]
 
   @@map("manager")
@@ -121,9 +121,9 @@ model Competition {
   maxTeamsNumber       Int
   hasTwoLeggedKnockout Boolean           @default(false)
   groups               Int?
-  teamsPerGroup        Int?
+  clubsPerGroup        Int?
 
-  teams               Team[]
+  clubs               Club[]
   competitionEditions CompetitionEdition[]
 
   @@map("competition")
@@ -138,7 +138,7 @@ model Stadium {
   openingDate DateTime @map("opening_date") @db.Date
 
   matches             Match[]
-  teams               Team[]
+  clubs               Club[]
   competitionEditions CompetitionEdition[]
   nationalTeams       NationalTeam[]
 
@@ -164,9 +164,9 @@ model Match {
   status               MatchStatus
   stadiumId            Int              @map("stadium_id")
   matchday             Int?
-  homeTeamId           Int?             @map("home_team_id")
-  awayTeamId           Int?             @map("away_team_id")
-  winnerTeamId         Int?             @map("winner_team_id")
+  homeClubId           Int?             @map("home_club_id")
+  awayClubId           Int?             @map("away_club_id")
+  winnerClubId         Int?             @map("winner_club_id")
   leg                  MatchLeg?
   homePenaltyGoals     Int?             @map("home_penalty_goals")
   awayPenaltyGoals     Int?             @map("away_penalty_goals")
@@ -183,13 +183,13 @@ model Match {
   stadium            Stadium            @relation(fields: [stadiumId], references: [id])
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
 
-  homeTeam Team? @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeClub Club? @relation("HomeClub", fields: [homeClubId], references: [id])
 
-  awayTeam Team? @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayClub Club? @relation("AwayClub", fields: [awayClubId], references: [id])
 
-  winnerTeam Team? @relation("WinnerTeam", fields: [winnerTeamId], references: [id])
+  winnerClub Club? @relation("WinnerClub", fields: [winnerClubId], references: [id])
 
-  matchTeamStats MatchTeamStats[]
+  matchClubStats MatchClubStats[]
 
   tie Tie? @relation(fields: [tieId], references: [id])
 
@@ -220,14 +220,14 @@ model Transfer {
   type       TransferType
   playerId   Int          @map("player_id")
   seasonId   Int          @map("season_id")
-  fromTeamId Int?         @map("from_team_id")
-  toTeamId   Int          @map("to_team_id")
+  fromClubId Int?         @map("from_club_id")
+  toClubId   Int          @map("to_club_id")
 
   player Player @relation(fields: [playerId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
 
-  fromTeam Team? @relation("FromTeam", fields: [fromTeamId], references: [id])
-  toTeam   Team  @relation("ToTeam", fields: [toTeamId], references: [id])
+  fromClub Club? @relation("FromClub", fields: [fromClubId], references: [id])
+  toClub   Club  @relation("ToClub", fields: [toClubId], references: [id])
 
   @@map("transfer")
 }
@@ -243,7 +243,7 @@ model Season {
 
   career              Career               @relation(fields: [careerId], references: [id])
   transfers           Transfer[]
-  teamSeasonStats     TeamSeasonStats[]
+  clubSeasonStats     ClubSeasonStats[]
   competitionEditions CompetitionEdition[]
   playerSeasonStats   PlayerSeasonStats[]
 
@@ -253,17 +253,17 @@ model Season {
 model Career {
   id          Int       @id @default(autoincrement())
   managerName String    @map("manager_name")
-  teamId      Int       @map("team_id")
+  clubId      Int       @map("club_id")
   startDate   DateTime  @map("start_date") @db.Date
   endDate     DateTime? @map("end_date") @db.Date
 
-  team    Team     @relation(fields: [teamId], references: [id])
+  club    Club     @relation(fields: [clubId], references: [id])
   seasons Season[]
 
   @@map("career")
 }
 
-model Team {
+model Club {
   id             Int           @id @default(autoincrement())
   name           String        @unique
   shortName      String        @map("short_name")
@@ -279,31 +279,31 @@ model Team {
   stadium     Stadium     @relation(fields: [stadiumId], references: [id])
   competition Competition @relation(fields: [leagueId], references: [id])
 
-  homeMatches Match[] @relation("HomeTeam")
+  homeMatches Match[] @relation("HomeClub")
 
-  awayMatches Match[] @relation("AwayTeam")
+  awayMatches Match[] @relation("AwayClub")
 
-  winnerMatches Match[] @relation("WinnerTeam")
+  winnerMatches Match[] @relation("WinnerClub")
 
-  incomingTransfers Transfer[] @relation("ToTeam")
+  incomingTransfers Transfer[] @relation("ToClub")
 
-  outgoingTransfers Transfer[] @relation("FromTeam")
+  outgoingTransfers Transfer[] @relation("FromClub")
 
   wonCompetitions CompetitionEdition[] @relation("CompetitionWinner")
 
   lostCompetitions CompetitionEdition[] @relation("CompetitionRunnerUp")
 
   careers            Career[]
-  teamSeasonStats    TeamSeasonStats[]
-  teamSeasons        CompetitionParticipant[]
-  matchTeamStats     MatchTeamStats[]
+  clubSeasonStats    ClubSeasonStats[]
+  clubSeasons        CompetitionParticipant[]
+  matchClubStats     MatchClubStats[]
   playerSeasonStats  PlayerSeasonStats[]
-  playerTeams        PlayerTeam[]
+  playerClubs        PlayerClub[]
   matchPlayerStats   MatchPlayerStats[]
-  knockoutRoundTeams KnockoutRoundTeam[]
-  managerTeams       ManagerTeam[]
+  knockoutRoundClubs KnockoutRoundTeam[]
+  managerClubs       ManagerClub[]
 
-  @@map("team")
+  @@map("club")
 }
 
 model NationalTeam {
@@ -323,8 +323,8 @@ model NationalTeam {
   awayMatches   Match[] @relation("AwayNationalTeam")
   winnerMatches Match[] @relation("WinnerNationalTeam")
 
-  playerNationalTeams  PlayerNationalTeam[]
-  managerNationalTeams ManagerNationalTeam[]
+  playerNationalTeams     PlayerNationalTeam[]
+  managerNationalTeams    ManagerNationalTeam[]
   competitionParticipants NationalTeamCompetitionParticipant[]
 
   @@map("national_team")
@@ -332,13 +332,13 @@ model NationalTeam {
 
 model KnockoutRoundTeam {
   knockoutRoundId Int @map("knockout_round_id")
-  teamId          Int @map("team_id")
+  clubId          Int @map("club_id")
 
   knockoutRound KnockoutRound @relation(fields: [knockoutRoundId], references: [id])
 
-  team Team @relation(fields: [teamId], references: [id])
+  club Club @relation(fields: [clubId], references: [id])
 
-  @@id([knockoutRoundId, teamId])
+  @@id([knockoutRoundId, clubId])
   @@map("knockout_round_team")
 }
 
@@ -350,7 +350,7 @@ model KnockoutRound {
 
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
 
-  qualifiedTeams KnockoutRoundTeam[]
+  qualifiedClubs KnockoutRoundTeam[]
   ties           Tie[]
 
   @@unique([competitionEditionId, type])
@@ -361,7 +361,7 @@ model KnockoutRound {
 model MatchPlayerStats {
   matchId     Int     @map("match_id")
   playerId    Int     @map("player_id")
-  teamId      Int     @map("team_id")
+  clubId      Int     @map("club_id")
   goals       Int     @default(0)
   assists     Int     @default(0)
   rating      Decimal @default(5) @db.Decimal(3, 1)
@@ -370,14 +370,14 @@ model MatchPlayerStats {
 
   player Player @relation(fields: [playerId], references: [id])
   match  Match  @relation(fields: [matchId], references: [id])
-  team   Team   @relation(fields: [teamId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
 
   @@id([matchId, playerId])
   @@map("match_player_stats")
 }
 
-model TeamSeasonStats {
-  teamId   Int @map("team_id")
+model ClubSeasonStats {
+  clubId   Int @map("club_id")
   seasonId Int @map("season_id")
   played   Int @default(0)
   wins     Int @default(0)
@@ -387,37 +387,37 @@ model TeamSeasonStats {
   ga       Int @default(0)
   gd       Int @default(0)
 
-  team   Team   @relation(fields: [teamId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
 
-  @@id([teamId, seasonId])
-  @@map("team_season_stats")
+  @@id([clubId, seasonId])
+  @@map("club_season_stats")
 }
 
 model CompetitionEdition {
   id             Int  @id @default(autoincrement())
   seasonId       Int  @map("season_id")
   competitionId  Int  @map("competition_id")
-  winnerTeamId   Int? @map("winner_team_id")
-  runnerUpTeamId Int? @map("runner_up_team_id")
+  winnerClubId   Int? @map("winner_club_id")
+  runnerUpClubId Int? @map("runner_up_club_id")
   finalStadiumId Int? @map("final_stadium_id")
 
-  season                  Season                   @relation(fields: [seasonId], references: [id])
-  stadium                 Stadium?                 @relation(fields: [finalStadiumId], references: [id])
-  competition             Competition              @relation(fields: [competitionId], references: [id])
-  matches                 Match[]
-  winnerTeam              Team?                    @relation("CompetitionWinner", fields: [winnerTeamId], references: [id])
-  runnerUpTeam            Team?                    @relation("CompetitionRunnerUp", fields: [runnerUpTeamId], references: [id])
-  competitionParticipants CompetitionParticipant[]
+  season                   Season                               @relation(fields: [seasonId], references: [id])
+  stadium                  Stadium?                             @relation(fields: [finalStadiumId], references: [id])
+  competition              Competition                          @relation(fields: [competitionId], references: [id])
+  matches                  Match[]
+  winnerClub               Club?                                @relation("CompetitionWinner", fields: [winnerClubId], references: [id])
+  runnerUpClub             Club?                                @relation("CompetitionRunnerUp", fields: [runnerUpClubId], references: [id])
+  competitionParticipants  CompetitionParticipant[]
   nationalTeamParticipants NationalTeamCompetitionParticipant[]
-  knockoutRounds          KnockoutRound[]
+  knockoutRounds           KnockoutRound[]
 
   @@unique([seasonId, competitionId])
   @@map("competition_edition")
 }
 
 model CompetitionParticipant {
-  teamId               Int     @map("team_id")
+  clubId               Int     @map("club_id")
   competitionEditionId Int     @map("competition_edition_id")
   points               Int?
   position             Int?
@@ -431,9 +431,9 @@ model CompetitionParticipant {
   gd                   Int     @default(0)
 
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
-  team               Team               @relation(fields: [teamId], references: [id])
+  club               Club               @relation(fields: [clubId], references: [id])
 
-  @@id([teamId, competitionEditionId])
+  @@id([clubId, competitionEditionId])
   @@map("competition_participant")
 }
 
@@ -458,8 +458,8 @@ model NationalTeamCompetitionParticipant {
   @@map("national_team_competition_participant")
 }
 
-model MatchTeamStats {
-  teamId        Int @map("team_id")
+model MatchClubStats {
+  clubId        Int @map("club_id")
   matchId       Int @map("match_id")
   possession    Int @default(0)
   shots         Int @default(0)
@@ -468,16 +468,16 @@ model MatchTeamStats {
   fouls         Int @default(0)
   offsides      Int @default(0)
 
-  team  Team  @relation(fields: [teamId], references: [id])
+  club  Club  @relation(fields: [clubId], references: [id])
   match Match @relation(fields: [matchId], references: [id])
 
-  @@id([teamId, matchId])
-  @@map("match_team_stats")
+  @@id([clubId, matchId])
+  @@map("match_club_stats")
 }
 
 model PlayerSeasonStats {
   playerId    Int     @map("player_id")
-  teamId      Int     @map("team_id")
+  clubId      Int     @map("club_id")
   seasonId    Int     @map("season_id")
   matches     Int     @default(0)
   goals       Int     @default(0)
@@ -487,26 +487,26 @@ model PlayerSeasonStats {
   rating      Decimal @default(5) @db.Decimal(3, 1)
 
   player Player @relation(fields: [playerId], references: [id])
-  team   Team   @relation(fields: [teamId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
 
-  @@id([playerId, teamId, seasonId])
+  @@id([playerId, clubId, seasonId])
   @@map("player_season_stats")
 }
 
-model PlayerTeam {
+model PlayerClub {
   id           Int       @id @default(autoincrement())
   playerId     Int       @map("player_id")
-  teamId       Int       @map("team_id")
+  clubId       Int       @map("club_id")
   jerseyNumber Int       @map("jersey_number")
   startDate    DateTime  @map("start_date") @db.Date
   endDate      DateTime? @map("end_date") @db.Date
 
   player Player @relation(fields: [playerId], references: [id])
-  team   Team   @relation(fields: [teamId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
 
-  @@unique([playerId, teamId, startDate])
-  @@map("player_team")
+  @@unique([playerId, clubId, startDate])
+  @@map("player_club")
 }
 
 model PlayerNationalTeam {
@@ -536,18 +536,18 @@ model PlayerPosition {
   @@map("player_position")
 }
 
-model ManagerTeam {
+model ManagerClub {
   id        Int       @id @default(autoincrement())
   managerId Int       @map("manager_id")
-  teamId    Int       @map("team_id")
+  clubId    Int       @map("club_id")
   startDate DateTime  @map("start_date") @db.Date
   endDate   DateTime? @map("end_date") @db.Date
 
   manager Manager @relation(fields: [managerId], references: [id])
-  team    Team    @relation(fields: [teamId], references: [id])
+  club    Club    @relation(fields: [clubId], references: [id])
 
-  @@unique([managerId, teamId, startDate])
-  @@map("manager_team")
+  @@unique([managerId, clubId, startDate])
+  @@map("manager_club")
 }
 
 model ManagerNationalTeam {
