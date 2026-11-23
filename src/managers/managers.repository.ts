@@ -1,22 +1,54 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateManagerDto } from './dto/create-manager.dto.ts';
 import { UpdateManagerDto } from './dto/update-manager.dto.ts';
+
+const managerInclude = {
+  managerClubs: {
+    where: {
+      endDate: null,
+    },
+    include: {
+      club: true,
+    },
+  },
+  managerNationalTeams: {
+    where: {
+      endDate: null,
+    },
+    include: {
+      nationalTeam: true,
+    },
+  },
+};
+
+export type ManagerWithRelations = Prisma.ManagerGetPayload<{
+  include: typeof managerInclude;
+}>;
 
 @Injectable()
 export class ManagersRepository {
   constructor(private prisma: PrismaService) {}
 
   findById(id: number) {
-    return this.prisma.manager.findUnique({ where: { id } });
+    return this.prisma.manager.findUnique({
+      where: { id },
+      include: managerInclude,
+    });
   }
 
   findAll() {
-    return this.prisma.manager.findMany();
+    return this.prisma.manager.findMany({
+      include: managerInclude,
+    });
   }
 
   findByName(name: string) {
-    return this.prisma.manager.findFirst({ where: { name } });
+    return this.prisma.manager.findFirst({
+      where: { name },
+      include: managerInclude,
+    });
   }
 
   create(data: CreateManagerDto) {

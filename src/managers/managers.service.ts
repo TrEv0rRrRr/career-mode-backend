@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateManagerDto } from './dto/create-manager.dto.ts';
 import { ManagerMapper } from './dto/mapper/manager.mapper.ts';
 import { UpdateManagerDto } from './dto/update-manager.dto.ts';
@@ -13,8 +9,9 @@ import { ManagersRepository } from './managers.repository.ts';
 export class ManagersService {
   constructor(private repo: ManagersRepository) {}
 
-  findManagers() {
-    return this.repo.findAll();
+  async findManagers() {
+    const managers = await this.repo.findAll();
+    return managers.map((m) => ManagerMapper.toResponse(m));
   }
 
   async findManagerById(id: number) {
@@ -22,7 +19,7 @@ export class ManagersService {
 
     if (!manager) throw new ManagerNotFoundException();
 
-    return manager;
+    return ManagerMapper.toResponse(manager);
   }
 
   async createManager(data: CreateManagerDto) {
@@ -69,11 +66,6 @@ export class ManagersService {
 
     const currentClub = await this.repo.findManagerCurrentClub(managerId);
 
-    if (!currentClub)
-      throw new NotFoundException(
-        'This manager is not managing any team currently',
-      );
-
     return ManagerMapper.mapClubs(currentClub);
   }
 
@@ -90,10 +82,6 @@ export class ManagersService {
     const currentNationalTeam =
       await this.repo.findManagerCurrentNationalTeam(managerId);
 
-    if (!currentNationalTeam)
-      throw new NotFoundException(
-        'This manager is not managing any national team currently',
-      );
     return ManagerMapper.mapNationalTeams(currentNationalTeam);
   }
 

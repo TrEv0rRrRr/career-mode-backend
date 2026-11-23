@@ -107,16 +107,6 @@ export class ManagersController {
   }
 
   // ! Manager Club Endpoints
-  @Get(':managerId/clubs/current')
-  @ApiOperation({ summary: "Get a manager's current club" })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Manager not found',
-  })
-  getManagerCurrentClub(@Param('managerId', ParseIntPipe) managerId: number) {
-    return this.managersService.findManagerCurrentClub(managerId);
-  }
-
   @Get(':managerId/clubs/history')
   @ApiOperation({ summary: "Get a manager's club history" })
   @ApiResponse({
@@ -128,18 +118,6 @@ export class ManagersController {
   }
 
   // ! Manager National Club Endpoints
-  @Get(':managerId/national-clubs/current')
-  @ApiOperation({ summary: "Get a manager's current national club" })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Manager not found',
-  })
-  getManagerCurrentNationalClub(
-    @Param('managerId', ParseIntPipe) managerId: number,
-  ) {
-    return this.managersService.findManagerCurrentNationalTeam(managerId);
-  }
-
   @Get(':managerId/national-clubs/history')
   @ApiOperation({ summary: "Get a manager's national club history" })
   @ApiResponse({

@@ -1,7 +1,6 @@
 import { Confederation } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
-import { NationalTeamResponse } from '../../../matches/dto/response/match-response.dto.ts';
-
+import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 export type ManagerClubType = {
   club: {
     name: string;
@@ -44,16 +43,31 @@ export type ManagerNationalTeamType = {
   nationalTeamId: number;
 };
 
-export class ManagerClubResponseDto {
+export class ManagerResponseDto {
+  id!: number;
+  name!: string;
+  face!: string | null;
+  nationality!: string;
+  birthDate!: Date;
+  currentClub!: Omit<ManagerClubResponseDto, 'id'> | null;
+  currentNationalTeam!: Omit<ManagerNationalTeamResponseDto, 'id'> | null;
+}
+
+export type ManagerSummary = Omit<
+  ManagerResponseDto,
+  'birthDate' | 'club' | 'nationalTeam'
+>;
+
+class ManagerTeam {
   id!: number;
   startDate!: Date;
   endDate!: Date | null;
+}
+
+export class ManagerClubResponseDto extends ManagerTeam {
   club!: Omit<ClubSummary, 'confederation'>;
 }
 
-export class ManagerNationalTeamResponseDto {
-  id!: number;
-  startDate!: Date;
-  endDate!: Date | null;
-  nationalTeam!: Omit<NationalTeamResponse, 'confederation'>;
+export class ManagerNationalTeamResponseDto extends ManagerTeam {
+  nationalTeam!: Omit<NationalTeamSummary, 'confederation'>;
 }
