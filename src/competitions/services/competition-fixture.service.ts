@@ -89,17 +89,13 @@ export class CompetitionFixtureService {
     return matches;
   }
 
-  async generateCompetitionFixture(
-    competitionEditionId: number,
-    competitionId: number,
-  ) {
-    const competition =
-      await this.competitionsService.findCompetitionById(competitionId);
-
+  async generateCompetitionFixture(competitionEditionId: number) {
     const competitionEdition =
       await this.competitionsService.findCompetitionEditionById(
         competitionEditionId,
       );
+
+    const competition = competitionEdition.competition;
 
     const season = await this.seasonService.findSeasonById(
       competitionEdition.seasonId,

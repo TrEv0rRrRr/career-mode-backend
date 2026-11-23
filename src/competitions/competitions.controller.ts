@@ -437,13 +437,17 @@ export class CompetitionsController {
     );
   }
 
-  @Post(':competitionId/edition/:competitionEditionId/generate-fixtures')
+  @Post('editions/:competitionEditionId/generate-fixtures')
   @ApiOperation({
     summary: 'Create a league fixture or a super cup match',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Fixture created!',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Edition not found',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -462,11 +466,9 @@ export class CompetitionsController {
   })
   generateCompetitionFixture(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Param('competitionId', ParseIntPipe) competitionId: number,
   ) {
     return this.competitionFixtureService.generateCompetitionFixture(
       competitionEditionId,
-      competitionId,
     );
   }
 
