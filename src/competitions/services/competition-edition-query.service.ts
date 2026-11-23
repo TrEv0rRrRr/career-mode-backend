@@ -3,7 +3,7 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { TeamsService } from '../../teams/teams.service.ts';
+import { ClubsService } from '../../clubs/clubs.service.ts';
 import { CompetitionsRepository } from '../competitions.repository.ts';
 import { UpdateCompetitionEditionDto } from '../dto/update-competition-edition.dto.ts';
 import { CompetitionNotFoundException } from '../exceptions/competition-not-found.exception.ts';
@@ -14,7 +14,7 @@ import { ParticipantNotFoundException } from '../exceptions/participant-not-foun
 export class CompetitionEditionQueryService {
   constructor(
     private readonly repo: CompetitionsRepository,
-    private readonly teamsService: TeamsService,
+    private readonly clubsService: ClubsService,
   ) {}
 
   async findCompetitionById(id: number) {
@@ -41,7 +41,7 @@ export class CompetitionEditionQueryService {
     message?: string,
   ) {
     await this.findCompetitionEditionById(competitionEditionId);
-    await this.teamsService.findTeamById(teamId);
+    await this.clubsService.findClubById(teamId);
 
     const participant = await this.repo.findCompetitionParticipant(
       competitionEditionId,
@@ -62,11 +62,11 @@ export class CompetitionEditionQueryService {
   ) {
     await this.findCompetitionById(competitionId);
 
-    await this.teamsService.findTeamById(data.winnerTeamId);
+    await this.clubsService.findClubById(data.winnerClubId);
 
-    await this.teamsService.findTeamById(data.runnerUpTeamId);
+    await this.clubsService.findClubById(data.runnerUpClubId);
 
-    if (data.winnerTeamId === data.runnerUpTeamId)
+    if (data.winnerClubId === data.runnerUpClubId)
       throw new ConflictException(
         'The winner and the runner-up teams must be different',
       );
@@ -75,17 +75,17 @@ export class CompetitionEditionQueryService {
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    const winnerTeam = await this.repo.findCompetitionParticipant(
+    const winnerClub = await this.repo.findCompetitionParticipant(
       editionId,
-      data.winnerTeamId,
+      data.winnerClubId,
     );
 
-    const runnerUpTeam = await this.repo.findCompetitionParticipant(
+    const runnerUpClub = await this.repo.findCompetitionParticipant(
       editionId,
-      data.runnerUpTeamId,
+      data.runnerUpClubId,
     );
 
-    if (!winnerTeam || !runnerUpTeam)
+    if (!winnerClub || !runnerUpClub)
       throw new BadRequestException(
         "You can't assign a team that is not participating in the given competition",
       );

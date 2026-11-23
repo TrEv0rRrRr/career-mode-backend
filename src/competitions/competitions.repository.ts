@@ -3,19 +3,18 @@ import { CompetitionFormat, CompetitionType, Prisma } from '@prisma/client';
 import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
-import { CreateCompetitionEditionDto } from './dto/create-competition-edition.dto.ts';
 import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
 import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 
 const competitionEditionInclude = {
   competition: true,
   season: true,
-  winnerTeam: true,
-  runnerUpTeam: true,
+  winnerClub: true,
+  runnerUpClub: true,
   stadium: true,
   competitionParticipants: {
     include: {
-      team: true,
+      club: true,
     },
   },
   nationalTeamParticipants: {
@@ -28,8 +27,8 @@ const competitionEditionInclude = {
 const competitionEditionByIdInclude = {
   competition: true,
   season: true,
-  winnerTeam: true,
-  runnerUpTeam: true,
+  winnerClub: true,
+  runnerUpClub: true,
   competitionParticipants: true,
 } as const;
 
@@ -116,20 +115,6 @@ export class CompetitionsRepository {
     });
   }
 
-  createEdition(
-    competitionId: number,
-    seasonId: number,
-    data: CreateCompetitionEditionDto,
-  ) {
-    return this.prisma.competitionEdition.create({
-      data: {
-        competitionId,
-        seasonId,
-        finalStadiumId: data.finalStadiumId,
-      },
-    });
-  }
-
   createEditionsForTheCurrentSeason(
     seasonId: number,
     data: CreateManyEditionsDto[],
@@ -175,7 +160,7 @@ export class CompetitionsRepository {
         competitionEditionId,
       },
       include: {
-        team: true,
+        club: true,
       },
     });
   }
@@ -197,9 +182,9 @@ export class CompetitionsRepository {
         competitionEditionId,
       },
       include: {
-        team: true,
+        club: true,
       },
-      orderBy: [{ position: 'asc' }, { teamId: 'asc' }],
+      orderBy: [{ position: 'asc' }, { clubId: 'asc' }],
     });
   }
 
@@ -210,21 +195,21 @@ export class CompetitionsRepository {
         group: { not: null },
       },
       include: {
-        team: true,
+        club: true,
       },
-      orderBy: [{ group: 'asc' }, { position: 'asc' }, { teamId: 'asc' }],
+      orderBy: [{ group: 'asc' }, { position: 'asc' }, { clubId: 'asc' }],
     });
   }
 
-  registerParticipant(competitionEditionId: number, teamIds: number[]) {
-    const teamSeasonData = teamIds.map((teamId) => ({
+  registerParticipant(competitionEditionId: number, clubIds: number[]) {
+    const clubSeasonData = clubIds.map((clubId) => ({
       competitionEditionId,
-      teamId,
+      clubId,
       points: 0,
     }));
 
     return this.prisma.competitionParticipant.createMany({
-      data: teamSeasonData,
+      data: clubSeasonData,
     });
   }
 
@@ -259,11 +244,11 @@ export class CompetitionsRepository {
 
   replaceCompetitionParticipants(
     competitionEditionId: number,
-    teamIds: number[],
+    clubIds: number[],
   ) {
-    const teamSeasonData = teamIds.map((teamId) => ({
+    const clubSeasonData = clubIds.map((clubId) => ({
       competitionEditionId,
-      teamId,
+      clubId,
       points: 0,
     }));
 
@@ -280,7 +265,7 @@ export class CompetitionsRepository {
       });
 
       await tx.competitionParticipant.createMany({
-        data: teamSeasonData,
+        data: clubSeasonData,
       });
     });
   }
@@ -310,12 +295,12 @@ export class CompetitionsRepository {
     });
   }
 
-  deleteCompetitionParticipant(competitionEditionId: number, teamId: number) {
+  deleteCompetitionParticipant(competitionEditionId: number, clubId: number) {
     return this.prisma.competitionParticipant.delete({
       where: {
-        teamId_competitionEditionId: {
+        clubId_competitionEditionId: {
           competitionEditionId,
-          teamId,
+          clubId,
         },
       },
     });
@@ -335,12 +320,12 @@ export class CompetitionsRepository {
     });
   }
 
-  findCompetitionParticipant(competitionEditionId: number, teamId: number) {
+  findCompetitionParticipant(competitionEditionId: number, clubId: number) {
     return this.prisma.competitionParticipant.findUnique({
       where: {
-        teamId_competitionEditionId: {
+        clubId_competitionEditionId: {
           competitionEditionId,
-          teamId,
+          clubId,
         },
       },
     });

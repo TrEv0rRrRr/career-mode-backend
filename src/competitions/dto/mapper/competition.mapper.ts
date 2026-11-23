@@ -5,8 +5,8 @@ import {
   CompetitionResponseDto,
   LeagueStandings,
   LeagueStandingsResponseDto,
-  ParticipantTeam,
-  ParticipantTeamType,
+  ParticipantClub,
+  ParticipantClubType,
 } from '../response/competition-response.dto.ts';
 
 export class CompetitionMapper {
@@ -26,7 +26,7 @@ export class CompetitionMapper {
     const isANationalTeamsCompetition =
       cE.competition.type === CompetitionType.NATIONAL_TEAMS;
 
-    const participantTeams: ParticipantTeam[] = cE.competitionParticipants.map(
+    const participantClubs: ParticipantClub[] = cE.competitionParticipants.map(
       (pt) => ({
         points: pt.points,
         position: pt.position,
@@ -38,12 +38,12 @@ export class CompetitionMapper {
         gf: pt.gf,
         ga: pt.ga,
         gd: pt.gd,
-        team: {
-          id: pt.teamId,
-          name: pt.team.name,
-          logo: pt.team.logo,
-          country: pt.team.country,
-          confederation: pt.team.confederation,
+        club: {
+          id: pt.clubId,
+          name: pt.club.name,
+          logo: pt.club.logo,
+          country: pt.club.country,
+          confederation: pt.club.confederation,
         },
       }),
     );
@@ -82,29 +82,29 @@ export class CompetitionMapper {
         image: cE.stadium?.image,
         country: cE.stadium?.country,
       },
-      winnerTeam: {
-        id: cE.winnerTeamId,
-        name: cE.winnerTeam?.name,
-        logo: cE.winnerTeam?.logo,
-        country: cE.winnerTeam?.country,
-        confederation: cE.winnerTeam?.confederation,
+      winnerClub: {
+        id: cE.winnerClubId,
+        name: cE.winnerClub?.name,
+        logo: cE.winnerClub?.logo,
+        country: cE.winnerClub?.country,
+        confederation: cE.winnerClub?.confederation,
       },
-      runnerUpTeam: {
-        id: cE.runnerUpTeamId,
-        name: cE.runnerUpTeam?.name,
-        logo: cE.runnerUpTeam?.logo,
-        country: cE.runnerUpTeam?.country,
-        confederation: cE.runnerUpTeam?.confederation,
+      runnerUpClub: {
+        id: cE.runnerUpClubId,
+        name: cE.runnerUpClub?.name,
+        logo: cE.runnerUpClub?.logo,
+        country: cE.runnerUpClub?.country,
+        confederation: cE.runnerUpClub?.confederation,
       },
       ...(isANationalTeamsCompetition
         ? {
             participantNationalTeams,
           }
-        : { participantTeams }),
+        : { participantClubs }),
     };
   }
 
-  static mapParticipantTeams(pt: ParticipantTeamType): ParticipantTeam {
+  static mapParticipantClubs(pt: ParticipantClubType): ParticipantClub {
     return {
       points: pt.points,
       position: pt.position,
@@ -116,12 +116,12 @@ export class CompetitionMapper {
       gf: pt.gf,
       ga: pt.ga,
       gd: pt.gd,
-      team: {
-        id: pt.teamId,
-        name: pt.team.name,
-        logo: pt.team.logo,
-        country: pt.team.country,
-        confederation: pt.team.confederation,
+      club: {
+        id: pt.clubId,
+        name: pt.club.name,
+        logo: pt.club.logo,
+        country: pt.club.country,
+        confederation: pt.club.confederation,
       },
     };
   }
@@ -139,12 +139,12 @@ export class CompetitionMapper {
       gf: leagueStandings.gf,
       ga: leagueStandings.ga,
       gd: leagueStandings.gd,
-      team: {
-        id: leagueStandings.teamId,
-        name: leagueStandings.team.name,
-        logo: leagueStandings.team.logo,
-        country: leagueStandings.team.country,
-        confederation: leagueStandings.team.confederation,
+      club: {
+        id: leagueStandings.clubId,
+        name: leagueStandings.club.name,
+        logo: leagueStandings.club.logo,
+        country: leagueStandings.club.country,
+        confederation: leagueStandings.club.confederation,
       },
     };
   }

@@ -239,15 +239,15 @@ export class CompetitionsController {
 
   @Patch(':competitionId/editions/:editionId')
   @ApiOperation({
-    summary: 'Assign a winner and a runner-up team to a competition edition',
+    summary: 'Assign a winner and a runner-up club to a competition edition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Teams assigned!',
+    description: 'Clubs assigned!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -259,22 +259,22 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'The winner and the runner-up teams must be different',
+    description: 'The winner and the runner-up clubs must be different',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "You can't assign a team that is not participating in the given competition",
+      "You can't assign a club that is not participating in the given competition",
   })
   @ApiBody({
     schema: {
       example: {
-        winnerTeamId: 1,
-        runnerUpTeamId: 2,
+        winnerClubId: 1,
+        runnerUpClubId: 2,
       },
     },
   })
-  assignTeamsToCompetition(
+  assignClubsToCompetition(
     @Param('competitionId', ParseIntPipe) competitionId: number,
     @Param('editionId', ParseIntPipe) editionId: number,
     @Body() data: UpdateCompetitionEditionDto,
@@ -288,10 +288,10 @@ export class CompetitionsController {
 
   // ! Competition Participant Endpoints
 
-  @Get('/editions/:competitionEditionId/teams')
+  @Get('/editions/:competitionEditionId/clubs')
   @ApiOperation({
     summary:
-      'Get the list of teams that are participating in the given competition',
+      'Get the list of clubs that are participating in the given competition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -335,10 +335,10 @@ export class CompetitionsController {
     return this.competitionsService.findLeagueStandings(competitionEditionId);
   }
 
-  @Post('/editions/:competitionEditionId/teams')
+  @Post('/editions/:competitionEditionId/clubs')
   @ApiOperation({
     summary:
-      'Register participants to a competition (teams, or national teams for NATIONAL_TEAMS competitions)',
+      'Register participants to a competition (clubs, or national teams for NATIONAL_TEAMS competitions)',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -354,12 +354,12 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'A team has already been registered',
+    description: 'A club has already been registered',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "You can't register more teams, the maximum number has been reached",
+      "You can't register more clubs, the maximum number has been reached",
   })
   @ApiBody({
     schema: {
@@ -376,7 +376,7 @@ export class CompetitionsController {
     );
   }
 
-  @Put('/editions/:competitionEditionId/teams')
+  @Put('/editions/:competitionEditionId/clubs')
   @ApiOperation({
     summary: 'Updates the entire list of participants for a competition',
   })
@@ -407,13 +407,13 @@ export class CompetitionsController {
     );
   }
 
-  @Delete('/editions/:competitionEditionId/teams/:teamId')
+  @Delete('/editions/:competitionEditionId/clubs/:clubId')
   @ApiOperation({
     summary: 'Deletes a participant from a competition',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description: 'Team deleted!',
+    description: 'Club deleted!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -429,11 +429,11 @@ export class CompetitionsController {
   })
   disqualifyParticipant(
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
   ) {
     return this.competitionsService.deleteCompetitionParticipant(
       competitionEditionId,
-      teamId,
+      clubId,
     );
   }
 
@@ -452,7 +452,7 @@ export class CompetitionsController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      'To generate a fixture, you have to register at least 2 teams in a competition',
+      'To generate a fixture, you have to register at least 2 clubs in a competition',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -491,12 +491,12 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Every group must have a name and at least one team.',
+    description: 'Every group must have a name and at least one club.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      'Every participating team must be assigned to exactly one group.',
+      'Every participating club must be assigned to exactly one group.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,

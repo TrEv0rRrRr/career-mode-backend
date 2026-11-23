@@ -4,11 +4,11 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { CompetitionFormat, CompetitionType } from '@prisma/client';
+import { ClubsService } from '../clubs/clubs.service.ts';
 import { MatchMapper } from '../matches/dto/mapper/match.mapper.ts';
 import { NationalTeamsService } from '../national-teams/national-teams.service.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
 import { StadiumsService } from '../stadiums/stadiums.service.ts';
-import { TeamsService } from '../teams/teams.service.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
 import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
@@ -22,7 +22,7 @@ import { ParticipantNotFoundException } from './exceptions/participant-not-found
 export class CompetitionsService {
   constructor(
     private repo: CompetitionsRepository,
-    private teamsService: TeamsService,
+    private clubsService: ClubsService,
     private seasonService: SeasonsService,
     private nationalTeamsService: NationalTeamsService,
     private stadiumsService: StadiumsService,
@@ -170,32 +170,32 @@ export class CompetitionsService {
   ) {
     await this.findCompetitionById(competitionId);
 
-    await this.teamsService.findTeamById(data.winnerTeamId);
+    await this.clubsService.findClubById(data.winnerClubId);
 
-    await this.teamsService.findTeamById(data.runnerUpTeamId);
+    await this.clubsService.findClubById(data.runnerUpClubId);
 
-    if (data.winnerTeamId === data.runnerUpTeamId)
+    if (data.winnerClubId === data.runnerUpClubId)
       throw new ConflictException(
-        'The winner and the runner-up teams must be different',
+        'The winner and the runner-up clubs must be different',
       );
 
     const edition = await this.repo.findEditionById(editionId);
 
     if (!edition) throw new CompetitionEditionNotFoundException();
 
-    const winnerTeam = await this.repo.findCompetitionParticipant(
+    const winnerClub = await this.repo.findCompetitionParticipant(
       editionId,
-      data.winnerTeamId,
+      data.winnerClubId,
     );
 
-    const runnerUpTeam = await this.repo.findCompetitionParticipant(
+    const runnerUpClub = await this.repo.findCompetitionParticipant(
       editionId,
-      data.runnerUpTeamId,
+      data.runnerUpClubId,
     );
 
-    if (!winnerTeam || !runnerUpTeam)
+    if (!winnerClub || !runnerUpClub)
       throw new BadRequestException(
-        "You can't assign a team that is not participating in the given competition",
+        "You can't assign a club that is not participating in the given competition",
       );
 
     return this.repo.assignWinnerAndRunnerUp(editionId, data);
@@ -203,9 +203,9 @@ export class CompetitionsService {
 
   // ! Competition Participant Methods
 
-  async validateData(competitionEditionId: number, teamId: number) {
+  async validateData(competitionEditionId: number, clubId: number) {
     await this.findCompetitionEditionById(competitionEditionId);
-    await this.teamsService.findTeamById(teamId);
+    await this.clubsService.findClubById(clubId);
   }
 
   async findCompetitionParticipants(competitionEditionId: number) {
@@ -215,7 +215,7 @@ export class CompetitionsService {
       await this.repo.findCompetitionParticipants(competitionEditionId);
 
     return participants.map((participant) => ({
-      team: participant.team,
+      club: participant.club,
       position: participant.position,
     }));
   }
@@ -239,7 +239,7 @@ export class CompetitionsService {
       await this.repo.findCompetitionParticipants(competitionEditionId);
 
     return participants.map((participant) => ({
-      team: participant.team,
+      club: participant.club,
       position: participant.position,
     }));
   }
@@ -291,7 +291,7 @@ export class CompetitionsService {
       );
     } else {
       await Promise.all(
-        participantIds.map((id) => this.teamsService.findTeamById(id)),
+        participantIds.map((id) => this.clubsService.findClubById(id)),
       );
     }
 
@@ -364,7 +364,7 @@ export class CompetitionsService {
     }
 
     await Promise.all(
-      participantIds.map((id) => this.teamsService.findTeamById(id)),
+      participantIds.map((id) => this.clubsService.findClubById(id)),
     );
 
     return this.repo.replaceCompetitionParticipants(
@@ -387,7 +387,7 @@ export class CompetitionsService {
       );
     }
 
-    await this.teamsService.findTeamById(participantId);
+    await this.clubsService.findClubById(participantId);
     return this.repo.deleteCompetitionParticipant(
       competitionEditionId,
       participantId,
@@ -396,14 +396,14 @@ export class CompetitionsService {
 
   async findCompetitionParticipant(
     competitionEditionId: number,
-    teamId: number,
+    clubId: number,
     message?: string,
   ) {
-    await this.validateData(competitionEditionId, teamId);
+    await this.validateData(competitionEditionId, clubId);
 
     const participant = await this.repo.findCompetitionParticipant(
       competitionEditionId,
-      teamId,
+      clubId,
     );
 
     if (!participant) throw new ParticipantNotFoundException(message);
@@ -441,7 +441,7 @@ export class CompetitionsService {
       await this.repo.findCompetitionGroupParticipants(competitionEditionId);
 
     const pt = participants.map((pt) =>
-      CompetitionMapper.mapParticipantTeams(pt),
+      CompetitionMapper.mapParticipantClubs(pt),
     );
 
     const groups: Record<string, typeof pt> = {};

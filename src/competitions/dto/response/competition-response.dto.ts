@@ -3,11 +3,11 @@ import {
   CompetitionType,
   Confederation,
 } from '@prisma/client';
+import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
 import { Optional } from '../../../seasons/dto/response/season-response.dto.ts';
-import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
 
 export type LeagueStandings = {
-  team: {
+  club: {
     id: number;
     name: string;
     logo: string | null;
@@ -21,7 +21,7 @@ export type LeagueStandings = {
     confederation: Confederation;
   };
 } & {
-  teamId: number;
+  clubId: number;
   competitionEditionId: number;
   points: number | null;
   position: number | null;
@@ -34,7 +34,7 @@ export type LeagueStandings = {
   ga: number;
   gd: number;
 };
-export class ParticipantTeam {
+export class ParticipantClub {
   points!: number | null;
   position!: number | null;
   group!: string | null;
@@ -45,7 +45,7 @@ export class ParticipantTeam {
   gf!: number;
   ga!: number;
   gd!: number;
-  team!: TeamResponse;
+  club!: ClubSummary;
 }
 
 export class ParticipantNationalTeam {
@@ -67,8 +67,8 @@ export class ParticipantNationalTeam {
   };
 }
 
-export type ParticipantTeamType = {
-  team: {
+export type ParticipantClubType = {
+  club: {
     id: number;
     name: string;
     logo: string | null;
@@ -82,7 +82,7 @@ export type ParticipantTeamType = {
     confederation: Confederation;
   };
 } & {
-  teamId: number;
+  clubId: number;
   competitionEditionId: number;
   points: number | null;
   position: number | null;
@@ -117,9 +117,9 @@ export class CompetitionEditionResponseDto {
     image: string | null | undefined;
     country: string | null | undefined;
   };
-  winnerTeam!: Optional<TeamResponse>;
-  runnerUpTeam!: Optional<TeamResponse>;
-  participantTeams?: ParticipantTeam[];
+  winnerClub!: Optional<ClubSummary>;
+  runnerUpClub!: Optional<ClubSummary>;
+  participantClubs?: ParticipantClub[];
   participantNationalTeams?: ParticipantNationalTeam[];
 }
 
@@ -133,5 +133,5 @@ export class LeagueStandingsResponseDto {
   gf!: number;
   ga!: number;
   gd!: number;
-  team!: TeamResponse;
+  club!: ClubSummary;
 }

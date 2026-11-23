@@ -3,7 +3,7 @@ import { NationalTeamsModule } from '../national-teams/national-teams.module.ts'
 import { PrismaModule } from '../prisma/prisma.module.ts';
 import { SeasonsModule } from '../seasons/seasons.module.ts';
 import { StadiumsModule } from '../stadiums/stadiums.module.ts';
-import { TeamsModule } from '../teams/teams.module.ts';
+import { TeamsModule } from '../clubs/clubs.module.ts';
 import { CompetitionsController } from './competitions.controller.ts';
 import { CompetitionsRepository } from './competitions.repository.ts';
 import { CompetitionsService } from './competitions.service.ts';

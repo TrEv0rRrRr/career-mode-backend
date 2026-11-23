@@ -17,7 +17,7 @@ import { generateSuperCupPairing } from '../../common/fixtures/super-cup.fixture
 import { isTwoLeggedKnockoutRound } from '../../common/helpers/knockouts/isTwoLeggedKnockoutRound.ts';
 import { CalendarEntry } from '../../common/types/CalendarEntry.ts';
 import { MatchPairing } from '../../common/types/MatchPairing.ts';
-import { ParticipatingTeam } from '../../common/types/ParticipatingTeams.ts';
+import { ParticipatingClub } from '../../common/types/ParticipatingClub.ts';
 import { CreatePairingDto } from '../../knockout-round/dto/create-knockout-pairing.dto.ts';
 import { KnockoutRoundResponseDto } from '../../knockout-round/dto/response/knockout-round-response.dto.ts';
 import { CreateMatchDto } from '../../matches/dto/create-match.dto.ts';
@@ -50,12 +50,12 @@ export class CompetitionFixtureService {
   private mergeFixtureWithCalendar(
     fixture: MatchPairing[],
     calendar: CalendarEntry[],
-    participantTeams: ParticipatingTeam[],
+    participantClubs: ParticipatingClub[],
     competitionEdition: CompetitionEdition,
   ) {
     const matches: CreateMatchDto[] = [];
 
-    const teamsMap = new Map(participantTeams.map((t) => [t.team.id, t.team]));
+    const clubsMap = new Map(participantClubs.map((t) => [t.club.id, t.club]));
 
     for (const match of fixture) {
       const day = this.findCalendarEntry(calendar, match);
@@ -65,22 +65,22 @@ export class CompetitionFixtureService {
           `No calendar entry found for ${match.matchType} ${match.leg ?? ''}`,
         );
 
-      const homeTeam = teamsMap.get(match.homeTeamId);
+      const homeClub = clubsMap.get(match.homeClubId);
 
-      if (!homeTeam)
+      if (!homeClub)
         throw new BadRequestException(
-          `Team ${match.homeTeamId} was not found among competition participants`,
+          `Club ${match.homeClubId} was not found among competition participants`,
         );
 
       matches.push({
-        homeTeamId: match.homeTeamId,
-        awayTeamId: match.awayTeamId,
+        homeClubId: match.homeClubId,
+        awayClubId: match.awayClubId,
         date: day.date,
         stadiumId:
           match.matchType === MatchType.FINAL &&
           competitionEdition.finalStadiumId
             ? competitionEdition.finalStadiumId
-            : homeTeam.stadiumId,
+            : homeClub.stadiumId,
         matchday: day.matchday,
         leg: match.leg,
       });
@@ -103,14 +103,14 @@ export class CompetitionFixtureService {
 
     const [year1, year2] = season.code.split('/');
 
-    const participantTeams =
+    const participantClubs =
       await this.competitionsService.findCompetitionParticipants(
         competitionEditionId,
       );
 
-    if (participantTeams.length <= 1)
+    if (participantClubs.length <= 1)
       throw new BadRequestException(
-        'To generate a fixture, you have to register at least 2 teams in a competition',
+        'To generate a fixture, you have to register at least 2 clubs in a competition',
       );
 
     const existingMatches =
@@ -128,7 +128,7 @@ export class CompetitionFixtureService {
 
     switch (competition.format) {
       case CompetitionFormat.SUPER_CUP:
-        fixture = generateSuperCupPairing(participantTeams);
+        fixture = generateSuperCupPairing(participantClubs);
         matchType = MatchType.FINAL;
         break;
       case CompetitionFormat.GROUPS_AND_KNOCKOUT:
@@ -136,7 +136,7 @@ export class CompetitionFixtureService {
           'Create group-stage matches through the groups endpoint and knockout matches through knockout-round pairings.',
         );
       case CompetitionFormat.LEAGUE:
-        fixture = generateLeagueFixture(participantTeams);
+        fixture = generateLeagueFixture(participantClubs);
         matchType = MatchType.LEAGUE;
         break;
       case CompetitionFormat.KNOCKOUT:
@@ -155,7 +155,7 @@ export class CompetitionFixtureService {
     const scheduledMatches = this.mergeFixtureWithCalendar(
       fixture,
       calendar,
-      participantTeams,
+      participantClubs,
       competitionEdition,
     );
 
@@ -200,39 +200,39 @@ export class CompetitionFixtureService {
     }
 
     const groupEntries = Object.entries(groups);
-    const participantTeams =
+    const participantClubs =
       await this.competitionsService.findCompetitionParticipants(
         competitionEditionId,
       );
-    const participantIds = participantTeams.map(({ team }) => team.id);
+    const participantIds = participantClubs.map(({ club }) => club.id);
     const assignedIds: number[] = [];
-    const expectedTeamsPerGroup =
-      competition.teamsPerGroup ?? groupEntries[0][1]?.length;
+    const expectedClubsPerGroup =
+      competition.clubsPerGroup ?? groupEntries[0][1]?.length;
 
-    for (const [groupName, teamIds] of groupEntries) {
+    for (const [groupName, clubIds] of groupEntries) {
       if (
         !groupName.trim() ||
-        !Array.isArray(teamIds) ||
-        teamIds.length === 0
+        !Array.isArray(clubIds) ||
+        clubIds.length === 0
       ) {
         throw new BadRequestException(
-          'Every group must have a name and at least one team.',
+          'Every group must have a name and at least one club.',
         );
       }
 
-      if (teamIds.length !== expectedTeamsPerGroup) {
+      if (clubIds.length !== expectedClubsPerGroup) {
         throw new BadRequestException(
-          `Every group must contain exactly ${expectedTeamsPerGroup} teams.`,
+          `Every group must contain exactly ${expectedClubsPerGroup} clubs.`,
         );
       }
 
-      if (teamIds.some((teamId) => !Number.isInteger(teamId) || teamId <= 0)) {
+      if (clubIds.some((clubId) => !Number.isInteger(clubId) || clubId <= 0)) {
         throw new BadRequestException(
-          `Group ${groupName} contains an invalid team id.`,
+          `Group ${groupName} contains an invalid club id.`,
         );
       }
 
-      assignedIds.push(...teamIds);
+      assignedIds.push(...clubIds);
     }
 
     if (
@@ -247,10 +247,10 @@ export class CompetitionFixtureService {
     if (
       new Set(assignedIds).size !== assignedIds.length ||
       participantIds.length !== assignedIds.length ||
-      participantIds.some((teamId) => !assignedIds.includes(teamId))
+      participantIds.some((clubId) => !assignedIds.includes(clubId))
     ) {
       throw new BadRequestException(
-        'Every participating team must be assigned to exactly one group.',
+        'Every participating club must be assigned to exactly one group.',
       );
     }
 
@@ -290,7 +290,7 @@ export class CompetitionFixtureService {
     const scheduledMatches = this.mergeFixtureWithCalendar(
       fixture,
       calendar,
-      participantTeams,
+      participantClubs,
       competitionEdition,
     );
 
@@ -333,26 +333,26 @@ export class CompetitionFixtureService {
 
     const calendar = calendarGenerator(year1, year2);
 
-    const qualifiedTeamIds = new Set(
-      knockoutRound.qualifiedTeams.map((team) => team.id),
+    const qualifiedClubIds = new Set(
+      knockoutRound.qualifiedClubs.map((club) => club.id),
     );
-    const participantTeams =
+    const participantClubs =
       await this.competitionsService.findCompetitionParticipants(
         competitionEdition.id,
       );
-    const qualifiedTeams = participantTeams.filter(({ team }) =>
-      qualifiedTeamIds.has(team.id),
+    const qualifiedClubs = participantClubs.filter(({ club }) =>
+      qualifiedClubIds.has(club.id),
     );
 
-    if (qualifiedTeams.length !== qualifiedTeamIds.size) {
+    if (qualifiedClubs.length !== qualifiedClubIds.size) {
       throw new BadRequestException(
-        'Every qualified team must participate in this competition edition.',
+        'Every qualified club must participate in this competition edition.',
       );
     }
 
-    const participatingTeams: ParticipatingTeam[] = qualifiedTeams.map(
-      ({ team }) => ({
-        team,
+    const participatingClubs: ParticipatingClub[] = qualifiedClubs.map(
+      ({ club }) => ({
+        club,
         position: null,
       }),
     );
@@ -369,7 +369,7 @@ export class CompetitionFixtureService {
       return this.mergeFixtureWithCalendar(
         fixture,
         calendar,
-        participatingTeams,
+        participatingClubs,
         competitionEdition,
       );
     });

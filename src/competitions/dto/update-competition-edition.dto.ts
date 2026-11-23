@@ -4,10 +4,10 @@ export class UpdateCompetitionEditionDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  winnerTeamId!: number;
+  winnerClubId!: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
-  runnerUpTeamId!: number;
+  runnerUpClubId!: number;
 }
