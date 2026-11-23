@@ -19,7 +19,7 @@ async function bootstrap() {
     .setDescription(
       'Backend API for a football career mode simulator, built with NestJS, TypeScript, and Prisma.',
     )
-    .setVersion('1.0')
+    .setVersion('1.1.0')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

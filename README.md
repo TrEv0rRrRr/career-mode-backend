@@ -5,16 +5,16 @@ Backend API for a football career mode simulator, built with NestJS, TypeScript,
 ## Features
 
 - **Career Management:** Create and manage football careers and their seasons.
-- **Team Management:** Manage clubs, managers, stadiums, and team information.
-- **Player Management:** Manage player profiles, positions, attributes, and team associations.
+- **Club Management:** Manage clubs, managers, stadiums, and club information.
+- **Player Management:** Manage player profiles, positions, attributes, and club associations.
 - **Competition Management:** Configure competitions, editions, participants, and competition formats.
 - **Fixture Management:** Generate league fixtures, group-stage fixtures, and knockout matches.
 - **Match Management:** Manage scheduled matches, results, match statistics, and match outcomes.
 - **Knockout System:** Manage knockout rounds, pairings, one-legged and two-legged ties, and round progression.
-- **Statistics:** Track player and team performance across seasons and individual matches.
+- **Statistics:** Track player and club performance across seasons and individual matches.
 - **Transfers:** Manage player transfers, loans, free-agent signings, and youth promotions.
-- **National Teams:** Manage national team rosters, call-ups, managers, fixtures, and historical records.
-- **National Team Competitions:** Support national-team participants and national team competition formats.
+- **National Teams:** Manage national club rosters, call-ups, managers, fixtures, and historical records.
+- **National Team Competitions:** Support national-club participants and national club competition formats.
 
 ## Tech Stack
 
@@ -48,13 +48,13 @@ The database is relational and managed through Prisma.
 The main domain entities include:
 
 - **Career and Season:** Represent a career save and its seasons.
-- **Team and Player:** Store club, manager, player, and squad information.
+- **Club and Player:** Store club, manager, player, and squad information.
 - **Competition and CompetitionEdition:** Represent competitions and their editions within a season.
-- **CompetitionParticipant:** Tracks team participation and competition standings.
+- **CompetitionParticipant:** Tracks club participation and competition standings.
 - **Match:** Stores fixtures, results, and match information.
 - **Tie and KnockoutRound:** Handle knockout pairings, legs, and round progression.
-- **Transfer and PlayerTeam:** Track player movements and team associations.
-- **Statistics:** Store player and team statistics at season and match level.
+- **Transfer and PlayerClub:** Track player movements and club associations.
+- **Statistics:** Store player and club statistics at season and match level.
 - **National Team:** Store national-team squads, manager records, matches, and competition participation.
 
 Supported competition formats include:
@@ -167,7 +167,7 @@ Once the application is running, access the Swagger UI at:
 
 **Complete — 100%**
 
-The backend implementation is complete, including national team management, national team competitions, competition helpers, response DTO coverage, API documentation, and final validation.
+The backend implementation is complete, including national club management, national club competitions, competition helpers, response DTO coverage, API documentation, and final validation.
 
 ## License
 
