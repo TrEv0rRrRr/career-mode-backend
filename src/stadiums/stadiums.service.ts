@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateStadiumDto } from './dto/create-stadium.dto.ts';
+import { StadiumMapper } from './dto/mapper/stadiums.mapper.ts';
 import { UpdateStadiumDto } from './dto/update-stadium.dto.ts';
 import { StadiumNotFoundException } from './exceptions/stadium-not-found.exception.ts';
 import { StadiumsRepository } from './stadiums.repository.ts';
@@ -8,8 +9,9 @@ import { StadiumsRepository } from './stadiums.repository.ts';
 export class StadiumsService {
   constructor(private repo: StadiumsRepository) {}
 
-  findStadiums() {
-    return this.repo.findAll();
+  async findStadiums() {
+    const stadiums = await this.repo.findAll();
+    return stadiums.map((s) => StadiumMapper.toResponse(s));
   }
 
   async findStadiumById(id: number) {
@@ -17,7 +19,7 @@ export class StadiumsService {
 
     if (!stadium) throw new StadiumNotFoundException();
 
-    return stadium;
+    return StadiumMapper.toResponse(stadium);
   }
 
   async createStadium(data: CreateStadiumDto) {

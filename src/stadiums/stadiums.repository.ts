@@ -1,18 +1,33 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateStadiumDto } from './dto/create-stadium.dto.ts';
 import { UpdateStadiumDto } from './dto/update-stadium.dto.ts';
+
+const stadiumInclude = {
+  clubs: true,
+  nationalTeams: true,
+};
+
+export type StadiumWithRelations = Prisma.StadiumGetPayload<{
+  include: typeof stadiumInclude;
+}>;
 
 @Injectable()
 export class StadiumsRepository {
   constructor(private prisma: PrismaService) {}
 
   findById(id: number) {
-    return this.prisma.stadium.findUnique({ where: { id } });
+    return this.prisma.stadium.findUnique({
+      where: { id },
+      include: stadiumInclude,
+    });
   }
 
   findAll() {
-    return this.prisma.stadium.findMany();
+    return this.prisma.stadium.findMany({
+      include: stadiumInclude,
+    });
   }
 
   findByName(name: string) {
