@@ -14,6 +14,14 @@ export class KnockoutRoundMapper {
       country: club.country,
       confederation: club.confederation,
     }));
+    const qualifiedNationalTeams = kR.qualifiedNationalTeams.map(
+      ({ nationalTeam }) => ({
+        id: nationalTeam.id,
+        name: nationalTeam.name,
+        logo: nationalTeam.logo,
+        confederation: nationalTeam.confederation,
+      }),
+    );
 
     return {
       id: kR.id,
@@ -21,6 +29,7 @@ export class KnockoutRoundMapper {
       completed: kR.completed,
       type: transformMatchTypeToKnockoutRoundType(kR.type),
       qualifiedClubs,
+      qualifiedNationalTeams,
     };
   };
 }

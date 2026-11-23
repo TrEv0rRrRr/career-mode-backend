@@ -52,18 +52,40 @@ export class CreateMatchDto {
   @ApiProperty({
     example: 1,
     description: 'The id of the home club',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Min(1)
-  homeClubId!: number;
+  homeClubId?: number;
 
   @ApiProperty({
     example: 2,
     description: 'The id of the away club',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Min(1)
-  awayClubId!: number;
+  awayClubId?: number;
+
+  @ApiProperty({
+    example: 1,
+    description: 'The id of the home national team',
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  homeNationalTeamId?: number;
+
+  @ApiProperty({
+    example: 2,
+    description: 'The id of the away national team',
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  awayNationalTeamId?: number;
 }

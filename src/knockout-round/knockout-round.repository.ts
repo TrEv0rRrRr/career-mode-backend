@@ -1,27 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { MatchType, Prisma } from '@prisma/client';
+import { CompetitionType, Prisma } from '@prisma/client';
 import { transformKnockoutRoundTypeToMatchType } from '../common/helpers/transformKnockoutRoundTypeToMatchType.ts';
 import { NextKnockoutRoundData } from '../common/types/NextKnockoutRoundData.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 
-type CreatedRounds = {
-  qualifiedClubs: {
-    clubId: number;
-    knockoutRoundId: number;
-  }[];
-} & {
-  id: number;
-  completed: boolean;
-  type: MatchType;
-  competitionEditionId: number;
-};
-
 export const knockoutRoundInclude = {
   qualifiedClubs: {
     include: {
       club: true,
+    },
+  },
+  qualifiedNationalTeams: {
+    include: {
+      nationalTeam: true,
     },
   },
   ties: {
@@ -33,6 +26,13 @@ export const knockoutRoundInclude = {
 
 export type KnockoutRoundWithRelations = Prisma.KnockoutRoundGetPayload<{
   include: typeof knockoutRoundInclude;
+}>;
+
+type CreatedKnockoutRound = Prisma.KnockoutRoundGetPayload<{
+  include: {
+    qualifiedClubs: true;
+    qualifiedNationalTeams: true;
+  };
 }>;
 
 @Injectable()
@@ -96,17 +96,27 @@ export class KnockoutRoundRepository {
   createKnockoutRound(data: CreateKnockoutRoundDto, type: KnockoutRoundType) {
     return this.prisma.knockoutRound.create({
       data: {
-        ...data,
+        competitionEditionId: data.competitionEditionId,
         type: transformKnockoutRoundTypeToMatchType(type),
-        qualifiedClubs: {
-          create: data.qualifiedClubs.map((clubId) => ({
-            clubId,
-          })),
-        },
+        qualifiedClubs: data.qualifiedClubs
+          ? {
+              create: data.qualifiedClubs.map((clubId) => ({
+                clubId,
+              })),
+            }
+          : undefined,
+        qualifiedNationalTeams: data.qualifiedNationalTeams
+          ? {
+              create: data.qualifiedNationalTeams.map((nationalTeamId) => ({
+                nationalTeamId,
+              })),
+            }
+          : undefined,
         completed: false,
       },
       include: {
         qualifiedClubs: true,
+        qualifiedNationalTeams: true,
       },
     });
   }
@@ -114,10 +124,9 @@ export class KnockoutRoundRepository {
   async resolveRoundAndCreateNextRounds(
     knockoutRoundId: number,
     nextRounds: NextKnockoutRoundData[],
-    eliminatedClubIds: number[] = [],
+    eliminatedParticipantIds: number[] = [],
   ) {
     return this.prisma.$transaction(async (tx) => {
-      // Solo una ejecución puede completar esta ronda.
       const result = await tx.knockoutRound.updateMany({
         where: {
           id: knockoutRoundId,
@@ -134,41 +143,69 @@ export class KnockoutRoundRepository {
         );
       }
 
-      const competitionEditionId = (
-        await tx.knockoutRound.findUniqueOrThrow({
-          where: { id: knockoutRoundId },
-          select: { competitionEditionId: true },
-        })
-      ).competitionEditionId;
+      const competitionEdition = await tx.knockoutRound.findUniqueOrThrow({
+        where: { id: knockoutRoundId },
+        select: {
+          competitionEditionId: true,
+          competitionEdition: {
+            select: { competition: { select: { type: true } } },
+          },
+        },
+      });
+      const competitionEditionId = competitionEdition.competitionEditionId;
+      const isNationalTeamsCompetition =
+        competitionEdition.competitionEdition.competition.type ===
+        CompetitionType.NATIONAL_TEAMS;
 
-      const createdRounds: CreatedRounds[] = [];
+      const createdRounds: CreatedKnockoutRound[] = [];
 
       for (const round of nextRounds) {
         const createdRound = await tx.knockoutRound.create({
           data: {
             competitionEditionId,
             type: round.type,
-            qualifiedClubs: {
-              create: round.qualifiedClubIds.map((clubId) => ({
-                clubId,
-              })),
-            },
+            qualifiedClubs:
+              'qualifiedClubIds' in round
+                ? {
+                    create: round.qualifiedClubIds.map((clubId) => ({
+                      clubId,
+                    })),
+                  }
+                : undefined,
+            qualifiedNationalTeams:
+              'qualifiedNationalTeamIds' in round
+                ? {
+                    create: round.qualifiedNationalTeamIds.map(
+                      (nationalTeamId) => ({ nationalTeamId }),
+                    ),
+                  }
+                : undefined,
           },
           include: {
             qualifiedClubs: true,
+            qualifiedNationalTeams: true,
           },
         });
 
         createdRounds.push(createdRound);
       }
 
-      if (eliminatedClubIds.length > 0) {
-        await tx.competitionParticipant.deleteMany({
-          where: {
-            competitionEditionId,
-            clubId: { in: eliminatedClubIds },
-          },
-        });
+      if (eliminatedParticipantIds.length > 0) {
+        if (isNationalTeamsCompetition) {
+          await tx.nationalTeamCompetitionParticipant.deleteMany({
+            where: {
+              competitionEditionId,
+              nationalTeamId: { in: eliminatedParticipantIds },
+            },
+          });
+        } else {
+          await tx.competitionParticipant.deleteMany({
+            where: {
+              competitionEditionId,
+              clubId: { in: eliminatedParticipantIds },
+            },
+          });
+        }
       }
 
       return createdRounds;

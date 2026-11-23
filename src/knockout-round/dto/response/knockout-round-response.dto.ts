@@ -1,4 +1,5 @@
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
+import { Confederation } from '@prisma/client';
 import { KnockoutRoundType } from '../../enums/KnockoutRoundType.ts';
 
 export class KnockoutRoundResponseDto {
@@ -7,4 +8,10 @@ export class KnockoutRoundResponseDto {
   type!: KnockoutRoundType;
   completed!: boolean;
   qualifiedClubs!: ClubSummary[];
+  qualifiedNationalTeams!: {
+    id: number;
+    name: string;
+    logo: string | null;
+    confederation: Confederation;
+  }[];
 }

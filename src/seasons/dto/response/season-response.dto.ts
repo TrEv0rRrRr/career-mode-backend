@@ -66,6 +66,12 @@ export type CompetitionEditionsResponse = {
   id: number;
   competition: CompetitionResponse;
   winnerClub: Optional<ClubSummary>;
+  winnerNationalTeam: Optional<{
+    id: number;
+    name: string;
+    logo: string | null;
+    confederation: Confederation;
+  }>;
 };
 
 export class SeasonResponseDto {

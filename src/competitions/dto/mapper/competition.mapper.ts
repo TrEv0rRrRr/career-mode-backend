@@ -96,6 +96,18 @@ export class CompetitionMapper {
         country: cE.runnerUpClub?.country,
         confederation: cE.runnerUpClub?.confederation,
       },
+      winnerNationalTeam: {
+        id: cE.winnerNationalTeamId,
+        name: cE.winnerNationalTeam?.name,
+        logo: cE.winnerNationalTeam?.logo,
+        confederation: cE.winnerNationalTeam?.confederation,
+      },
+      runnerUpNationalTeam: {
+        id: cE.runnerUpNationalTeamId,
+        name: cE.runnerUpNationalTeam?.name,
+        logo: cE.runnerUpNationalTeam?.logo,
+        confederation: cE.runnerUpNationalTeam?.confederation,
+      },
       ...(isANationalTeamsCompetition
         ? {
             participantNationalTeams,

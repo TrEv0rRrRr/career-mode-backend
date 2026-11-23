@@ -5,6 +5,7 @@ import {
   IsArray,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -14,6 +15,20 @@ export class CreateKnockoutRoundPairingsDto {
     example: [
       { homeClubId: 1, awayClubId: 2 },
       { homeClubId: 3, awayClubId: 4 },
+    ],
+    examples: [
+      {
+        pairings: [
+          { homeClubId: 1, awayClubId: 2 },
+          { homeClubId: 3, awayClubId: 4 },
+        ],
+      },
+      {
+        pairings: [
+          { homeNationalTeamId: 1, awayNationalTeamId: 2 },
+          { homeNationalTeamId: 3, awayNationalTeamId: 4 },
+        ],
+      },
     ],
   })
   @IsNotEmpty()
@@ -25,15 +40,27 @@ export class CreateKnockoutRoundPairingsDto {
 }
 
 export class CreatePairingDto {
-  @ApiProperty({ example: 1 })
-  @IsNotEmpty()
+  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
   @IsInt()
   @Min(1)
-  homeClubId!: number;
+  homeClubId?: number;
 
-  @ApiProperty({ example: 2 })
-  @IsNotEmpty()
+  @ApiProperty({ example: 2, required: false })
+  @IsOptional()
   @IsInt()
   @Min(1)
-  awayClubId!: number;
+  awayClubId?: number;
+
+  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  homeNationalTeamId?: number;
+
+  @ApiProperty({ example: 2, required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  awayNationalTeamId?: number;
 }

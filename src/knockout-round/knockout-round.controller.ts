@@ -81,27 +81,27 @@ export class KnockoutRoundController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "They can't be more or less than 32 qualified clubs for a round of 32.",
+      "They can't be more or less than 32 qualified participants for a round of 32.",
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "They can't be more or less than 16 qualified clubs for a round of 16.",
+      "They can't be more or less than 16 qualified participants for a round of 16.",
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "They can't be more or less than 8 qualified clubs for the quarterfinals.",
+      "They can't be more or less than 8 qualified participants for the quarterfinals.",
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "They can't be more or less than 4 qualified clubs for the semifinals.",
+      "They can't be more or less than 4 qualified participants for the semifinals.",
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "They can't be more or less than 2 qualified clubs for the third place match or the final.",
+      "They can't be more or less than 2 qualified participants for the third place match or the final.",
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
@@ -136,15 +136,15 @@ export class KnockoutRoundController {
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: "There's a pairing with two equal clubs",
+    description: "There's a pairing with two equal participants",
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'A club cannot participate in multiple pairings',
+    description: 'A participant cannot participate in multiple pairings',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: "There are clubs that aren't qualified for the next round",
+    description: "There are participants that aren't qualified for this round",
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,

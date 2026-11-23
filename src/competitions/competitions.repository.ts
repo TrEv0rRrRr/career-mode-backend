@@ -4,13 +4,14 @@ import { matchInclude } from '../matches/matches.repository.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { ChangeEditionFinalStadiumDto } from './dto/change-edition-final-stadium.dto.ts';
 import { CreateManyEditionsDto } from './dto/create-many-editions.dto.ts';
-import { UpdateCompetitionEditionDto } from './dto/update-competition-edition.dto.ts';
 
 const competitionEditionInclude = {
   competition: true,
   season: true,
   winnerClub: true,
   runnerUpClub: true,
+  winnerNationalTeam: true,
+  runnerUpNationalTeam: true,
   stadium: true,
   competitionParticipants: {
     include: {
@@ -29,6 +30,8 @@ const competitionEditionByIdInclude = {
   season: true,
   winnerClub: true,
   runnerUpClub: true,
+  winnerNationalTeam: true,
+  runnerUpNationalTeam: true,
   competitionParticipants: true,
 } as const;
 
@@ -144,7 +147,7 @@ export class CompetitionsRepository {
 
   assignWinnerAndRunnerUp(
     editionId: number,
-    data: UpdateCompetitionEditionDto,
+    data: Prisma.CompetitionEditionUncheckedUpdateInput,
   ) {
     return this.prisma.competitionEdition.update({
       where: { id: editionId },

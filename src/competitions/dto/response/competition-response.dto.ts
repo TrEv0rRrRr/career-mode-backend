@@ -119,6 +119,18 @@ export class CompetitionEditionResponseDto {
   };
   winnerClub!: Optional<ClubSummary>;
   runnerUpClub!: Optional<ClubSummary>;
+  winnerNationalTeam!: Optional<{
+    id: number;
+    name: string;
+    logo: string | null;
+    confederation: Confederation;
+  }>;
+  runnerUpNationalTeam!: Optional<{
+    id: number;
+    name: string;
+    logo: string | null;
+    confederation: Confederation;
+  }>;
   participantClubs?: ParticipantClub[];
   participantNationalTeams?: ParticipantNationalTeam[];
 }

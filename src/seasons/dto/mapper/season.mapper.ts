@@ -67,6 +67,12 @@ export class SeasonMapper {
           country: cE.winnerClub?.country,
           confederation: cE.winnerClub?.confederation,
         },
+        winnerNationalTeam: {
+          id: cE.winnerNationalTeamId,
+          name: cE.winnerNationalTeam?.name,
+          logo: cE.winnerNationalTeam?.logo,
+          confederation: cE.winnerNationalTeam?.confederation,
+        },
       }));
 
     return {

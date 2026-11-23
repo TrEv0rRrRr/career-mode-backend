@@ -7,6 +7,7 @@ import {
 import {
   CompetitionEdition,
   CompetitionFormat,
+  CompetitionType,
   MatchType,
 } from '@prisma/client';
 import { calendarTemplates } from '../../common/calendar/calendarTemplates.ts';
@@ -333,6 +334,78 @@ export class CompetitionFixtureService {
 
     const calendar = calendarGenerator(year1, year2);
 
+    if (competition.type === CompetitionType.NATIONAL_TEAMS) {
+      const qualifiedNationalTeamIds = new Set(
+        knockoutRound.qualifiedNationalTeams.map(({ id }) => id),
+      );
+      const participants =
+        await this.competitionsService.findNationalTeamCompetitionParticipants(
+          competitionEdition.id,
+        );
+      const qualifiedNationalTeams = participants
+        .filter(({ nationalTeamId }) =>
+          qualifiedNationalTeamIds.has(nationalTeamId),
+        )
+        .map(({ nationalTeam }) => nationalTeam);
+      const nationalTeamsById = new Map(
+        qualifiedNationalTeams.map((nationalTeam) => [
+          nationalTeam.id,
+          nationalTeam,
+        ]),
+      );
+
+      if (qualifiedNationalTeams.length !== qualifiedNationalTeamIds.size) {
+        throw new BadRequestException(
+          'Every qualified national team must participate in this competition edition.',
+        );
+      }
+
+      const nationalTeamTies = pairings.map((pairing) => {
+        const fixture = generateKnockoutBracket(
+          {
+            homeClubId: pairing.homeNationalTeamId!,
+            awayClubId: pairing.awayNationalTeamId!,
+            matchType: knockoutRound.type,
+          },
+          isTwoLeggedRound,
+        );
+
+        return fixture.map((match) => {
+          const day = this.findCalendarEntry(calendar, match);
+          if (!day)
+            throw new BadRequestException(
+              `No calendar entry found for ${match.matchType} ${match.leg ?? ''}`,
+            );
+
+          const homeNationalTeam = nationalTeamsById.get(match.homeClubId);
+          if (!homeNationalTeam)
+            throw new BadRequestException(
+              `National team ${match.homeClubId} was not found among competition participants`,
+            );
+
+          return {
+            homeNationalTeamId: match.homeClubId,
+            awayNationalTeamId: match.awayClubId,
+            date: day.date,
+            stadiumId:
+              match.matchType === MatchType.FINAL &&
+              competitionEdition.finalStadiumId
+                ? competitionEdition.finalStadiumId
+                : homeNationalTeam.stadiumId,
+            matchday: day.matchday,
+            leg: match.leg,
+          };
+        });
+      });
+
+      return this.matchesService.createKnockoutRoundMatches(
+        knockoutRound.id,
+        competitionEdition.id,
+        knockoutRound.type,
+        nationalTeamTies,
+      );
+    }
+
     const qualifiedClubIds = new Set(
       knockoutRound.qualifiedClubs.map((club) => club.id),
     );
@@ -358,9 +431,15 @@ export class CompetitionFixtureService {
     );
 
     const matchesByPairing = pairings.map((pairing) => {
+      if (pairing.homeClubId === undefined || pairing.awayClubId === undefined)
+        throw new BadRequestException(
+          'Each pairing must include homeClubId and awayClubId.',
+        );
+
       const fixture = generateKnockoutBracket(
         {
-          ...pairing,
+          homeClubId: pairing.homeClubId,
+          awayClubId: pairing.awayClubId,
           matchType: knockoutRound.type,
         },
         isTwoLeggedRound,

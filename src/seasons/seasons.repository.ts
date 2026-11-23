@@ -20,6 +20,7 @@ const seasonInclude = {
     include: {
       competition: true,
       winnerClub: true,
+      winnerNationalTeam: true,
     },
   },
 } as const;

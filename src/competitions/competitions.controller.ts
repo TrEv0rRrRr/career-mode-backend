@@ -239,11 +239,12 @@ export class CompetitionsController {
 
   @Patch(':competitionId/editions/:editionId')
   @ApiOperation({
-    summary: 'Assign a winner and a runner-up club to a competition edition',
+    summary:
+      'Assign a winner and a runner-up club or national team to a competition edition',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Clubs assigned!',
+    description: 'Winners assigned!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -259,18 +260,42 @@ export class CompetitionsController {
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'The winner and the runner-up clubs must be different',
+    description: 'The winner and the runner-up participants must be different',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description:
-      "You can't assign a club that is not participating in the given competition",
+      "You can't assign a participant that is not participating in the given competition",
   })
   @ApiBody({
     schema: {
-      example: {
-        winnerClubId: 1,
-        runnerUpClubId: 2,
+      oneOf: [
+        {
+          type: 'object',
+          properties: {
+            winnerClubId: { type: 'integer', minimum: 1 },
+            runnerUpClubId: { type: 'integer', minimum: 1 },
+          },
+          required: ['winnerClubId', 'runnerUpClubId'],
+        },
+        {
+          type: 'object',
+          properties: {
+            winnerNationalTeamId: { type: 'integer', minimum: 1 },
+            runnerUpNationalTeamId: { type: 'integer', minimum: 1 },
+          },
+          required: ['winnerNationalTeamId', 'runnerUpNationalTeamId'],
+        },
+      ],
+    },
+    examples: {
+      clubs: {
+        summary: 'Club competition',
+        value: { winnerClubId: 1, runnerUpClubId: 2 },
+      },
+      nationalTeams: {
+        summary: 'National teams competition',
+        value: { winnerNationalTeamId: 1, runnerUpNationalTeamId: 2 },
       },
     },
   })
@@ -291,7 +316,7 @@ export class CompetitionsController {
   @Get('/editions/:competitionEditionId/clubs')
   @ApiOperation({
     summary:
-      'Get the list of clubs that are participating in the given competition',
+      'Get the list of participants that are participating in the given competition',
   })
   @ApiResponse({
     status: HttpStatus.OK,

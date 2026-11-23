@@ -168,37 +168,104 @@ export class CompetitionsService {
     editionId: number,
     data: UpdateCompetitionEditionDto,
   ) {
-    await this.findCompetitionById(competitionId);
+    const competition = await this.findCompetitionById(competitionId);
+    const edition = await this.repo.findEditionById(editionId);
 
-    await this.clubsService.findClubById(data.winnerClubId);
+    if (!edition) throw new CompetitionEditionNotFoundException();
+    if (edition.competitionId !== competitionId)
+      throw new BadRequestException(
+        'The competition edition does not belong to this competition.',
+      );
 
-    await this.clubsService.findClubById(data.runnerUpClubId);
+    const isNationalTeamsCompetition =
+      competition.type === CompetitionType.NATIONAL_TEAMS;
 
-    if (data.winnerClubId === data.runnerUpClubId)
+    if (isNationalTeamsCompetition) {
+      const { winnerNationalTeamId, runnerUpNationalTeamId } = data;
+      if (
+        typeof winnerNationalTeamId !== 'number' ||
+        !Number.isInteger(winnerNationalTeamId) ||
+        winnerNationalTeamId < 1 ||
+        typeof runnerUpNationalTeamId !== 'number' ||
+        !Number.isInteger(runnerUpNationalTeamId) ||
+        runnerUpNationalTeamId < 1 ||
+        data.winnerClubId !== undefined ||
+        data.runnerUpClubId !== undefined
+      )
+        throw new BadRequestException(
+          'Provide the winnerNationalTeamId and runnerUpNationalTeamId for a national teams competition.',
+        );
+
+      if (winnerNationalTeamId === runnerUpNationalTeamId)
+        throw new ConflictException(
+          'The winner and the runner-up national teams must be different',
+        );
+
+      const [winner, runnerUp] = await Promise.all([
+        this.repo.findNationalTeamCompetitionParticipant(
+          editionId,
+          winnerNationalTeamId,
+        ),
+        this.repo.findNationalTeamCompetitionParticipant(
+          editionId,
+          runnerUpNationalTeamId,
+        ),
+      ]);
+
+      if (!winner || !runnerUp)
+        throw new BadRequestException(
+          "You can't assign a national team that is not participating in the given competition",
+        );
+
+      return this.repo.assignWinnerAndRunnerUp(editionId, {
+        winnerNationalTeamId,
+        runnerUpNationalTeamId,
+        winnerClubId: null,
+        runnerUpClubId: null,
+      });
+    }
+
+    const { winnerClubId, runnerUpClubId } = data;
+    if (
+      typeof winnerClubId !== 'number' ||
+      !Number.isInteger(winnerClubId) ||
+      winnerClubId < 1 ||
+      typeof runnerUpClubId !== 'number' ||
+      !Number.isInteger(runnerUpClubId) ||
+      runnerUpClubId < 1 ||
+      data.winnerNationalTeamId !== undefined ||
+      data.runnerUpNationalTeamId !== undefined
+    )
+      throw new BadRequestException(
+        'Provide the winnerClubId and runnerUpClubId for a club competition.',
+      );
+
+    await Promise.all([
+      this.clubsService.findClubById(winnerClubId),
+      this.clubsService.findClubById(runnerUpClubId),
+    ]);
+
+    if (winnerClubId === runnerUpClubId)
       throw new ConflictException(
         'The winner and the runner-up clubs must be different',
       );
 
-    const edition = await this.repo.findEditionById(editionId);
+    const [winner, runnerUp] = await Promise.all([
+      this.repo.findCompetitionParticipant(editionId, winnerClubId),
+      this.repo.findCompetitionParticipant(editionId, runnerUpClubId),
+    ]);
 
-    if (!edition) throw new CompetitionEditionNotFoundException();
-
-    const winnerClub = await this.repo.findCompetitionParticipant(
-      editionId,
-      data.winnerClubId,
-    );
-
-    const runnerUpClub = await this.repo.findCompetitionParticipant(
-      editionId,
-      data.runnerUpClubId,
-    );
-
-    if (!winnerClub || !runnerUpClub)
+    if (!winner || !runnerUp)
       throw new BadRequestException(
         "You can't assign a club that is not participating in the given competition",
       );
 
-    return this.repo.assignWinnerAndRunnerUp(editionId, data);
+    return this.repo.assignWinnerAndRunnerUp(editionId, {
+      winnerClubId,
+      runnerUpClubId,
+      winnerNationalTeamId: null,
+      runnerUpNationalTeamId: null,
+    });
   }
 
   // ! Competition Participant Methods
@@ -218,6 +285,14 @@ export class CompetitionsService {
       club: participant.club,
       position: participant.position,
     }));
+  }
+
+  async findNationalTeamCompetitionParticipants(competitionEditionId: number) {
+    await this.findCompetitionEditionById(competitionEditionId);
+
+    return this.repo.findNationalTeamCompetitionParticipants(
+      competitionEditionId,
+    );
   }
 
   async findAllCompetitionParticipants(competitionEditionId: number) {

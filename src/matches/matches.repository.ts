@@ -331,7 +331,8 @@ export class MatchesRepository {
     competitionFormat: CompetitionFormat,
     playerClubsIds: Map<number, number>,
     seasonId: number,
-    winnerClubId: number | null,
+    winnerId: number | null,
+    isNationalTeamsMatch: boolean,
     data: PlayMatchDto,
     finishType: MatchFinishType,
   ) {
@@ -342,7 +343,8 @@ export class MatchesRepository {
           ...data.match,
           finishType,
           status: MatchStatus.PLAYED,
-          winnerClubId,
+          winnerClubId: isNationalTeamsMatch ? null : winnerId,
+          winnerNationalTeamId: isNationalTeamsMatch ? winnerId : null,
         },
       });
 
@@ -350,6 +352,15 @@ export class MatchesRepository {
       const awayClubId = updatedMatch.awayClubId;
 
       if (homeClubId === null || awayClubId === null) {
+        if (
+          isNationalTeamsMatch &&
+          updatedMatch.homeNationalTeamId !== null &&
+          updatedMatch.awayNationalTeamId !== null &&
+          data.playerStats.length === 0 &&
+          data.clubStats.length === 0
+        ) {
+          return updatedMatch;
+        }
         throw new BadRequestException(
           'Player and club stats can only be recorded for club matches.',
         );

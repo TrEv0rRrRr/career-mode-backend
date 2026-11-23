@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { CreateMatchPlayerStatsDto } from './stats/create-match-player-stats.dto.ts';
 import { CreateMatchClubStatsDto } from './stats/create-match-club-stats.dto.ts';
 import { UpdateMatchDto } from './update-match.dto.ts';
@@ -11,15 +11,24 @@ export class PlayMatchDto {
   @Type(() => UpdateMatchDto)
   match!: UpdateMatchDto;
 
-  @ApiProperty({ type: () => CreateMatchPlayerStatsDto, isArray: true })
+  @ApiProperty({
+    type: () => CreateMatchPlayerStatsDto,
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateMatchPlayerStatsDto)
   playerStats!: CreateMatchPlayerStatsDto[];
 
-  @ApiProperty({ type: () => CreateMatchClubStatsDto, isArray: true })
+  @ApiProperty({
+    type: () => CreateMatchClubStatsDto,
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
   @IsArray()
-  @ArrayMinSize(2)
   @ValidateNested({ each: true })
   @Type(() => CreateMatchClubStatsDto)
   clubStats!: CreateMatchClubStatsDto[];
