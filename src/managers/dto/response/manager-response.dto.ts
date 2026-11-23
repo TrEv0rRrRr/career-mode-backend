@@ -1,6 +1,7 @@
 import { Confederation } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
 import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
+
 export type ManagerClubType = {
   club: {
     name: string;
@@ -55,7 +56,7 @@ export class ManagerResponseDto {
 
 export type ManagerSummary = Omit<
   ManagerResponseDto,
-  'birthDate' | 'club' | 'nationalTeam'
+  'birthDate' | 'currentClub' | 'currentNationalTeam'
 >;
 
 class ManagerTeam {
