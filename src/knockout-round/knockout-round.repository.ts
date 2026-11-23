@@ -7,8 +7,8 @@ import { CreateKnockoutRoundDto } from './dto/create-knockout-round.dto.ts';
 import { KnockoutRoundType } from './enums/KnockoutRoundType.ts';
 
 type CreatedRounds = {
-  qualifiedTeams: {
-    teamId: number;
+  qualifiedClubs: {
+    clubId: number;
     knockoutRoundId: number;
   }[];
 } & {
@@ -19,9 +19,9 @@ type CreatedRounds = {
 };
 
 export const knockoutRoundInclude = {
-  qualifiedTeams: {
+  qualifiedClubs: {
     include: {
-      team: true,
+      club: true,
     },
   },
   ties: {
@@ -98,15 +98,15 @@ export class KnockoutRoundRepository {
       data: {
         ...data,
         type: transformKnockoutRoundTypeToMatchType(type),
-        qualifiedTeams: {
-          create: data.qualifiedTeams.map((teamId) => ({
-            teamId,
+        qualifiedClubs: {
+          create: data.qualifiedClubs.map((clubId) => ({
+            clubId,
           })),
         },
         completed: false,
       },
       include: {
-        qualifiedTeams: true,
+        qualifiedClubs: true,
       },
     });
   }
@@ -114,7 +114,7 @@ export class KnockoutRoundRepository {
   async resolveRoundAndCreateNextRounds(
     knockoutRoundId: number,
     nextRounds: NextKnockoutRoundData[],
-    eliminatedTeamIds: number[] = [],
+    eliminatedClubIds: number[] = [],
   ) {
     return this.prisma.$transaction(async (tx) => {
       // Solo una ejecución puede completar esta ronda.
@@ -148,25 +148,25 @@ export class KnockoutRoundRepository {
           data: {
             competitionEditionId,
             type: round.type,
-            qualifiedTeams: {
-              create: round.qualifiedTeamIds.map((teamId) => ({
-                teamId,
+            qualifiedClubs: {
+              create: round.qualifiedClubIds.map((clubId) => ({
+                clubId,
               })),
             },
           },
           include: {
-            qualifiedTeams: true,
+            qualifiedClubs: true,
           },
         });
 
         createdRounds.push(createdRound);
       }
 
-      if (eliminatedTeamIds.length > 0) {
+      if (eliminatedClubIds.length > 0) {
         await tx.competitionParticipant.deleteMany({
           where: {
             competitionEditionId,
-            teamId: { in: eliminatedTeamIds },
+            clubId: { in: eliminatedClubIds },
           },
         });
       }

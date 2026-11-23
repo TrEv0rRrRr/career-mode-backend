@@ -12,8 +12,8 @@ import {
 export class CreateKnockoutRoundPairingsDto {
   @ApiProperty({
     example: [
-      { homeTeamId: 1, awayTeamId: 2 },
-      { homeTeamId: 3, awayTeamId: 4 },
+      { homeClubId: 1, awayClubId: 2 },
+      { homeClubId: 3, awayClubId: 4 },
     ],
   })
   @IsNotEmpty()
@@ -29,11 +29,11 @@ export class CreatePairingDto {
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  homeTeamId!: number;
+  homeClubId!: number;
 
   @ApiProperty({ example: 2 })
   @IsNotEmpty()
   @IsInt()
   @Min(1)
-  awayTeamId!: number;
+  awayClubId!: number;
 }

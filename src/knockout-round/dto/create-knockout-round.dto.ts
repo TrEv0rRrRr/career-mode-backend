@@ -13,9 +13,9 @@ export class CreateKnockoutRoundDto {
 
   @ApiProperty({
     example: [1, 2, 3, 4],
-    description: 'Represents the teams that have qualified for the next round',
+    description: 'Represents the clubs that have qualified for the next round',
   })
   @IsArray()
   @IsNotEmpty()
-  qualifiedTeams!: number[];
+  qualifiedClubs!: number[];
 }

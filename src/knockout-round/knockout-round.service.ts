@@ -67,18 +67,18 @@ export class KnockoutRoundService {
       data.competitionEditionId,
     );
 
-    const participantTeams = await this.competitionsService
+    const participantClubs = await this.competitionsService
       .findCompetitionParticipants(edition.id)
-      .then((data) => data.map(({ team }) => team.id));
+      .then((data) => data.map(({ club }) => club.id));
 
-    const qualifiedTeamsWithoutDuplicates = [...new Set(data.qualifiedTeams)];
+    const qualifiedClubsWithoutDuplicates = [...new Set(data.qualifiedClubs)];
 
-    const areQualifiedTeamsParticipatingInTheCompetition =
-      validateArrayEquality(participantTeams, qualifiedTeamsWithoutDuplicates);
+    const areQualifiedClubsParticipatingInTheCompetition =
+      validateArrayEquality(participantClubs, qualifiedClubsWithoutDuplicates);
 
-    if (!areQualifiedTeamsParticipatingInTheCompetition)
+    if (!areQualifiedClubsParticipatingInTheCompetition)
       throw new ConflictException(
-        'There is a team that is not participating in this competition edition',
+        'There is a club that is not participating in this competition edition',
       );
 
     const thereIsUncompleted =
@@ -93,34 +93,34 @@ export class KnockoutRoundService {
 
     switch (type) {
       case KnockoutRoundType.ROUND_OF_32:
-        if (qualifiedTeamsWithoutDuplicates.length !== 32)
+        if (qualifiedClubsWithoutDuplicates.length !== 32)
           throw new BadRequestException(
-            "They can't be more or less than 32 qualified teams for a round of 32.",
+            "They can't be more or less than 32 qualified clubs for a round of 32.",
           );
         break;
       case KnockoutRoundType.ROUND_OF_16:
-        if (qualifiedTeamsWithoutDuplicates.length !== 16)
+        if (qualifiedClubsWithoutDuplicates.length !== 16)
           throw new BadRequestException(
-            "They can't be more or less than 16 qualified teams for a round of 16.",
+            "They can't be more or less than 16 qualified clubs for a round of 16.",
           );
         break;
       case KnockoutRoundType.QUARTER_FINAL:
-        if (qualifiedTeamsWithoutDuplicates.length !== 8)
+        if (qualifiedClubsWithoutDuplicates.length !== 8)
           throw new BadRequestException(
-            "They can't be more or less than 8 qualified teams for the quarterfinals.",
+            "They can't be more or less than 8 qualified clubs for the quarterfinals.",
           );
         break;
       case KnockoutRoundType.SEMI_FINAL:
-        if (qualifiedTeamsWithoutDuplicates.length !== 4)
+        if (qualifiedClubsWithoutDuplicates.length !== 4)
           throw new BadRequestException(
-            "They can't be more or less than 4 qualified teams for the semifinals.",
+            "They can't be more or less than 4 qualified clubs for the semifinals.",
           );
         break;
       case KnockoutRoundType.THIRD_PLACE:
       case KnockoutRoundType.FINAL:
-        if (qualifiedTeamsWithoutDuplicates.length !== 2)
+        if (qualifiedClubsWithoutDuplicates.length !== 2)
           throw new BadRequestException(
-            "They can't be more or less than 2 qualified teams for the third place match or the final.",
+            "They can't be more or less than 2 qualified clubs for the third place match or the final.",
           );
         break;
       default:
@@ -129,7 +129,7 @@ export class KnockoutRoundService {
 
     const finalData: CreateKnockoutRoundDto = {
       ...data,
-      qualifiedTeams: qualifiedTeamsWithoutDuplicates,
+      qualifiedClubs: qualifiedClubsWithoutDuplicates,
     };
 
     return this.repo.createKnockoutRound(finalData, type);
@@ -146,30 +146,30 @@ export class KnockoutRoundService {
         'This knockout round is completed, try creating a new one',
       );
 
-    const teamIds: Set<number> = new Set([]);
+    const clubIds: Set<number> = new Set([]);
 
     for (const pairing of data.pairings) {
-      if (pairing.homeTeamId === pairing.awayTeamId)
-        throw new ConflictException("There's a pairing with two equal teams");
-      teamIds.add(pairing.homeTeamId);
-      teamIds.add(pairing.awayTeamId);
+      if (pairing.homeClubId === pairing.awayClubId)
+        throw new ConflictException("There's a pairing with two equal clubs");
+      clubIds.add(pairing.homeClubId);
+      clubIds.add(pairing.awayClubId);
     }
 
-    const totalTeamAppearances = data.pairings.length * 2;
+    const totalClubAppearances = data.pairings.length * 2;
 
-    if (teamIds.size !== totalTeamAppearances) {
+    if (clubIds.size !== totalClubAppearances) {
       throw new ConflictException(
-        'A team cannot participate in multiple pairings',
+        'A club cannot participate in multiple pairings',
       );
     }
 
-    const qualifiedTeams = knockoutRound.qualifiedTeams.map((team) => team.id);
+    const qualifiedClubs = knockoutRound.qualifiedClubs.map((club) => club.id);
 
-    const areArraysEqual = validateArrayEquality([...teamIds], qualifiedTeams);
+    const areArraysEqual = validateArrayEquality([...clubIds], qualifiedClubs);
 
     if (!areArraysEqual)
       throw new ConflictException(
-        "There are teams that aren't qualified for the next round",
+        "There are clubs that aren't qualified for the next round",
       );
 
     const existingTies =
@@ -196,14 +196,14 @@ export class KnockoutRoundService {
   async resolveRoundAndCreateNextRounds(
     knockoutRoundId: number,
     nextRounds: NextKnockoutRoundData[],
-    eliminatedTeamIds: number[] = [],
+    eliminatedClubIds: number[] = [],
   ) {
     await this.findKnockoutRoundById(knockoutRoundId);
 
     return this.repo.resolveRoundAndCreateNextRounds(
       knockoutRoundId,
       nextRounds,
-      eliminatedTeamIds,
+      eliminatedClubIds,
     );
   }
 }

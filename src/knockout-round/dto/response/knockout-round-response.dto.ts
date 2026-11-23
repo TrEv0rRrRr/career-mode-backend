@@ -1,4 +1,4 @@
-import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
+import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
 import { KnockoutRoundType } from '../../enums/KnockoutRoundType.ts';
 
 export class KnockoutRoundResponseDto {
@@ -6,5 +6,5 @@ export class KnockoutRoundResponseDto {
   competitionEditionId!: number;
   type!: KnockoutRoundType;
   completed!: boolean;
-  qualifiedTeams!: TeamResponse[];
+  qualifiedClubs!: ClubSummary[];
 }
