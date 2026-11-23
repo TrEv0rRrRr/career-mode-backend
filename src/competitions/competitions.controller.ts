@@ -472,7 +472,7 @@ export class CompetitionsController {
     );
   }
 
-  @Post('editions/:competitionEditionId/groups')
+  @Post('/editions/:competitionEditionId/groups')
   @ApiOperation({
     summary: 'Create group-stage matches for a competition edition',
   })
