@@ -1,7 +1,8 @@
 import { Confederation, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
+import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
 import { NationalTeamResponse } from '../../../matches/dto/response/match-response.dto.ts';
-import { TeamResponse } from '../../../teams/dto/response/team-response.dto.ts';
+
 export type PlayerPositions = {
   position: {
     id: number;
@@ -14,8 +15,8 @@ export type PlayerPositions = {
   isPrimary: boolean;
 };
 
-export type PlayerTeams = {
-  team: {
+export type PlayerClubs = {
+  club: {
     id: number;
     name: string;
     shortName: string;
@@ -31,7 +32,7 @@ export type PlayerTeams = {
 } & {
   id: number;
   playerId: number;
-  teamId: number;
+  clubId: number;
   jerseyNumber: number;
   startDate: Date;
   endDate: Date | null;
@@ -48,7 +49,7 @@ export type PlayerSeasonStats = {
   };
 } & {
   playerId: number;
-  teamId: number;
+  clubId: number;
   seasonId: number;
   matches: number;
   goals: number;
@@ -58,8 +59,8 @@ export type PlayerSeasonStats = {
   rating: Decimal;
 };
 
-export type PlayerTeamSeasonStats = {
-  team: {
+export type PlayerClubSeasonStats = {
+  club: {
     id: number;
     name: string;
     shortName: string;
@@ -82,7 +83,7 @@ export type PlayerTeamSeasonStats = {
   };
 } & {
   playerId: number;
-  teamId: number;
+  clubId: number;
   matches: number;
   seasonId: number;
   goals: number;
@@ -131,11 +132,11 @@ export class PlayerPositionsResponseDto {
   isPrimary!: boolean;
 }
 
-export class PlayerTeamsResponseDto {
+export class PlayerClubsResponseDto {
   jerseyNumber!: number;
   startDate!: Date;
   endDate!: Date | null;
-  team!: TeamResponse;
+  club!: ClubSummary;
 }
 
 export class PlayerSeasonStatsResponseDto {
@@ -148,8 +149,8 @@ export class PlayerSeasonStatsResponseDto {
   season!: string;
 }
 
-export class PlayerTeamSeasonStatsResponseDto extends PlayerSeasonStatsResponseDto {
-  team!: TeamResponse;
+export class PlayerClubSeasonStatsResponseDto extends PlayerSeasonStatsResponseDto {
+  club!: ClubSummary;
 }
 
 export class PlayerNationalTeamResponseDto {

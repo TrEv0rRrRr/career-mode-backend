@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { SignPlayerDto } from '../clubs/dto/players/sign-player.dto.ts';
+import { ClubNotFoundException } from '../clubs/exceptions/club-not-found.exception.ts';
 import { SeasonsService } from '../seasons/seasons.service.ts';
-import { TeamNotFoundException } from '../teams/exceptions/team-not-found.exception.ts';
-import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
 import { PlayerMapper } from './dto/mapper/player.mapper.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
@@ -146,49 +146,49 @@ export class PlayersService {
     return this.repo.deletePlayerPosition(playerId, positionId);
   }
 
-  // ! Player Team Methods
+  // ! Player Club Methods
 
-  async findPlayerTeamHistory(playerId: number) {
+  async findPlayerClubHistory(playerId: number) {
     await this.findPlayerById(playerId);
-    const history = await this.repo.findPlayerTeamHistory(playerId);
-    return history.map((h) => PlayerMapper.teamsToResponse(h));
+    const history = await this.repo.findPlayerClubHistory(playerId);
+    return history.map((h) => PlayerMapper.clubsToResponse(h));
   }
 
-  async findCurrentTeam(playerId: number) {
+  async findCurrentClub(playerId: number) {
     await this.findPlayerById(playerId);
-    const currentTeam = await this.repo.findCurrentTeam(playerId);
-    if (!currentTeam)
+    const currentClub = await this.repo.findCurrentClub(playerId);
+    if (!currentClub)
       throw new NotFoundException(
-        'This player is not playing for a team currently',
+        'This player is not playing for a club currently',
       );
-    return currentTeam;
+    return currentClub;
   }
 
   // ! Dev only
-  async findCurrentTeams(playerIds: number[]) {
-    return this.repo.findCurrentTeams(playerIds);
+  async findCurrentClubs(playerIds: number[]) {
+    return this.repo.findCurrentClubs(playerIds);
   }
 
   // ! Dev only
-  async replacePlayerTeams(
-    teamId: number,
+  async replacePlayerClubs(
+    clubId: number,
     playerId: number,
     data: SignPlayerDto[],
   ) {
     await this.findPlayerById(playerId);
 
-    for (const team of data) {
-      if (team.endDate && team.endDate < team.startDate) {
+    for (const club of data) {
+      if (club.endDate && club.endDate < club.startDate) {
         throw new BadRequestException(
           'The end date cannot be before the start date.',
         );
       }
     }
 
-    if (data.length && !(await this.repo.teamExists(teamId)))
-      throw new TeamNotFoundException();
+    if (data.length && !(await this.repo.clubExists(clubId)))
+      throw new ClubNotFoundException();
 
-    const activeContracts = data.filter((team) => team.endDate === null);
+    const activeContracts = data.filter((club) => club.endDate === null);
 
     if (activeContracts.length > 1) {
       throw new ConflictException(
@@ -196,16 +196,16 @@ export class PlayersService {
       );
     }
 
-    return this.repo.replacePlayerTeams(teamId, playerId, data);
+    return this.repo.replacePlayerClubs(clubId, playerId, data);
   }
 
   // ! Dev only
-  async deletePlayerTeam(playerTeamId: number, playerId: number) {
+  async deletePlayerClub(playerClubId: number, playerId: number) {
     await this.findPlayerById(playerId);
 
-    await this.findCurrentTeam(playerTeamId);
+    await this.findCurrentClub(playerClubId);
 
-    return this.repo.deletePlayerTeam(playerTeamId);
+    return this.repo.deletePlayerClub(playerClubId);
   }
 
   // ! Player season stats Methods
@@ -220,28 +220,29 @@ export class PlayersService {
     );
   }
 
-  async findPlayerTeamSeasonStats(
+  async findPlayerClubSeasonStats(
     playerId: number,
-    teamId: number,
+    clubId: number,
     seasonId: number,
   ) {
     await this.findPlayerById(playerId);
-    if (!(await this.repo.teamExists(teamId))) throw new TeamNotFoundException();
+    if (!(await this.repo.clubExists(clubId)))
+      throw new ClubNotFoundException();
     await this.seasonsService.findSeasonById(seasonId);
 
-    const playerTeamSeasonStats =
-      await this.repo.findPlayerStatsBySeasonAndTeam(
+    const playerClubSeasonStats =
+      await this.repo.findPlayerStatsBySeasonAndClub(
         playerId,
-        teamId,
+        clubId,
         seasonId,
       );
 
-    if (!playerTeamSeasonStats)
+    if (!playerClubSeasonStats)
       throw new BadRequestException(
         'This player has no stats because he has not played any match this season',
       );
 
-    return PlayerMapper.teamSeasonStatsToResponse(playerTeamSeasonStats);
+    return PlayerMapper.clubSeasonStatsToResponse(playerClubSeasonStats);
   }
 
   // ! Player NT Methods
@@ -259,7 +260,7 @@ export class PlayersService {
 
     if (!currentCallUp)
       throw new BadRequestException(
-        'This player has not been called up for his national team',
+        'This player has not been called up for his national club',
       );
 
     return PlayerMapper.nationalTeamsToResponse(currentCallUp);

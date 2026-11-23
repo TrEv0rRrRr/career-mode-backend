@@ -1,5 +1,9 @@
 import { Player } from '@prisma/client';
 import {
+  PlayerClubs,
+  PlayerClubSeasonStats,
+  PlayerClubSeasonStatsResponseDto,
+  PlayerClubsResponseDto,
   PlayerNationalTeam,
   PlayerNationalTeamResponseDto,
   PlayerPositions,
@@ -7,10 +11,6 @@ import {
   PlayerResponseDto,
   PlayerSeasonStats,
   PlayerSeasonStatsResponseDto,
-  PlayerTeams,
-  PlayerTeamSeasonStats,
-  PlayerTeamSeasonStatsResponseDto,
-  PlayerTeamsResponseDto,
 } from '../response/player-response.dto.ts';
 
 export class PlayerMapper {
@@ -36,17 +36,17 @@ export class PlayerMapper {
     };
   }
 
-  static teamsToResponse(pt: PlayerTeams): PlayerTeamsResponseDto {
+  static clubsToResponse(pt: PlayerClubs): PlayerClubsResponseDto {
     return {
       jerseyNumber: pt.jerseyNumber,
       startDate: pt.startDate,
       endDate: pt.endDate,
-      team: {
-        id: pt.teamId,
-        name: pt.team.name,
-        logo: pt.team.logo,
-        country: pt.team.country,
-        confederation: pt.team.confederation,
+      club: {
+        id: pt.clubId,
+        name: pt.club.name,
+        logo: pt.club.logo,
+        country: pt.club.country,
+        confederation: pt.club.confederation,
       },
     };
   }
@@ -65,9 +65,9 @@ export class PlayerMapper {
     };
   }
 
-  static teamSeasonStatsToResponse(
-    ptss: PlayerTeamSeasonStats,
-  ): PlayerTeamSeasonStatsResponseDto {
+  static clubSeasonStatsToResponse(
+    ptss: PlayerClubSeasonStats,
+  ): PlayerClubSeasonStatsResponseDto {
     return {
       matches: ptss.matches,
       goals: ptss.goals,
@@ -76,12 +76,12 @@ export class PlayerMapper {
       redCards: ptss.redCards,
       rating: Number(ptss.rating),
       season: ptss.season.code,
-      team: {
-        id: ptss.teamId,
-        name: ptss.team.name,
-        logo: ptss.team.logo,
-        country: ptss.team.country,
-        confederation: ptss.team.confederation,
+      club: {
+        id: ptss.clubId,
+        name: ptss.club.name,
+        logo: ptss.club.logo,
+        country: ptss.club.country,
+        confederation: ptss.club.confederation,
       },
     };
   }

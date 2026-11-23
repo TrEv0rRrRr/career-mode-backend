@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { SignPlayerDto } from '../clubs/dto/players/sign-player.dto.ts';
 import { PrismaService } from '../prisma/prisma.service.ts';
-import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
@@ -8,17 +8,17 @@ import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.
 
 const playerInclude = {
   playerPositions: true,
-  playerTeams: true,
+  playerClubs: true,
 } as const;
 
 @Injectable()
 export class PlayersRepository {
   constructor(private prisma: PrismaService) {}
 
-  async teamExists(teamId: number) {
+  async clubExists(clubId: number) {
     return (
-      (await this.prisma.team.findUnique({
-        where: { id: teamId },
+      (await this.prisma.club.findUnique({
+        where: { id: clubId },
         select: { id: true },
       })) !== null
     );
@@ -177,13 +177,13 @@ export class PlayersRepository {
     });
   }
 
-  // ! Player team Queries
+  // ! Player club Queries
 
-  findPlayerTeamHistory(playerId: number) {
-    return this.prisma.playerTeam.findMany({
+  findPlayerClubHistory(playerId: number) {
+    return this.prisma.playerClub.findMany({
       where: { playerId },
       include: {
-        team: true,
+        club: true,
       },
       orderBy: {
         startDate: 'desc',
@@ -191,22 +191,22 @@ export class PlayersRepository {
     });
   }
 
-  findCurrentTeam(playerId: number) {
-    return this.prisma.playerTeam.findFirst({
+  findCurrentClub(playerId: number) {
+    return this.prisma.playerClub.findFirst({
       where: {
         playerId,
         endDate: null,
       },
       include: {
-        team: true,
+        club: true,
       },
     });
   }
 
   // ! Dev only!
 
-  findCurrentTeams(playerIds: number[]): Promise<Map<number, number>> {
-    return this.prisma.playerTeam
+  findCurrentClubs(playerIds: number[]): Promise<Map<number, number>> {
+    return this.prisma.playerClub
       .findMany({
         where: {
           playerId: {
@@ -215,37 +215,37 @@ export class PlayersRepository {
         },
       })
       .then(
-        (playerTeam) =>
-          new Map(playerTeam.map((pt) => [pt.playerId, pt.teamId])),
+        (playerClub) =>
+          new Map(playerClub.map((pt) => [pt.playerId, pt.clubId])),
       );
   }
 
   // ! Dev only!
 
-  replacePlayerTeams(teamId: number, playerId: number, data: SignPlayerDto[]) {
-    const playerTeams = data.map((team) => ({
-      ...team,
-      teamId,
+  replacePlayerClubs(clubId: number, playerId: number, data: SignPlayerDto[]) {
+    const playerClubs = data.map((club) => ({
+      ...club,
+      clubId,
       playerId,
     }));
 
     return this.prisma.$transaction(async (tx) => {
-      await tx.playerTeam.deleteMany({
+      await tx.playerClub.deleteMany({
         where: { playerId },
       });
 
-      return tx.playerTeam.createMany({
-        data: playerTeams,
+      return tx.playerClub.createMany({
+        data: playerClubs,
       });
     });
   }
 
   // ! Dev only!
 
-  deletePlayerTeam(playerTeamId: number) {
-    return this.prisma.playerTeam.delete({
+  deletePlayerClub(playerClubId: number) {
+    return this.prisma.playerClub.delete({
       where: {
-        id: playerTeamId,
+        id: playerClubId,
       },
     });
   }
@@ -259,23 +259,23 @@ export class PlayersRepository {
     });
   }
 
-  findPlayerStatsBySeasonAndTeam(
+  findPlayerStatsBySeasonAndClub(
     playerId: number,
-    teamId: number,
+    clubId: number,
     seasonId: number,
   ) {
     return this.prisma.playerSeasonStats.findUnique({
       where: {
-        playerId_teamId_seasonId: { playerId, teamId, seasonId },
+        playerId_clubId_seasonId: { playerId, clubId, seasonId },
       },
       include: {
-        team: true,
+        club: true,
         season: true,
       },
     });
   }
 
-  // ! Player National Team Queries
+  // ! Player National Club Queries
 
   findPlayerCurrentCallUp(playerId: number) {
     return this.prisma.playerNationalTeam.findFirst({

@@ -17,15 +17,15 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { SignPlayerDto } from '../teams/dto/players/sign-player.dto.ts';
+import { SignPlayerDto } from '../clubs/dto/players/sign-player.dto.ts';
 import { CreatePlayerDto } from './dto/player/create-player.dto.ts';
 import { UpdatePlayerDto } from './dto/player/update-player.dto.ts';
 import { AssignPositionsDto } from './dto/positions/assign-positions.dto.ts';
 import { UpdatePlayerPositionDto } from './dto/positions/update-player-position.dto.ts';
 import {
+  PlayerClubsResponseDto,
   PlayerPositionsResponseDto,
   PlayerResponseDto,
-  PlayerTeamsResponseDto,
 } from './dto/response/player-response.dto.ts';
 import { PlayersService } from './players.service.ts';
 
@@ -246,30 +246,30 @@ export class PlayersController {
     return this.playersService.deletePlayerPosition(playerId, positionId);
   }
 
-  // ! Player Team Endpoints
+  // ! Player Club Endpoints
 
-  @Get(':playerId/teams')
-  @ApiOperation({ summary: "Get a player's teams record" })
+  @Get(':playerId/clubs')
+  @ApiOperation({ summary: "Get a player's clubs record" })
   @ApiOkResponse({
-    type: [PlayerTeamsResponseDto],
+    type: [PlayerClubsResponseDto],
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Player teams found!',
+    description: 'Player clubs found!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Player not found',
   })
-  getAllPlayerTeams(@Param('playerId', ParseIntPipe) playerId: number) {
-    return this.playersService.findPlayerTeamHistory(playerId);
+  getAllPlayerClubs(@Param('playerId', ParseIntPipe) playerId: number) {
+    return this.playersService.findPlayerClubHistory(playerId);
   }
 
-  @Put(':playerId/teams')
-  @ApiOperation({ summary: "Update a player's teams record" })
+  @Put(':playerId/clubs')
+  @ApiOperation({ summary: "Update a player's clubs record" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Player teams replaced!',
+    description: 'Player clubs replaced!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -277,11 +277,11 @@ export class PlayersController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
-    description: 'The player is already playing for a team',
+    description: 'The player is already playing for a club',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -303,19 +303,19 @@ export class PlayersController {
       ],
     },
   })
-  replacePlayerTeams(
+  replacePlayerClubs(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Body() data: SignPlayerDto[],
   ) {
-    return this.playersService.replacePlayerTeams(teamId, playerId, data);
+    return this.playersService.replacePlayerClubs(clubId, playerId, data);
   }
 
-  @Delete(':playerId/teams/:playerTeamId')
-  @ApiOperation({ summary: "Delete a player's team" })
+  @Delete(':playerId/clubs/:playerClubId')
+  @ApiOperation({ summary: "Delete a player's club" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Player team deleted!',
+    description: 'Player club deleted!',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -325,11 +325,11 @@ export class PlayersController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid start date.',
   })
-  deletePlayerTeam(
+  deletePlayerClub(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Param('playerTeamId', ParseIntPipe) playerTeamId: number,
+    @Param('playerClubId', ParseIntPipe) playerClubId: number,
   ) {
-    return this.playersService.deletePlayerTeam(playerTeamId, playerId);
+    return this.playersService.deletePlayerClub(playerClubId, playerId);
   }
 
   // ! Player season stats Endpoints
@@ -348,9 +348,9 @@ export class PlayersController {
     return this.playersService.findPlayerSeasonStats(playerId);
   }
 
-  @Get(':playerId/team/:teamId/stats/:seasonId')
+  @Get(':playerId/club/:clubId/stats/:seasonId')
   @ApiOperation({
-    summary: "Get the player's stats from a specific team of a specific season",
+    summary: "Get the player's stats from a specific club of a specific season",
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -362,20 +362,20 @@ export class PlayersController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Team not found',
+    description: 'Club not found',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Season not found',
   })
-  getPlayerTeamSeasonStats(
+  getPlayerClubSeasonStats(
     @Param('playerId', ParseIntPipe) playerId: number,
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('clubId', ParseIntPipe) clubId: number,
     @Param('seasonId', ParseIntPipe) seasonId: number,
   ) {
-    return this.playersService.findPlayerTeamSeasonStats(
+    return this.playersService.findPlayerClubSeasonStats(
       playerId,
-      teamId,
+      clubId,
       seasonId,
     );
   }
