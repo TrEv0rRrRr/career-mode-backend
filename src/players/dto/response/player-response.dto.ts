@@ -1,7 +1,7 @@
 import { Confederation, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
-import { NationalTeamResponse } from '../../../matches/dto/response/match-response.dto.ts';
+import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 
 export type PlayerPositions = {
   position: {
@@ -132,13 +132,6 @@ export class PlayerPositionsResponseDto {
   isPrimary!: boolean;
 }
 
-export class PlayerClubsResponseDto {
-  jerseyNumber!: number;
-  startDate!: Date;
-  endDate!: Date | null;
-  club!: ClubSummary;
-}
-
 export class PlayerSeasonStatsResponseDto {
   matches!: number;
   goals!: number;
@@ -153,10 +146,17 @@ export class PlayerClubSeasonStatsResponseDto extends PlayerSeasonStatsResponseD
   club!: ClubSummary;
 }
 
-export class PlayerNationalTeamResponseDto {
-  id!: number;
+class PlayerTeamResponse {
   jerseyNumber!: number;
   startDate!: Date;
   endDate!: Date | null;
-  nationalTeam!: NationalTeamResponse;
+}
+
+export class PlayerClubsResponseDto extends PlayerTeamResponse {
+  club!: ClubSummary;
+}
+
+export class PlayerNationalTeamResponseDto extends PlayerTeamResponse {
+  id!: number;
+  nationalTeam!: NationalTeamSummary;
 }
