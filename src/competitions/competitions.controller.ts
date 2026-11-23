@@ -472,7 +472,7 @@ export class CompetitionsController {
     );
   }
 
-  @Post(':competitionId/edition/:competitionEditionId/groups')
+  @Post('editions/:competitionEditionId/groups')
   @ApiOperation({
     summary: 'Create group-stage matches for a competition edition',
   })
@@ -480,14 +480,34 @@ export class CompetitionsController {
     status: HttpStatus.CREATED,
     description: 'Group-stage matches created!',
   })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'Groups can only be created for GROUPS_AND_KNOCKOUT competitions.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'At least one group must be provided.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Every group must have a name and at least one team.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description:
+      'Every participating team must be assigned to exactly one group.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Matches already exist for this competition edition.',
+  })
   createCompetitionGroups(
-    @Param('competitionId', ParseIntPipe) competitionId: number,
     @Param('competitionEditionId', ParseIntPipe) competitionEditionId: number,
     @Body() data: CreateCompetitionGroupsDto,
   ) {
     return this.competitionFixtureService.createCompetitionGroups(
       competitionEditionId,
-      competitionId,
       data.groups,
     );
   }

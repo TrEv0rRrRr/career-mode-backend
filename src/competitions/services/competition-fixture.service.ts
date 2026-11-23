@@ -175,21 +175,14 @@ export class CompetitionFixtureService {
 
   async createCompetitionGroups(
     competitionEditionId: number,
-    competitionId: number,
     groups: Record<string, number[]>,
   ) {
-    const competition =
-      await this.competitionsService.findCompetitionById(competitionId);
     const competitionEdition =
       await this.competitionsService.findCompetitionEditionById(
         competitionEditionId,
       );
 
-    if (competitionEdition.competitionId !== competitionId) {
-      throw new BadRequestException(
-        'The competition edition does not belong to this competition.',
-      );
-    }
+    const competition = competitionEdition.competition;
 
     if (competition.format !== CompetitionFormat.GROUPS_AND_KNOCKOUT) {
       throw new BadRequestException(
