@@ -121,7 +121,7 @@ model Competition {
   maxTeamsNumber       Int
   hasTwoLeggedKnockout Boolean           @default(false)
   groups               Int?
-  clubsPerGroup        Int?
+  teamsPerGroup        Int?
 
   clubs               Club[]
   competitionEditions CompetitionEdition[]
