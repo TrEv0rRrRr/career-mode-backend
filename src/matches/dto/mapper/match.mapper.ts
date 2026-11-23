@@ -19,7 +19,8 @@ export class MatchMapper {
       stadium: {
         id: match.stadium.id,
         name: match.stadium.name,
-        capacity: match.stadium.capacity,
+        image: match.stadium.image,
+        country: match.stadium.country,
       },
       matchday: match.matchday,
       homePenaltyGoals: match.homePenaltyGoals,

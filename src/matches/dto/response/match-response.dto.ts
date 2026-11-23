@@ -1,24 +1,12 @@
 import {
-  Confederation,
   MatchFinishType,
   MatchLeg,
   MatchStatus,
   MatchType,
 } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
-
-export class NationalTeamResponse {
-  id!: number;
-  name!: string;
-  logo!: string | null;
-  confederation!: Confederation;
-}
-
-interface Stadium {
-  id: number;
-  name: string;
-  capacity: number;
-}
+import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
+import { StadiumSummary } from '../../../stadiums/dto/response/stadiums.response.ts';
 
 export class MatchResponseDto {
   id!: number;
@@ -26,7 +14,7 @@ export class MatchResponseDto {
   homeGoals!: number;
   awayGoals!: number;
   status!: MatchStatus;
-  stadium!: Stadium;
+  stadium!: StadiumSummary;
   matchday!: number | null;
   homePenaltyGoals!: number | null;
   awayPenaltyGoals!: number | null;
@@ -41,8 +29,8 @@ export class MatchResponseDto {
   competitionEditionId!: number;
   homeClub!: ClubSummary | null;
   awayClub!: ClubSummary | null;
-  homeNationalTeam!: NationalTeamResponse | null;
-  awayNationalTeam!: NationalTeamResponse | null;
+  homeNationalTeam!: NationalTeamSummary | null;
+  awayNationalTeam!: NationalTeamSummary | null;
   type!: MatchType;
   finishType!: MatchFinishType | null;
 }
