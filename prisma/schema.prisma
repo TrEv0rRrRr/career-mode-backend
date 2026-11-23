@@ -326,6 +326,9 @@ model NationalTeam {
   playerNationalTeams     PlayerNationalTeam[]
   managerNationalTeams    ManagerNationalTeam[]
   competitionParticipants NationalTeamCompetitionParticipant[]
+  knockoutRounds          KnockoutRoundNationalTeam[]
+  wonCompetitions         CompetitionEdition[]                 @relation("CompetitionNationalTeamWinner")
+  runnerUpCompetitions    CompetitionEdition[]                 @relation("CompetitionNationalTeamRunnerUp")
 
   @@map("national_team")
 }
@@ -342,16 +345,27 @@ model KnockoutRoundTeam {
   @@map("knockout_round_team")
 }
 
+model KnockoutRoundNationalTeam {
+  knockoutRoundId Int @map("knockout_round_id")
+  nationalTeamId  Int @map("national_team_id")
+
+  knockoutRound KnockoutRound @relation(fields: [knockoutRoundId], references: [id])
+  nationalTeam  NationalTeam  @relation(fields: [nationalTeamId], references: [id])
+
+  @@id([knockoutRoundId, nationalTeamId])
+  @@map("knockout_round_national_team")
+}
+
 model KnockoutRound {
-  id                   Int       @id @default(autoincrement())
-  competitionEditionId Int       @map("competition_edition_id")
-  type                 MatchType
-  completed            Boolean   @default(false)
+  id                     Int                         @id @default(autoincrement())
+  competitionEditionId   Int                         @map("competition_edition_id")
+  type                   MatchType
+  completed              Boolean                     @default(false)
+  qualifiedClubs         KnockoutRoundTeam[]
+  qualifiedNationalTeams KnockoutRoundNationalTeam[]
 
   competitionEdition CompetitionEdition @relation(fields: [competitionEditionId], references: [id])
-
-  qualifiedClubs KnockoutRoundTeam[]
-  ties           Tie[]
+  ties               Tie[]
 
   @@unique([competitionEditionId, type])
   @@map("knockout_round")
@@ -395,12 +409,14 @@ model ClubSeasonStats {
 }
 
 model CompetitionEdition {
-  id             Int  @id @default(autoincrement())
-  seasonId       Int  @map("season_id")
-  competitionId  Int  @map("competition_id")
-  winnerClubId   Int? @map("winner_club_id")
-  runnerUpClubId Int? @map("runner_up_club_id")
-  finalStadiumId Int? @map("final_stadium_id")
+  id                     Int  @id @default(autoincrement())
+  seasonId               Int  @map("season_id")
+  competitionId          Int  @map("competition_id")
+  winnerClubId           Int? @map("winner_club_id")
+  runnerUpClubId         Int? @map("runner_up_club_id")
+  winnerNationalTeamId   Int? @map("winner_national_team_id")
+  runnerUpNationalTeamId Int? @map("runner_up_national_team_id")
+  finalStadiumId         Int? @map("final_stadium_id")
 
   season                   Season                               @relation(fields: [seasonId], references: [id])
   stadium                  Stadium?                             @relation(fields: [finalStadiumId], references: [id])
@@ -408,6 +424,8 @@ model CompetitionEdition {
   matches                  Match[]
   winnerClub               Club?                                @relation("CompetitionWinner", fields: [winnerClubId], references: [id])
   runnerUpClub             Club?                                @relation("CompetitionRunnerUp", fields: [runnerUpClubId], references: [id])
+  winnerNationalTeam       NationalTeam?                        @relation("CompetitionNationalTeamWinner", fields: [winnerNationalTeamId], references: [id])
+  runnerUpNationalTeam     NationalTeam?                        @relation("CompetitionNationalTeamRunnerUp", fields: [runnerUpNationalTeamId], references: [id])
   competitionParticipants  CompetitionParticipant[]
   nationalTeamParticipants NationalTeamCompetitionParticipant[]
   knockoutRounds           KnockoutRound[]
