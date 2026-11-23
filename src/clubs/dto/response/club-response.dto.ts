@@ -2,14 +2,6 @@ import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
 import { ManagerResponse } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 
-export class ClubSummary {
-  id!: number;
-  name!: string;
-  logo!: string | null;
-  country!: string;
-  confederation!: Confederation;
-}
-
 export type PlayerType = {
   id: number;
   name: string;
@@ -100,11 +92,21 @@ export type ManagerClubType = {
   clubId: number;
 };
 
-export class ClubResponseDto extends ClubSummary {
+export class ClubResponseDto {
+  id!: number;
+  name!: string;
+  logo!: string | null;
+  country!: string;
+  confederation!: Confederation;
   manager!: string | null;
   stadium!: string;
   league!: string;
 }
+
+export type ClubSummary = Omit<
+  ClubResponseDto,
+  'manager' | 'stadium' | 'league'
+>;
 
 export class ClubPlayersResponseDto {
   id!: number;

@@ -1,6 +1,7 @@
 import { Confederation, TransferType } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
-import { CompetitionResponse } from '../../../competitions/dto/response/competition-response.dto.ts';
+import { CompetitionSummary } from '../../../competitions/dto/response/competition-response.dto.ts';
+import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 /**
  * Make all properties in T optional, but now seriously. Similar to Partial<>
  */
@@ -64,14 +65,9 @@ export class ClubSeasonStatsResponse {
 
 export type CompetitionEditionsResponse = {
   id: number;
-  competition: CompetitionResponse;
+  competition: CompetitionSummary;
   winnerClub: Optional<ClubSummary>;
-  winnerNationalTeam: Optional<{
-    id: number;
-    name: string;
-    logo: string | null;
-    confederation: Confederation;
-  }>;
+  winnerNationalTeam: Optional<NationalTeamSummary>;
 };
 
 export class SeasonResponseDto {

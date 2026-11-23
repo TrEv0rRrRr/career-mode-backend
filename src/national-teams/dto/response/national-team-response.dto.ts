@@ -22,13 +22,6 @@ export type PlayerNationalTeam = {
   endDate: Date | null;
 };
 
-export type ManagerResponse = {
-  id: number;
-  name: string;
-  nationality: string;
-  face: string | null;
-};
-
 export type NationalTeamManagerType = {
   manager: {
     id: number;
@@ -45,6 +38,13 @@ export type NationalTeamManagerType = {
   endDate: Date | null;
 };
 
+export type ManagerResponse = {
+  id: number;
+  name: string;
+  nationality: string;
+  face: string | null;
+};
+
 export class NationalTeamResponseDto {
   id!: number;
   name!: string;
@@ -53,6 +53,11 @@ export class NationalTeamResponseDto {
   manager!: string | null;
   stadium!: string;
 }
+
+export type NationalTeamSummary = Omit<
+  NationalTeamResponseDto,
+  'manager' | 'stadium'
+>;
 
 export class CurrentCallUpPlayersResponseDto {
   jerseyNumber!: number;
