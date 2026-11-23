@@ -1,15 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import { clubs } from './data/clubs.ts';
 import { competitions } from './data/competitions.ts';
+import { managerClubs } from './data/managerClubs.ts';
 import { managerNationalTeams } from './data/managerNationalTeams.ts';
 import { managers } from './data/managers.ts';
-import { managerTeams } from './data/managerTeams.ts';
 import { nationalTeams } from './data/nationalTeams.ts';
+import { playerClubs } from './data/playerClubs.ts';
 import { playerPositions } from './data/playerPositions.ts';
 import { barcelona } from './data/players/barcelona.ts';
-import { playerTeams } from './data/playerTeams.ts';
 import { positions } from './data/positions.ts';
 import { stadiums } from './data/stadiums.ts';
-import { teams } from './data/teams.ts';
 
 export const seedDatabase = async (prisma: PrismaClient) => {
   await prisma.$transaction(async (tx) => {
@@ -25,8 +25,8 @@ export const seedDatabase = async (prisma: PrismaClient) => {
       }),
     ]);
 
-    await tx.team.createMany({
-      data: teams,
+    await tx.club.createMany({
+      data: clubs,
       skipDuplicates: true,
     });
 
@@ -35,13 +35,13 @@ export const seedDatabase = async (prisma: PrismaClient) => {
       skipDuplicates: true,
     });
 
-    await tx.playerTeam.createMany({
-      data: playerTeams,
+    await tx.playerClub.createMany({
+      data: playerClubs,
       skipDuplicates: true,
     });
 
-    await tx.managerTeam.createMany({
-      data: managerTeams,
+    await tx.managerClub.createMany({
+      data: managerClubs,
       skipDuplicates: true,
     });
 
