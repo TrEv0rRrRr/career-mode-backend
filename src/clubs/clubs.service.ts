@@ -248,7 +248,9 @@ export class ClubsService {
   async findCurrentManager(clubId: number) {
     await this.findClubById(clubId);
     const currentManager = await this.repo.findCurrentManager(clubId);
-    if (!currentManager) throw new NotFoundException('This nt has no manager');
+
+    if (!currentManager)
+      throw new NotFoundException('This club has no manager');
 
     return ClubMapper.mapManagers(currentManager);
   }
@@ -267,7 +269,7 @@ export class ClubsService {
     const currentClub =
       await this.managersService.findManagerCurrentClub(managerId);
 
-    if (currentClub)
+    if (!('notFound' in currentClub))
       throw new BadRequestException(
         'The manager is already managing another club.',
       );
@@ -319,7 +321,7 @@ export class ClubsService {
 
     // Manager hiring validations
 
-    if (currentClub)
+    if (!('notFound' in currentClub))
       throw new BadRequestException(
         'The manager is already managing another club.',
       );
