@@ -103,7 +103,7 @@ export type CompetitionSummary = Omit<
 export class CompetitionEditionResponseDto {
   id!: number;
   season!: string;
-  competition!: CompetitionSummary;
+  competition!: CompetitionResponseDto;
   finalStadium!: Optional<StadiumSummary>;
   winnerClub?: Optional<ClubSummary>;
   runnerUpClub?: Optional<ClubSummary>;

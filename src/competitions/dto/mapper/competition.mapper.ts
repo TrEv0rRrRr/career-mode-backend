@@ -103,6 +103,8 @@ export class CompetitionMapper {
         id: cE.competitionId,
         name: cE.competition.name,
         logo: cE.competition.logo,
+        type: cE.competition.type,
+        format: cE.competition.format,
       },
       finalStadium: {
         id: cE.finalStadiumId,
