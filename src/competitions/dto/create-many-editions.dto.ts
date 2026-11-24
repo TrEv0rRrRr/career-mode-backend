@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, Min } from 'class-validator';
 
 export class CreateManyEditionsDto {
   @ApiProperty({
     example: 1,
     description: 'The id of the competition whose edition will be created',
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsInt()
   @Min(1)
   competitionId!: number;

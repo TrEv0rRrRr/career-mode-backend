@@ -107,34 +107,35 @@ export class CompetitionsService {
   async createEditionsForTheCurrentSeason(data: CreateManyEditionsDto[]) {
     const season = await this.seasonService.findCurrentSeason();
 
+    const competitionIds = data.map((d) => d.competitionId);
+
+    if (new Set(competitionIds).size !== competitionIds.length)
+      throw new ConflictException(
+        'A competition cannot have more than one edition in the request',
+      );
+
     await Promise.all(
-      data.map(async (d) => ({
-        comp: await this.findCompetitionById(d.competitionId),
-        finalStadium: d.finalStadiumId,
-      })),
-    ).then(async (data) => {
-      for (const d of data) {
-        if (d.comp.format !== CompetitionFormat.LEAGUE) {
-          if (!d.finalStadium)
+      data.map(async (d) => {
+        const competition = await this.findCompetitionById(d.competitionId);
+
+        if (competition.format !== CompetitionFormat.LEAGUE) {
+          if (!d.finalStadiumId)
             throw new BadRequestException(
               "If the competition doesn't have a league format, then you have to assign a stadium for the final.",
             );
-          else await this.stadiumsService.findStadiumById(d.finalStadium);
+
+          await this.stadiumsService.findStadiumById(d.finalStadiumId);
         }
-      }
-    });
+      }),
+    );
 
     const existingEditions = await Promise.all(
       data.map((d) =>
-        this.findEditionByCompetitionAndSeason(d.competitionId, season.id),
+        this.repo.findEditionByCompetitionAndSeason(d.competitionId, season.id),
       ),
     );
 
-    const isNotFullOfNulls = !existingEditions.every(
-      (edition) => edition === null,
-    );
-
-    if (isNotFullOfNulls)
+    if (existingEditions.some((edition) => edition !== null))
       throw new ConflictException(
         "There's a competition with an edition already created for the current season",
       );
