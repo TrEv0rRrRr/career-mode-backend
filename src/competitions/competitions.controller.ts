@@ -560,7 +560,7 @@ export class CompetitionsController {
     );
   }
 
-  @Get('/edition/:competitionEditionId/matches')
+  @Get('/editions/:competitionEditionId/matches')
   @ApiOperation({ summary: 'Gets the fixture of a competition' })
   @ApiResponse({
     status: HttpStatus.OK,
