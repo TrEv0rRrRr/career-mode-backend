@@ -1,6 +1,6 @@
 import { Confederation, Player, PreferredFoot } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/client';
-import { ManagerResponse } from '../../../national-teams/dto/response/national-team-response.dto.ts';
+import { ManagerSummary } from '../../../managers/dto/response/manager-response.dto.ts';
 
 export type PlayerType = {
   id: number;
@@ -142,5 +142,5 @@ export class CurrentManagerClubResponseDto {
   clubId!: number;
   startDate!: Date;
   endDate!: Date | null;
-  manager!: ManagerResponse;
+  manager!: ManagerSummary;
 }
