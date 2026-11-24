@@ -42,6 +42,11 @@ export const matchInclude = {
   matchClubStats: true,
   matchPlayerStats: true,
   stadium: true,
+  competitionEdition: {
+    include: {
+      competition: true,
+    },
+  },
 } satisfies Prisma.MatchInclude;
 
 export type MatchWithRelations = Prisma.MatchGetPayload<{

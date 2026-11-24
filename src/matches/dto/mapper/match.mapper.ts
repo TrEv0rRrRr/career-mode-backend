@@ -22,6 +22,11 @@ export class MatchMapper {
         image: match.stadium.image,
         country: match.stadium.country,
       },
+      competition: {
+        id: match.competitionEdition.competitionId,
+        name: match.competitionEdition.competition.name,
+        logo: match.competitionEdition.competition.logo,
+      },
       matchday: match.matchday,
       homePenaltyGoals: match.homePenaltyGoals,
       awayPenaltyGoals: match.awayPenaltyGoals,

@@ -5,6 +5,7 @@ import {
   MatchType,
 } from '@prisma/client';
 import { ClubSummary } from '../../../clubs/dto/response/club-response.dto.ts';
+import { CompetitionSummary } from '../../../competitions/dto/response/competition-response.dto.ts';
 import { NationalTeamSummary } from '../../../national-teams/dto/response/national-team-response.dto.ts';
 import { StadiumSummary } from '../../../stadiums/dto/response/stadiums.response.ts';
 
@@ -15,6 +16,7 @@ export class MatchResponseDto {
   awayGoals!: number;
   status!: MatchStatus;
   stadium!: StadiumSummary;
+  competition!: CompetitionSummary;
   matchday!: number | null;
   homePenaltyGoals!: number | null;
   awayPenaltyGoals!: number | null;
