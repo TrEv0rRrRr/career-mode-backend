@@ -59,6 +59,12 @@ export class SeasonsRepository {
     });
   }
 
+  careerExists(id: number) {
+    return this.prisma.career
+      .findUnique({ where: { id }, select: { id: true } })
+      .then((career) => career !== null);
+  }
+
   create(data: CreateSeasonDto) {
     const [firstYear, secondYear] = data.code.split('/');
 

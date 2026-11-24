@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { CareerNotFoundException } from '../careers/exceptions/career-not-found.exception.ts';
 import { CreateSeasonDto } from './dto/create-season.dto.ts';
 import { SeasonMapper } from './dto/mapper/season.mapper.ts';
 import { SeasonNotFoundException } from './exceptions/season-not-found.exception.ts';
@@ -30,6 +31,9 @@ export class SeasonsService {
   }
 
   async createSeason(data: CreateSeasonDto) {
+    const careerExists = await this.repo.careerExists(data.careerId);
+    if (!careerExists) throw new CareerNotFoundException();
+
     const existing = await this.repo.findByCode(data.code);
 
     if (existing)
