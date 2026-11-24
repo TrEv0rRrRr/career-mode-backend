@@ -15,6 +15,7 @@ export const calendarTemplates: Record<string, CalendarGenerator> = {
   'Premier League': getLeagueCalendar,
   'Serie A': getLeagueCalendar,
   'Ligue 1': getLeagueCalendar,
+  'Liga Test': getLeagueCalendar,
 
   'DFB-Pokal': getCupCalendar,
   'FA Cup': getCupCalendar,
