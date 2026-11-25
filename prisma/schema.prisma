@@ -256,6 +256,7 @@ model Career {
   clubId      Int       @map("club_id")
   startDate   DateTime  @map("start_date") @db.Date
   endDate     DateTime? @map("end_date") @db.Date
+  completed   Boolean
 
   club    Club     @relation(fields: [clubId], references: [id])
   seasons Season[]
