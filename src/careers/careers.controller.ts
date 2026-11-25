@@ -6,13 +6,14 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CareersService } from './careers.service.ts';
 import { CreateCareerDto } from './dto/create-career.dto.ts';
 
-@Controller('career')
+@Controller('careers')
 export class CareersController {
   constructor(private readonly careersService: CareersService) {}
 
@@ -40,6 +41,62 @@ export class CareersController {
   })
   getCareerById(@Param('id', ParseIntPipe) id: number) {
     return this.careersService.findCareerById(id);
+  }
+
+  @Get('/current')
+  @ApiOperation({ summary: 'Get the current career' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the career',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Career not found',
+  })
+  getCurrentCareer() {
+    return this.careersService.findCurrentCareer();
+  }
+
+  @Get('/current/club/:clubId')
+  @ApiOperation({ summary: 'Get the current career by club id' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the career',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Career not found',
+  })
+  getCurrentCareerByClubId(@Param('clubId', ParseIntPipe) clubId: number) {
+    return this.careersService.findCurrentCareerByClubId(clubId);
+  }
+
+  @Patch('/current/complete')
+  @ApiOperation({ summary: 'Complete the current career' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the career',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Career not found',
+  })
+  completeCurrentCareer() {
+    return this.careersService.completeCurrentCareer();
+  }
+
+  @Patch(':careerId/complete')
+  @ApiOperation({ summary: 'Complete a career' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Gets the career',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Career not found',
+  })
+  completeCareer(@Param('careerId', ParseIntPipe) careerId: number) {
+    return this.careersService.completeCareer(careerId);
   }
 
   @Post()

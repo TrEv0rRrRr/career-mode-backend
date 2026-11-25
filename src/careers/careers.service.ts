@@ -11,6 +11,16 @@ export class CareersService {
     private clubsService: ClubsService,
   ) {}
 
+  findCurrentCareer() {
+    return this.repo.findCurrentCareer();
+  }
+
+  async findCurrentCareerByClubId(clubId: number) {
+    await this.clubsService.findClubById(clubId);
+
+    return this.repo.findCurrentCareerByClubId(clubId);
+  }
+
   findCareers() {
     return this.repo.findAll();
   }
@@ -25,7 +35,21 @@ export class CareersService {
 
   async createCareer(data: CreateCareerDto) {
     await this.clubsService.findClubById(data.clubId);
+
     return this.repo.create(data);
+  }
+
+  async completeCurrentCareer() {
+    const currentCareer = await this.findCurrentCareer();
+
+    if (!currentCareer) throw new CareerNotFoundException();
+
+    return this.repo.completeCurrentCareer(currentCareer.id);
+  }
+
+  async completeCareer(careerId: number) {
+    await this.findCareerById(careerId);
+    return this.repo.completeCareer(careerId);
   }
 
   async deleteCareer(id: number) {
